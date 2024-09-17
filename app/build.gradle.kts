@@ -68,6 +68,11 @@ dependencies {
     //google services
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
+    //Navigation component
+    implementation("androidx.navigation:navigation-fragment-ktx:2.5.0")  // Navigation component
+    implementation ("androidx.navigation:navigation-ui-ktx:2.5.0")
+
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

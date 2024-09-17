@@ -10,15 +10,15 @@ import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.Location
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
+import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class WeatherRepositoryImpl private constructor(
     private val remoteDataSource: WeatherRemoteDataSource,
-    private val weatherDao: WeatherDao,
-    private val forecastDao: ForecastDao,
+    private val localDataSource: WeatherLocalDataSource,
     private val sharedPreferences: SharedPreferences
-) {
+) : WeatherRepository {
 
     companion object {
         @Volatile
@@ -26,12 +26,11 @@ class WeatherRepositoryImpl private constructor(
 
         fun getInstance(
             remoteDataSource: WeatherRemoteDataSource,
-            weatherDao: WeatherDao,
-            forecastDao: ForecastDao,
+            localDataSource: WeatherLocalDataSource,
             sharedPreferences: SharedPreferences
         ): WeatherRepositoryImpl {
             return instance ?: synchronized(this) {
-                instance ?: WeatherRepositoryImpl(remoteDataSource, weatherDao, forecastDao, sharedPreferences)
+                instance ?: WeatherRepositoryImpl(remoteDataSource, localDataSource, sharedPreferences)
                     .also { instance = it }
             }
         }

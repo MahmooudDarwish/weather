@@ -11,17 +11,35 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.Switch
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.weather.MapActivity
 import com.example.weather.R
+import com.example.weather.features.landing.view_model.LandingFactory
 import com.example.weather.features.landing.view_model.LandingViewModel
+import com.example.weather.utils.local.room.AppDatabase
+import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
+import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.model.WeatherRepositoryImpl
+import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import com.google.android.material.navigation.NavigationView
+
 
 class LandingActivity : AppCompatActivity() {
 
-    private val viewModel: LandingViewModel by viewModels()
+    lateinit var viewModel: LandingViewModel
+    private lateinit var drawerLayout: DrawerLayout
+
+
 
     private val requestLocationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -35,9 +53,35 @@ class LandingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.landing_activity)
+        setContentView(R.layout.activity_landing)
 
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        drawerLayout = findViewById(R.id.drawer_layout)
+        val navView: NavigationView = findViewById(R.id.navigation_view)
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        setupActionBarWithNavController(navController, drawerLayout)
+        NavigationUI.setupWithNavController(navView, navController)
+
+
+        val landingFactory = LandingFactory(
+            WeatherRepositoryImpl.getInstance(
+                remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
+                localDataSource = WeatherLocalDataSourceImpl(AppDatabase.getDatabase(this).weatherDao(), AppDatabase.getDatabase(this).forecastDao()),
+                sharedPreferences = SharedPreferences(this)
+
+            )
+        )
+
+        viewModel = ViewModelProvider(this, landingFactory).get(LandingViewModel::class.java)
         showInitialSetupDialog()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment)
+        return NavigationUI.navigateUp(navController, drawerLayout)
+                || super.onSupportNavigateUp()
     }
 
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -53,18 +97,6 @@ class LandingActivity : AppCompatActivity() {
         val rbMap = dialogView.findViewById<RadioButton>(R.id.rbMap)
         val switchNotifications = dialogView.findViewById<Switch>(R.id.switchNotificationsSwitch)
         val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
-
-        viewModel.isGpsSelected.observe(this) { isSelected ->
-            rbGps.isChecked = isSelected
-        }
-
-        viewModel.isMapSelected.observe(this) { isSelected ->
-            rbMap.isChecked = isSelected
-        }
-
-        viewModel.isNotificationsEnabled.observe(this) { isEnabled ->
-            switchNotifications.isChecked = isEnabled
-        }
 
         btnOk.setOnClickListener {
             when {
@@ -90,6 +122,7 @@ class LandingActivity : AppCompatActivity() {
                 this, Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+
             checkGpsStatusAndFetchLocation()
         } else {
             requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)

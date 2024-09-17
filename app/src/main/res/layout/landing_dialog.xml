@@ -65,10 +65,10 @@
                 android:id="@+id/rbGps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/gps"
-                android:theme="@style/MyRadioButtonStyle"
                 android:textColor="@color/primary_text"
-               />
+                android:theme="@style/MyRadioButtonStyle" />
 
             <RadioButton
                 android:id="@+id/rbMap"
