@@ -13,10 +13,10 @@ class LandingViewModel : ViewModel() {
     val isMapSelected: LiveData<Boolean> get() = _isMapSelected
 
     private val _isNotificationsEnabled = MutableLiveData<Boolean>()
-    val isNotificationsEnabled: LiveData<Boolean> get() = _isNotificationsEnabled
+        val isNotificationsEnabled: LiveData<Boolean> get() = _isNotificationsEnabled
 
     init {
-        _isGpsSelected.value = false
+        _isGpsSelected.value = true
         _isMapSelected.value = false
         _isNotificationsEnabled.value = false
     }

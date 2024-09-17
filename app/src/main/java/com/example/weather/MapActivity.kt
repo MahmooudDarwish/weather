@@ -22,7 +22,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import java.util.Locale
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var map: GoogleMap? = null
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_map)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -81,18 +81,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     val longitude = it.longitude
                     val currentLocation = LatLng(latitude, longitude)
 
-                    // Move camera to the current location and add a marker
                     map?.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
                     addMarker(currentLocation)
-
-                    // Get and display the address
                     getAddressFromLocation(latitude, longitude)
                 } ?: run {
-                    Log.e("DEBUGGGGGGG", "Location is null")
+                    Log.e("MapsActivity", "Location is null")
                     Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
                 }
-            }.addOnFailureListener {
-                Log.e("DEBUGGGGGGG", "Failed to get location", it)
             }
         }
     }
@@ -106,7 +101,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
         val address = addresses?.get(0)?.getAddressLine(0) ?: "Unknown location"
-
         Toast.makeText(this, "Address: $address", Toast.LENGTH_SHORT).show()
     }
 
@@ -122,7 +116,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             Toast.makeText(this, "Lat: $latitude, Lng: $longitude", Toast.LENGTH_SHORT).show()
         }
 
-        // Show user's current location if permission is granted
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(

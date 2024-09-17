@@ -38,16 +38,20 @@ class WeatherRepositoryImpl private constructor(
     }
 
     ///API
-    suspend fun fetchAndStoreWeatherData(location: String) {
+    suspend fun fetchAndStoreWeatherData(longtitude: Double, latitude: Double) {
+        ///TODO: get the current language and metric from shared preferences
+
         withContext(Dispatchers.IO) {
-            val response = remoteDataSource
+            val response = remoteDataSource.getCurrentWeather(
+                longitude = longtitude.toString(),
+                latitude = latitude.toString(),
+                lang = "en",
+                metric = "metric"
+            )
         }
     }
 
     ///ROOM DATABASE
-  //  suspend fun insertWeatherData(weatherEntity: WeatherEntity) {
-   //     weatherDao.insertWeatherData(weatherData)
-    //}
 
 
 
