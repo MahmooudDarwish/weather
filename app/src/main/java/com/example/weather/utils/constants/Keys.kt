@@ -19,6 +19,7 @@ object Keys {
     const val NOTIFICATION_STATUS_KEY = "notification_enabled"
 
     //API Keys
-    const val BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
+    const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
+    const val WEATHER_API_KEY = "7c6b62db0288453b19dcecf900970e80"
 
 }

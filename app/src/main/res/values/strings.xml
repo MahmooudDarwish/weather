@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Weather</string>
+    <string name="weather_api_key">7c6b62db0288453b19dcecf900970e80</string>
     <string name="initial_setup">Initial Setup</string>
     <string name="location">Location</string>
     <string name="gps">GPS</string>
@@ -12,6 +13,7 @@
     <string name="home">Home</string>
     <string name="open_drawer">Open navigation drawer</string>
     <string name="close_drawer">Close navigation drawer</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

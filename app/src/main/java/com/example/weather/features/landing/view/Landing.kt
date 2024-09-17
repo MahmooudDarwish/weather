@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
@@ -15,7 +16,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
@@ -125,8 +125,12 @@ class LandingActivity : AppCompatActivity() {
 
             checkGpsStatusAndFetchLocation()
         } else {
-            requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            openPermissionDialog()
         }
+    }
+
+    private fun  openPermissionDialog(){
+        requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
     private fun checkGpsStatusAndFetchLocation() {
@@ -147,6 +151,8 @@ class LandingActivity : AppCompatActivity() {
             .setMessage("GPS is turned off. Please turn it on to fetch your location.")
             .setPositiveButton("Turn on") { _, _ ->
                 startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            }.setNegativeButton("Continue with specific location") { _, _ ->
+                navigateToMaps()
             }
             .setCancelable(false)
             .create()
@@ -154,12 +160,41 @@ class LandingActivity : AppCompatActivity() {
     }
 
     private fun showGpsPermissionDeniedDialog() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            // If the user hasn't permanently denied the permission, we can show the dialog again.
+            AlertDialog.Builder(this)
+                .setMessage("Location permission is required to fetch weather data using GPS.")
+                .setPositiveButton("OK") { dialog, _ ->
+                    openPermissionDialog()
+                    dialog.dismiss()
+                }
+                .setCancelable(false)
+                .setNegativeButton("Continue with specific location") { _, _ ->
+                    navigateToMaps()
+                }
+                .create()
+                .show()
+        } else {
+            showPermissionDeniedPermanentlyDialog()
+        }
+    }
+
+    private fun showPermissionDeniedPermanentlyDialog() {
         AlertDialog.Builder(this)
-            .setMessage("Location permission is required to fetch weather data using GPS.")
-            .setPositiveButton("OK", null).setCancelable(false).setOnDismissListener { }
-            .create()
+            .setMessage("Location permission is permanently denied. You need to enable it from the app settings.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    val uri = Uri.fromParts("package", packageName, null)
+                    data = uri
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("Continue with specific location") { _, _ ->
+                navigateToMaps()
+            }       .create()
             .show()
     }
+
 
     private fun fetchGpsLocation() {
         // Logic to fetch GPS location (can be done via a ViewModel or directly)
