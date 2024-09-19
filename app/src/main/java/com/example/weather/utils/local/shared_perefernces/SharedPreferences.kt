@@ -42,11 +42,11 @@ class SharedPreferences(context: Context) {
     }
 
     // Location settings
-    fun setLocation(location: Location) {
+    fun setLocationStatus(location: Location) {
         sharedPreferences.edit().putString(Keys.LOCATION_KEY, location.name).apply()
     }
 
-    fun getLocation(): Location {
+    fun setLocationStatus(): Location {
         val location = sharedPreferences.getString(Keys.LOCATION_KEY, Location.GPS.name) ?: Location.GPS.name
         return Location.valueOf(location)
     }
@@ -59,4 +59,24 @@ class SharedPreferences(context: Context) {
     fun getNotificationStatus(): Boolean {
         return sharedPreferences.getBoolean(Keys.NOTIFICATION_STATUS_KEY, false)
     }
+
+
+    fun setLocation(latitude: Double, longitude: Double) {
+        with(sharedPreferences.edit()) {
+            putFloat("latitude", latitude.toFloat())
+            putFloat("longitude", longitude.toFloat())
+            apply()
+        }
+    }
+
+    fun getLocation(): Pair<Double, Double>? {
+        val latitude = sharedPreferences.getFloat("latitude", Float.NaN)
+        val longitude = sharedPreferences.getFloat("longitude", Float.NaN)
+        return if (latitude.isNaN() || longitude.isNaN()) {
+            null
+        } else {
+            Pair(latitude.toDouble(), longitude.toDouble())
+        }
+    }
+
 }

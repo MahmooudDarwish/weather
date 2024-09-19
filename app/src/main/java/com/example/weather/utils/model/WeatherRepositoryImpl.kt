@@ -30,7 +30,11 @@ class WeatherRepositoryImpl private constructor(
             sharedPreferences: SharedPreferences
         ): WeatherRepositoryImpl {
             return instance ?: synchronized(this) {
-                instance ?: WeatherRepositoryImpl(remoteDataSource, localDataSource, sharedPreferences)
+                instance ?: WeatherRepositoryImpl(
+                    remoteDataSource,
+                    localDataSource,
+                    sharedPreferences
+                )
                     .also { instance = it }
             }
         }
@@ -53,10 +57,6 @@ class WeatherRepositoryImpl private constructor(
     ///ROOM DATABASE
 
 
-
-
-
-
     ///SharedPreferences
     fun setTemperatureUnit(unit: Temperature) {
         sharedPreferences.setTemperatureUnit(unit)
@@ -74,12 +74,12 @@ class WeatherRepositoryImpl private constructor(
         return sharedPreferences.getWindSpeedUnit()
     }
 
-    fun setLocation(location: Location) {
-        sharedPreferences.setLocation(location)
+    fun setLocationStatus(location: Location) {
+        sharedPreferences.setLocationStatus(location)
     }
 
-    fun getLocation(): Location {
-        return sharedPreferences.getLocation()
+    fun getLocationStatus(): Location {
+        return sharedPreferences.setLocationStatus()
     }
 
     fun setLanguage(language: Language) {
@@ -97,4 +97,13 @@ class WeatherRepositoryImpl private constructor(
     fun getNotificationStatus(): Boolean {
         return sharedPreferences.getNotificationStatus()
     }
+
+    fun saveLocation(latitude: Double, longitude: Double) {
+        sharedPreferences.setLocation(latitude = latitude, longitude = longitude)
+    }
+
+    fun getLocation(): Pair<Double, Double>? {
+        return sharedPreferences.getLocation()
+    }
+
 }

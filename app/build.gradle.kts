@@ -1,13 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("kotlin-kapt")
+    id("kotlin-kapt") // No version specified
+
 
 }
 
 android {
     namespace = "com.example.weather"
     compileSdk = 34
+
+
     buildFeatures {
         viewBinding = true
         dataBinding = true
@@ -42,6 +45,7 @@ android {
 
 dependencies {
 
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -69,8 +73,9 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
     //Navigation component
-    implementation("androidx.navigation:navigation-fragment-ktx:2.5.0")  // Navigation component
-    implementation ("androidx.navigation:navigation-ui-ktx:2.5.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.0")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.0")
+
 
 
 

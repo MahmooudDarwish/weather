@@ -2,6 +2,7 @@ package com.example.weather.features.landing.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -22,8 +23,9 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
-import com.example.weather.MapActivity
 import com.example.weather.R
+import com.example.weather.features.home.view.Home
+import com.example.weather.features.home.view.UpdateLocationWeather
 import com.example.weather.features.landing.view_model.LandingFactory
 import com.example.weather.features.landing.view_model.LandingViewModel
 import com.example.weather.utils.local.room.AppDatabase
@@ -32,6 +34,8 @@ import com.example.weather.utils.local.shared_perefernces.SharedPreferences
 import com.example.weather.utils.model.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.material.navigation.NavigationView
+import com.example.weather.features.map.view.Map
+
 
 
 class LandingActivity : AppCompatActivity() {
@@ -40,6 +44,20 @@ class LandingActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
 
 
+    private val mapActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val latitude = data?.getDoubleExtra("LATITUDE", 0.0) ?: 0.0
+            val longitude = data?.getDoubleExtra("LONGITUDE", 0.0) ?: 0.0
+
+            // Pass the data to the Home fragment
+            val homeFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+            val home = homeFragment?.childFragmentManager?.fragments?.find { it is Home } as? UpdateLocationWeather
+            home?.updateLocation(latitude, longitude)
+        }
+    }
 
     private val requestLocationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -137,11 +155,7 @@ class LandingActivity : AppCompatActivity() {
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
-        if (isGpsEnabled) {
-            // GPS is enabled, fetch location
-            fetchGpsLocation()
-        } else {
-            // Prompt user to enable GPS
+        if (!isGpsEnabled) {
             showEnableGpsDialog()
         }
     }
@@ -193,16 +207,12 @@ class LandingActivity : AppCompatActivity() {
                 navigateToMaps()
             }       .create()
             .show()
-    }
-
-
-    private fun fetchGpsLocation() {
-        // Logic to fetch GPS location (can be done via a ViewModel or directly)
-        // This method would interact with your WeatherRepository to fetch the weather based on location
-    }
+            }
 
     private fun navigateToMaps() {
-        // Navigate to the Maps activity for location selection
-        startActivity(Intent(this, MapActivity::class.java))
+        val intent = Intent(this, Map::class.java)
+        mapActivityResultLauncher.launch(intent)
     }
+
 }
+

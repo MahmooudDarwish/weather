@@ -1,15 +1,19 @@
-package com.example.weather
+package com.example.weather.features.map.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.weather.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -22,7 +26,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import java.util.Locale
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback {
+class Map : AppCompatActivity(), OnMapReadyCallback {
 
     private var map: GoogleMap? = null
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
@@ -36,6 +40,23 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         requestLocationPermission()
+
+        // Inside the Map activity
+        val selectLocationButton: Button = findViewById(R.id.btnGetWeather)
+        selectLocationButton.setOnClickListener {
+            Log.d("MapsActivity", "Select Location button clicked")
+            selectedMarker?.let {
+                val resultIntent = Intent().apply {
+                    putExtra("LATITUDE", selectedMarker?.position?.latitude ?: 0.0)
+                    putExtra("LONGITUDE", selectedMarker?.position?.longitude ?: 0.0)
+                }
+                setResult(Activity.RESULT_OK, resultIntent)
+
+                finish()
+            } ?: run {
+                Toast.makeText(this, "No location selected", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)

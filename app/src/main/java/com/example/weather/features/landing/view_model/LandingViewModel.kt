@@ -1,11 +1,15 @@
 package com.example.weather.features.landing.view_model
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.weather.utils.model.WeatherRepository
 
 
 class LandingViewModel(val repository: WeatherRepository): ViewModel() {
+
+    private val _locationData = MutableLiveData<Pair<Double, Double>>()
+    val locationData: LiveData<Pair<Double, Double>> get() = _locationData
 
     private val _isGpsSelected = MutableLiveData<Boolean>()
 
@@ -19,6 +23,9 @@ class LandingViewModel(val repository: WeatherRepository): ViewModel() {
         _isNotificationsEnabled.value = false
     }
 
+    fun setLocationData(latitude: Double, longitude: Double) {
+        _locationData.value = Pair(latitude, longitude)
+    }
     fun selectGps(selected: Boolean) {
         _isGpsSelected.value = selected
     }

@@ -10,11 +10,13 @@
         android:name="com.example.weather.features.home.view.Home"
         android:label="Home"
         tools:layout="@layout/fragment_home" />
+
     <fragment
         android:id="@+id/nav_favorites"
         android:name="com.example.weather.features.favorites.view.Favorites"
         android:label="Favorites"
-        tools:layout="@layout/fragment_favorites" />
+        tools:layout="@layout/fragment_favorites" >
+    </fragment>
     <fragment
         android:id="@+id/nav_alerts"
         android:name="com.example.weather.features.alarm.view.Alarm"
@@ -25,6 +27,7 @@
         android:name="com.example.weather.features.settings.view.Settings"
         android:label="Settings"
         tools:layout="@layout/fragment_settings" />
+
 
 
 </navigation>
