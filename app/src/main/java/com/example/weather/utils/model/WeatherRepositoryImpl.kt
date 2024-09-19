@@ -12,7 +12,10 @@ import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class WeatherRepositoryImpl private constructor(
     private val remoteDataSource: WeatherRemoteDataSource,
@@ -40,20 +43,18 @@ class WeatherRepositoryImpl private constructor(
         }
     }
 
+
     ///API
-    suspend fun fetchAndStoreWeatherData(longtitude: Double, latitude: Double) {
-        ///TODO: get the current language and metric from shared preferences
-
-        withContext(Dispatchers.IO) {
-            val response = remoteDataSource.getCurrentWeather(
-                longitude = longtitude.toString(),
-                latitude = latitude.toString(),
-                lang = "en",
-                metric = "metric"
-            )
-        }
+    override fun fetchAndStoreWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?> {
+        //TODO: Get language and metric from preferences
+        return remoteDataSource.getCurrentWeather(
+            latitude = latitude.toString(),
+            longitude = longitude.toString(),
+            metric = "metric",
+            lang = "en"
+        )
+        //TODO: Add additional logic here to store data in localDataSource or handle preferences
     }
-
     ///ROOM DATABASE
 
 

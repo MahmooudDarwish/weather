@@ -61,7 +61,6 @@
 
             <!-- Card Styles -->
             <style name="MyCardStyle" parent="Widget.MaterialComponents.CardView">
-                <item name="cardBackgroundColor">@color/white</item>
                 <item name="cardCornerRadius">8dp</item>
                 <item name="cardElevation">4dp</item>
                 <item name="android:layout_margin">8dp</item>

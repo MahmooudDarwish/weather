@@ -20,6 +20,6 @@ object Keys {
 
     //API Keys
     const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
-    const val WEATHER_API_KEY = "7c6b62db0288453b19dcecf900970e80"
-
+    const val WEATHER_API_KEY = "1de10df0792496fe3df75e77821732a5"
 }
+
