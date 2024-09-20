@@ -6,7 +6,7 @@ import com.example.weather.utils.remote.WeatherRemoteDataSource
 
 import com.example.weather.utils.local.shared_perefernces.SharedPreferences
 import com.example.weather.utils.enums.Language
-import com.example.weather.utils.enums.Location
+import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSource
@@ -71,11 +71,11 @@ class WeatherRepositoryImpl private constructor(
         return sharedPreferences.getWindSpeedUnit()
     }
 
-    override fun setLocationStatus(location: Location) {
-        sharedPreferences.setLocationStatus(location)
+    override fun setLocationStatus(locationStatus: LocationStatus) {
+        sharedPreferences.setLocationStatus(locationStatus)
     }
 
-    override fun getLocationStatus(): Location {
+    override fun getLocationStatus(): LocationStatus {
         return sharedPreferences.getLocationStatus()
     }
 
@@ -95,12 +95,21 @@ class WeatherRepositoryImpl private constructor(
         return sharedPreferences.getNotificationStatus()
     }
 
-    override fun saveLocation(latitude: Double, longitude: Double) {
+    override fun saveCurrentLocation(latitude: Double, longitude: Double) {
         sharedPreferences.setLocation(latitude = latitude, longitude = longitude)
     }
 
-    override fun getLocation(): Pair<Double, Double>? {
+    override fun getCurrentLocation(): Pair<Double, Double>? {
         return sharedPreferences.getLocation()
     }
+
+    override fun setFirstLaunchCompleted() {
+        sharedPreferences.setFirstLaunchCompleted(true)
+    }
+
+    override fun isFirstLaunch(): Boolean {
+        return sharedPreferences.isFirstLaunch()
+    }
+
 
 }

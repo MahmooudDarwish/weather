@@ -2,7 +2,7 @@ package com.example.weather.utils.model
 
 
 import com.example.weather.utils.enums.Language
-import com.example.weather.utils.enums.Location
+import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import kotlinx.coroutines.flow.Flow
@@ -19,8 +19,8 @@ interface WeatherRepository {
      fun setWindSpeedUnit(unit: WindSpeed)
      fun getWindSpeedUnit(): WindSpeed
 
-     fun setLocationStatus(location: Location)
-     fun getLocationStatus(): Location
+     fun setLocationStatus(locationStatus: LocationStatus)
+     fun getLocationStatus(): LocationStatus
 
      fun setLanguage(language: Language)
      fun getLanguage(): Language
@@ -28,6 +28,11 @@ interface WeatherRepository {
      fun setNotificationStatus(status: Boolean)
      fun getNotificationStatus(): Boolean
 
-     fun saveLocation(latitude: Double, longitude: Double)
-     fun getLocation(): Pair<Double, Double>?
+     fun saveCurrentLocation(latitude: Double, longitude: Double)
+     fun getCurrentLocation(): Pair<Double, Double>?
+
+     fun setFirstLaunchCompleted()
+
+     fun isFirstLaunch(): Boolean
+
 }

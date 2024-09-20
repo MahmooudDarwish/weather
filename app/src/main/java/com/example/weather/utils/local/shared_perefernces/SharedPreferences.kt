@@ -3,13 +3,22 @@ package com.example.weather.utils.local.shared_perefernces
 
 import android.content.Context
 import com.example.weather.utils.enums.Language
-import com.example.weather.utils.enums.Location
+import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.constants.Keys
 
 class SharedPreferences(context: Context) {
     private val sharedPreferences = context.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+
+    //landing options
+    fun setFirstLaunchCompleted(status: Boolean) {
+        sharedPreferences.edit().putBoolean(Keys.LANDING_OPTION_KEY, status).apply()
+    }
+
+    fun isFirstLaunch(): Boolean {
+        return sharedPreferences.getBoolean(Keys.LANDING_OPTION_KEY, false)
+    }
 
     // Language settings
     fun setLanguage(lang: Language) {
@@ -42,12 +51,12 @@ class SharedPreferences(context: Context) {
     }
 
     // Location settings
-    fun setLocationStatus(location: Location) {
-        sharedPreferences.edit().putString(Keys.LOCATION_KEY, location.name).apply()
+    fun setLocationStatus(locationStatus: LocationStatus) {
+        sharedPreferences.edit().putString(Keys.LOCATION_KEY, locationStatus.name).apply()
     }
-    fun getLocationStatus(): Location {
-        val location = sharedPreferences.getString(Keys.LOCATION_KEY, Location.MAP.name) ?: Location.MAP.name
-        return Location.valueOf(location)
+    fun getLocationStatus(): LocationStatus {
+        val locationStatus = sharedPreferences.getString(Keys.LOCATION_KEY, LocationStatus.MAP.name) ?: LocationStatus.MAP.name
+        return LocationStatus.valueOf(locationStatus)
     }
 
     // Notification settings
@@ -60,17 +69,18 @@ class SharedPreferences(context: Context) {
     }
 
 
+    //Current location
     fun setLocation(latitude: Double, longitude: Double) {
         with(sharedPreferences.edit()) {
-            putFloat("latitude", latitude.toFloat())
-            putFloat("longitude", longitude.toFloat())
+            putFloat(Keys.LATITUDE_KEY, latitude.toFloat())
+            putFloat(Keys.LONGITUDE_KEY, longitude.toFloat())
             apply()
         }
     }
 
     fun getLocation(): Pair<Double, Double>? {
-        val latitude = sharedPreferences.getFloat("latitude", Float.NaN)
-        val longitude = sharedPreferences.getFloat("longitude", Float.NaN)
+        val latitude = sharedPreferences.getFloat(Keys.LATITUDE_KEY, Float.NaN)
+        val longitude = sharedPreferences.getFloat(Keys.LONGITUDE_KEY, Float.NaN)
         return if (latitude.isNaN() || longitude.isNaN()) {
             null
         } else {

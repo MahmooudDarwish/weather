@@ -12,7 +12,7 @@ import com.example.weather.R
 import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
 import com.example.weather.utils.enums.Language
-import com.example.weather.utils.enums.Location
+import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.local.room.AppDatabase
@@ -57,9 +57,6 @@ class Settings : Fragment() {
         getSavedSettings()
         setUpListeners()
 
-
-
-
         return view
     }
 
@@ -95,8 +92,8 @@ class Settings : Fragment() {
 
         radioGroupLocation.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
-                R.id.rbGps -> viewModel.saveLocationStatus(Location.GPS)
-                R.id.rbMap -> viewModel.saveLocationStatus(Location.MAP)
+                R.id.rbGps -> viewModel.saveLocationStatus(LocationStatus.GPS)
+                R.id.rbMap -> viewModel.saveLocationStatus(LocationStatus.MAP)
             }
         }
 
@@ -133,8 +130,8 @@ class Settings : Fragment() {
 
         Log.d("TAG", "getSavedSettings: ${viewModel.getLocationStatus()}")
         when (viewModel.getLocationStatus()) {
-            Location.GPS -> radioGroupLocation.check(R.id.rbGPS)
-            Location.MAP -> radioGroupLocation.check(R.id.rbMap)
+            LocationStatus.GPS -> radioGroupLocation.check(R.id.rbGPS)
+            LocationStatus.MAP -> radioGroupLocation.check(R.id.rbMap)
         }
 
     }

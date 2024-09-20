@@ -1,41 +1,49 @@
 package com.example.weather.features.landing.view_model
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.model.WeatherRepository
+import kotlinx.coroutines.launch
 
 
-class LandingViewModel(val repository: WeatherRepository): ViewModel() {
-
-    private val _locationData = MutableLiveData<Pair<Double, Double>>()
-    val locationData: LiveData<Pair<Double, Double>> get() = _locationData
-
-    private val _isGpsSelected = MutableLiveData<Boolean>()
-
-    private val _isMapSelected = MutableLiveData<Boolean>()
-
-    private val _isNotificationsEnabled = MutableLiveData<Boolean>()
-
-    init {
-        _isGpsSelected.value = true
-        _isMapSelected.value = false
-        _isNotificationsEnabled.value = false
+class LandingViewModel(val repository: WeatherRepository) : ViewModel() {
+    fun saveCurrentLocation(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            repository.saveCurrentLocation(latitude, longitude)
+        }
     }
 
-    fun setLocationData(latitude: Double, longitude: Double) {
-        _locationData.value = Pair(latitude, longitude)
-    }
-    fun selectGps(selected: Boolean) {
-        _isGpsSelected.value = selected
+    fun getCurrentLocation(): Pair<Double, Double>? {
+        return repository.getCurrentLocation()
     }
 
-    fun selectMap(selected: Boolean) {
-        _isMapSelected.value = selected
+    fun saveLocationStatus(locationStatus: LocationStatus) {
+        viewModelScope.launch {
+            repository.setLocationStatus(locationStatus)
+        }
     }
 
-    fun setNotificationsEnabled(enabled: Boolean) {
-        _isNotificationsEnabled.value = enabled
+    fun getLocationStatus(): LocationStatus {
+        return repository.getLocationStatus()
+    }
+    fun isFirstLaunch(): Boolean {
+        return repository.isFirstLaunch()
     }
 
+    fun setFirstLaunchCompleted(){
+        viewModelScope.launch {
+            repository.setFirstLaunchCompleted()
+        }
+    }
+
+    fun saveNotificationStatus(status: Boolean) {
+        viewModelScope.launch {
+            repository.setNotificationStatus(status)
+        }
+    }
+
+    fun getNotificationStatus(): Boolean {
+        return repository.getNotificationStatus()
+    }
 }

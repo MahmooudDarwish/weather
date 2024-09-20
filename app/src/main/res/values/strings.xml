@@ -29,4 +29,21 @@
     <string name="wind_speed">Wind Speed</string>
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
+    <string name="initial_setup_dialog_message">Initial setup required.</string>
+    <string name="gps_disabled_message">GPS is turned off. Please turn it on to fetch your location.</string>
+    <string name="turn_on_gps">Turn on</string>
+    <string name="continue_with_specific_location">Continue with specific location</string>
+    <string name="gps_permission_required">Location permission is required to fetch weather data using GPS.</string>
+    <string name="ok_try_again">OK Try Again</string>
+    <string name="gps_permission_denied_permanently">Location permission is permanently denied. You need to enable it from the app settings.</string>
+    <string name="open_settings">Open Settings</string>
+
+    <!-- Snackbar Messages -->
+    <string name="gps_disabled_snackbar">GPS is disabled. Please turn it on.</string>
+    <string name="gps_permission_denied_dialog_message">Location permission is permanently denied. You need to enable it from the app settings.</string>
+    <string name="navigation_drawer_open">Navigation drawer opened</string>
+    <string name="navigation_drawer_close">Navigation drawer closed</string>
+
+
+
 </resources>

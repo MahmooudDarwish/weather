@@ -55,7 +55,7 @@
             />
 
         <RadioGroup
-            android:id="@+id/locationRadioBtnGroup"
+            android:id="@+id/LANDING_OPTION_KEY"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -71,7 +71,7 @@
                 android:theme="@style/MyRadioButtonStyle" />
 
             <RadioButton
-                android:id="@+id/rbMap"
+                android:id="@+id/rbMAP"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/map"

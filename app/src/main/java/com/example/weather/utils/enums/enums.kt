@@ -1,6 +1,6 @@
 package com.example.weather.utils.enums
 
-enum class Location {
+enum class LocationStatus {
     GPS, MAP
 }
 enum class Temperature {

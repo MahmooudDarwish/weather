@@ -5,7 +5,7 @@ import com.example.weather.utils.model.WeatherRepository
 
 import androidx.lifecycle.viewModelScope
 import com.example.weather.utils.enums.Language
-import com.example.weather.utils.enums.Location
+import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import kotlinx.coroutines.launch
@@ -32,13 +32,13 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
         return repository.getLanguage()
     }
 
-    fun saveLocationStatus(location: Location) {
+    fun saveLocationStatus(locationStatus: LocationStatus) {
         viewModelScope.launch {
-            repository.setLocationStatus(location)
+            repository.setLocationStatus(locationStatus)
         }
     }
 
-    fun getLocationStatus(): Location {
+    fun getLocationStatus(): LocationStatus {
         return repository.getLocationStatus()
     }
 
