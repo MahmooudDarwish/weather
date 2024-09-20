@@ -1,5 +1,5 @@
 package com.example.weather.features.home.view
 
 interface UpdateLocationWeather {
-    fun updateLocation(latitude: Double, longitude: Double)
+    fun updateLocation(currentLocation : Pair<Double, Double>?)
 }

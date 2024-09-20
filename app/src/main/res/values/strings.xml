@@ -44,6 +44,7 @@
     <string name="navigation_drawer_open">Navigation drawer opened</string>
     <string name="navigation_drawer_close">Navigation drawer closed</string>
     <string name="unknown">Unknown</string>
+    <string name="cancel">Cancel</string>
 
 
 </resources>

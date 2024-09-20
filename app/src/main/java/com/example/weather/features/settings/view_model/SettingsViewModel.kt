@@ -61,4 +61,10 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
     fun getWindSpeedUnit(): WindSpeed {
         return repository.getWindSpeedUnit()
     }
+
+    fun saveCurrentLocation(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            repository.saveCurrentLocation(latitude, longitude)
+        }
+    }
 }

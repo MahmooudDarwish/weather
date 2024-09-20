@@ -1,5 +1,7 @@
 package com.example.weather.features.home.view
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,10 +10,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.example.weather.R
 import com.example.weather.features.home.view_model.HomeViewModel
 import com.example.weather.features.home.view_model.HomeViewModelFactory
+import com.example.weather.features.map.view.Map
+import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
@@ -23,7 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class Home : Fragment(), UpdateLocationWeather {
+class Home : Fragment() , UpdateLocationWeather{
     lateinit var viewModel: HomeViewModel
 
     private lateinit var countryName: TextView
@@ -58,9 +63,33 @@ class Home : Fragment(), UpdateLocationWeather {
     }
 
     private fun updateUI(weatherResponse: WeatherResponse?) {
-        countryName.text = weatherResponse?.name
-        temperatureText.text = weatherResponse?.main?.temp.toString()
-        weatherDescriptionText.text = weatherResponse?.weather?.get(0)?.description
+        if(weatherResponse?.name!!.isEmpty()){
+            countryName.text = getString(R.string.unknown)
+        }else{
+            countryName.text = weatherResponse.name
+        }
+        temperatureText.text = weatherResponse.main.temp.toString()
+        weatherDescriptionText.text = weatherResponse.weather[0].description
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.i("DEBUGGGGGGG", "onResume called")
+        val currentLocation : Pair<Double, Double>? = viewModel.getCurrentLocation()
+        Log.i("DEBUGGGGGGG", "currentLocation $currentLocation")
+        Log.i("DEBUGGGGGGG", "viewModel.getCurrentLocation() ${viewModel.getLocationStatus()}")
+        updateLocation(currentLocation)
+        checkLocationStatus()
+    }
+
+    private fun checkLocationStatus() {
+        if(viewModel.getLocationStatus() == LocationStatus.MAP){
+            Log.i("HomeFragment", "LocationStatus is MAP")
+            locationIcon.visibility = View.VISIBLE
+        }else{
+            Log.i("HomeFragment", "LocationStatus is NOT MAP")
+            locationIcon.visibility = View.GONE
+        }
     }
 
     override fun onCreateView(
@@ -72,13 +101,40 @@ class Home : Fragment(), UpdateLocationWeather {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-
         super.onViewCreated(view, savedInstanceState)
+        val currentLocation : Pair<Double, Double>? = viewModel.getCurrentLocation()
+
+        updateLocation(currentLocation)
         Log.i("HomeFragment", "onViewCreated called")
         initUi(view)
+        setUpListeners()
         todayDate.text = getCurrentDate()
 
     }
+
+    private fun setUpListeners() {
+        locationIcon.setOnClickListener {
+            navigateToMaps()
+        }
+    }
+
+    private val mapActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val latitude = data?.getDoubleExtra(Keys.LATITUDE_KEY, 0.0) ?: 0.0
+            val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
+            Log.d("HomeActivity", "Latitude: $latitude, Longitude: $longitude")
+            viewModel.saveCurrentLocation(latitude, longitude)
+            updateLocation(Pair(latitude, longitude))
+        }
+    }
+
+    private fun navigateToMaps() {
+        mapActivityResultLauncher.launch(Intent(requireActivity(), Map::class.java))
+    }
+
 
     private fun initUi(view: View){
         countryName = view.findViewById(R.id.countryName)
@@ -87,14 +143,7 @@ class Home : Fragment(), UpdateLocationWeather {
         temperatureText = view.findViewById(R.id.temperatureText)
         weatherDescriptionText = view.findViewById(R.id.weatherDescriptionText)
         locationIcon = view.findViewById(R.id.locationIcon)
-        Log.i("HomeFragment", "location satauts ${viewModel.getLocationStatus()}")
-        if(viewModel.getLocationStatus() == LocationStatus.MAP){
-            Log.i("HomeFragment", "LocationStatus is MAP")
-            locationIcon.visibility = View.VISIBLE
-        }else{
-            Log.i("HomeFragment", "LocationStatus is NOT MAP")
-            locationIcon.visibility = View.GONE
-        }
+        checkLocationStatus()
 
     }
     private fun getCurrentDate(): String {
@@ -102,10 +151,15 @@ class Home : Fragment(), UpdateLocationWeather {
         val date = Date()
         return dateFormat.format(date)
     }
-    override fun updateLocation(latitude: Double, longitude: Double) {
-        Log.d("HomeFragment", "Latitude: $latitude, Longitude: $longitude")
+    override fun updateLocation(currentLocation : Pair<Double, Double>?) {
+        if (currentLocation == null) {
+            return
+        }
+        val latitude = currentLocation.first
+        val longitude = currentLocation.second
+        Log.i("HomeFragment", "updateLocation called $latitude $longitude")
         viewModel.getWeather(longitude = longitude, latitude = latitude)
     }
 }
 
-
+//        Pair(latitude.toDouble(), longitude.toDouble())

@@ -19,6 +19,8 @@ class HomeViewModel(
     val currentWeather: MutableLiveData<WeatherResponse?>
         get() = _currentWeather
 
+
+
     fun getWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             weatherRepository.fetchAndStoreWeatherData(longitude, latitude).collect { response ->
@@ -32,4 +34,13 @@ class HomeViewModel(
         Log.d("HomeViewModel", "getLocationStatus called ${weatherRepository.getLocationStatus()}")
         return weatherRepository.getLocationStatus()
     }
+    fun saveCurrentLocation(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            weatherRepository.saveCurrentLocation(latitude, longitude)
+        }
+    }
+    fun getCurrentLocation(): Pair<Double, Double>? {
+        return weatherRepository.getCurrentLocation()
+    }
+
 }

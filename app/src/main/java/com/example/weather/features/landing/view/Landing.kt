@@ -44,6 +44,8 @@ import com.google.android.gms.tasks.Task
 import android.location.Location
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.ContextCompat
+import com.example.weather.features.home.view.Home
+import com.example.weather.features.home.view.UpdateLocationWeather
 import com.example.weather.utils.enums.LocationStatus
 import com.google.android.material.snackbar.Snackbar
 
@@ -71,7 +73,7 @@ class LandingActivity : AppCompatActivity() {
             val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
             Log.d("LandingActivity", "Latitude: $latitude, Longitude: $longitude")
             viewModel.saveCurrentLocation(latitude, longitude)
-            //updateHomeLocation(latitude, longitude)
+            updateHomeLocation(latitude, longitude)
         } else {
             showInitialSetupDialog()
         }
@@ -97,13 +99,13 @@ class LandingActivity : AppCompatActivity() {
         registerReceiver(gpsStatusReceiver, intentFilter)
     }
 
-    /*
+
     private fun updateHomeLocation(latitude: Double, longitude: Double) {
         val homeFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
         val home = homeFragment?.childFragmentManager?.fragments?.find { it is Home } as? UpdateLocationWeather
-        home?.updateLocation(latitude, longitude)
+        home?.updateLocation(Pair(latitude, longitude))
     }
-        */
+
     private val requestLocationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -125,23 +127,41 @@ class LandingActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        Log.i("DEBUGGGGGGG", "onResume")
+        Log.i("DEBUGGGGGGG", "onResume called")
         super.onResume()
 
+        // Check if location permission is granted
         val isLocationPermissionGranted = ContextCompat.checkSelfPermission(
             this, Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
+        Log.i("DEBUGGGGGGG", "Location permission granted: $isLocationPermissionGranted")
+
+        // Check if location status is set to GPS in the ViewModel
         val isGpsLocationStatus = viewModel.getLocationStatus() == LocationStatus.GPS
         Log.i("DEBUGGGGGGG", "isGpsLocationStatus: $isGpsLocationStatus")
+
+        // If location permission is granted, proceed
         if (isLocationPermissionGranted) {
+            Log.i("DEBUGGGGGGG", "Location permission is granted, proceeding")
+
+            // Check if GPS is enabled
             if (isGpsEnabled()) {
+                Log.i("DEBUGGGGGGG", "GPS is enabled, fetching current location weather")
                 fetchCurrentLocationWeather()
             } else {
+                Log.i("DEBUGGGGGGG", "GPS is not enabled")
+
+                // If location status is GPS, prompt to enable GPS and fetch location
                 if (isGpsLocationStatus) {
+                    Log.i("DEBUGGGGGGG", "Location status is GPS, checking GPS status")
                     checkGpsStatusAndFetchLocation()
+                } else {
+                    Log.i("DEBUGGGGGGG", "Location status is not GPS, skipping GPS check")
                 }
             }
+        } else {
+            Log.i("DEBUGGGGGGG", "Location permission is not granted, cannot proceed")
         }
     }
 
@@ -285,6 +305,7 @@ class LandingActivity : AppCompatActivity() {
                     val latitude = it.latitude
                     val longitude = it.longitude
                     viewModel.saveCurrentLocation(latitude, longitude)
+                    updateHomeLocation(latitude, longitude)
                     Log.i("DEBUGGGGGGG", "Latitude: $latitude, Longitude: $longitude")
 
                 } ?: run {

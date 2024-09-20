@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.weather.R
+import com.example.weather.utils.constants.Keys
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -47,8 +48,8 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             Log.d("MapsActivity", "Select Location button clicked")
             selectedMarker?.let {
                 val resultIntent = Intent().apply {
-                    putExtra("LATITUDE", selectedMarker?.position?.latitude ?: 0.0)
-                    putExtra("LONGITUDE", selectedMarker?.position?.longitude ?: 0.0)
+                    putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.latitude ?: 0.0)
+                    putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.longitude ?: 0.0)
                 }
                 setResult(Activity.RESULT_OK, resultIntent)
 

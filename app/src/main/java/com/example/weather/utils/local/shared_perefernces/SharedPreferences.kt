@@ -55,7 +55,7 @@ class SharedPreferences(context: Context) {
         sharedPreferences.edit().putString(Keys.LOCATION_KEY, locationStatus.name).apply()
     }
     fun getLocationStatus(): LocationStatus {
-        val locationStatus = sharedPreferences.getString(Keys.LOCATION_KEY, LocationStatus.MAP.name) ?: LocationStatus.MAP.name
+        val locationStatus = sharedPreferences.getString(Keys.LOCATION_KEY, LocationStatus.GPS.name) ?: LocationStatus.GPS.name
         return LocationStatus.valueOf(locationStatus)
     }
 
