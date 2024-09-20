@@ -43,7 +43,7 @@
     <string name="gps_permission_denied_dialog_message">Location permission is permanently denied. You need to enable it from the app settings.</string>
     <string name="navigation_drawer_open">Navigation drawer opened</string>
     <string name="navigation_drawer_close">Navigation drawer closed</string>
-
+    <string name="unknown">Unknown</string>
 
 
 </resources>

@@ -62,7 +62,7 @@
             android:orientation="horizontal">
 
             <RadioButton
-                android:id="@+id/rbGps"
+                android:id="@+id/rbDialogGps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
@@ -71,7 +71,7 @@
                 android:theme="@style/MyRadioButtonStyle" />
 
             <RadioButton
-                android:id="@+id/rbMAP"
+                android:id="@+id/rbDialogMAP"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/map"

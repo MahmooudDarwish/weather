@@ -49,13 +49,13 @@
                         android:padding="8dp">
 
                         <RadioButton
-                            android:id="@+id/rbGPS"
+                            android:id="@+id/rbSettingsGPS"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/gps"/>
 
                         <RadioButton
-                            android:id="@+id/rbMap"
+                            android:id="@+id/rbSettingsMap"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/map"/>

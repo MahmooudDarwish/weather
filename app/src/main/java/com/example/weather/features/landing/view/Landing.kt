@@ -27,7 +27,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
-import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.weather.R
 import com.example.weather.features.landing.view_model.LandingFactory
 import com.example.weather.features.landing.view_model.LandingViewModel
@@ -224,8 +223,8 @@ class LandingActivity : AppCompatActivity() {
     }
 
     private fun initDialogUI(dialogView: View) {
-        rbGps = dialogView.findViewById(R.id.rbGps)
-        rbMap = dialogView.findViewById(R.id.rbMAP)
+        rbGps = dialogView.findViewById(R.id.rbDialogGps)
+        rbMap = dialogView.findViewById(R.id.rbDialogMAP)
         switchNotifications = dialogView.findViewById(R.id.switchNotificationsSwitch)
         btnOk = dialogView.findViewById(R.id.btnOk)
     }

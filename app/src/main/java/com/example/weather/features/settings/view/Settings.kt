@@ -92,8 +92,8 @@ class Settings : Fragment() {
 
         radioGroupLocation.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
-                R.id.rbGps -> viewModel.saveLocationStatus(LocationStatus.GPS)
-                R.id.rbMap -> viewModel.saveLocationStatus(LocationStatus.MAP)
+                R.id.rbSettingsGPS -> viewModel.saveLocationStatus(LocationStatus.GPS)
+                R.id.rbSettingsMap -> viewModel.saveLocationStatus(LocationStatus.MAP)
             }
         }
 
@@ -130,8 +130,8 @@ class Settings : Fragment() {
 
         Log.d("TAG", "getSavedSettings: ${viewModel.getLocationStatus()}")
         when (viewModel.getLocationStatus()) {
-            LocationStatus.GPS -> radioGroupLocation.check(R.id.rbGPS)
-            LocationStatus.MAP -> radioGroupLocation.check(R.id.rbMap)
+            LocationStatus.GPS -> radioGroupLocation.check(R.id.rbSettingsGPS)
+            LocationStatus.MAP -> radioGroupLocation.check(R.id.rbSettingsMap)
         }
 
     }

@@ -1,6 +1,5 @@
 package com.example.weather.features.home.view
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -9,16 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.weather.R
 import com.example.weather.features.home.view_model.HomeViewModel
 import com.example.weather.features.home.view_model.HomeViewModelFactory
-import com.example.weather.features.landing.view_model.LandingFactory
-import com.example.weather.features.landing.view_model.LandingViewModel
+import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferences
@@ -37,6 +31,8 @@ class Home : Fragment(), UpdateLocationWeather {
     private lateinit var weatherIcon: ImageView
     private lateinit var temperatureText: TextView
     private lateinit var weatherDescriptionText: TextView
+    private lateinit var locationIcon: ImageView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +86,16 @@ class Home : Fragment(), UpdateLocationWeather {
         weatherIcon = view.findViewById(R.id.weatherIcon)
         temperatureText = view.findViewById(R.id.temperatureText)
         weatherDescriptionText = view.findViewById(R.id.weatherDescriptionText)
+        locationIcon = view.findViewById(R.id.locationIcon)
+        Log.i("HomeFragment", "location satauts ${viewModel.getLocationStatus()}")
+        if(viewModel.getLocationStatus() == LocationStatus.MAP){
+            Log.i("HomeFragment", "LocationStatus is MAP")
+            locationIcon.visibility = View.VISIBLE
+        }else{
+            Log.i("HomeFragment", "LocationStatus is NOT MAP")
+            locationIcon.visibility = View.GONE
+        }
+
     }
     private fun getCurrentDate(): String {
         val dateFormat = SimpleDateFormat("EEE, dd MMM", Locale.getDefault())
