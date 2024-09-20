@@ -17,4 +17,16 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="get_weather">Get Weather</string>
+    <string name="fahrenheit">Fahrenheit</string>
+    <string name="kelvin">Kelvin</string>
+    <string name="celsius">Celsius</string>
+    <string name="temperature">Temperature</string>
+    <string name="arabic">Arabic</string>
+    <string name="english">English</string>
+    <string name="language">Language</string>
+    <string name="meter_sec">Meter / Sec</string>
+    <string name="mile_hour">Mile / Hour</string>
+    <string name="wind_speed">Wind Speed</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
 </resources>

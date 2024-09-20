@@ -1,7 +1,6 @@
 package com.example.weather.utils.model
 
-import com.example.weather.utils.local.room.Dao.ForecastDao
-import com.example.weather.utils.local.room.Dao.WeatherDao
+
 import com.example.weather.utils.remote.WeatherRemoteDataSource
 
 
@@ -11,11 +10,8 @@ import com.example.weather.utils.enums.Location
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSource
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
-import java.io.IOException
+
 
 class WeatherRepositoryImpl private constructor(
     private val remoteDataSource: WeatherRemoteDataSource,
@@ -59,51 +55,51 @@ class WeatherRepositoryImpl private constructor(
 
 
     ///SharedPreferences
-    fun setTemperatureUnit(unit: Temperature) {
+    override fun setTemperatureUnit(unit: Temperature) {
         sharedPreferences.setTemperatureUnit(unit)
     }
 
-    fun getTemperatureUnit(): Temperature {
+    override fun getTemperatureUnit(): Temperature {
         return sharedPreferences.getTemperatureUnit()
     }
 
-    fun setWindSpeedUnit(unit: WindSpeed) {
+    override fun setWindSpeedUnit(unit: WindSpeed) {
         sharedPreferences.setWindSpeedUnit(unit)
     }
 
-    fun getWindSpeedUnit(): WindSpeed {
+    override fun getWindSpeedUnit(): WindSpeed {
         return sharedPreferences.getWindSpeedUnit()
     }
 
-    fun setLocationStatus(location: Location) {
+    override fun setLocationStatus(location: Location) {
         sharedPreferences.setLocationStatus(location)
     }
 
-    fun getLocationStatus(): Location {
-        return sharedPreferences.setLocationStatus()
+    override fun getLocationStatus(): Location {
+        return sharedPreferences.getLocationStatus()
     }
 
-    fun setLanguage(language: Language) {
+    override fun setLanguage(language: Language) {
         sharedPreferences.setLanguage(language)
     }
 
-    fun getLanguage(): Language {
+    override fun getLanguage(): Language {
         return sharedPreferences.getLanguage()
     }
 
-    fun setNotificationStatus(status: Boolean) {
+    override fun setNotificationStatus(status: Boolean) {
         sharedPreferences.setNotificationStatus(status)
     }
 
-    fun getNotificationStatus(): Boolean {
+    override fun getNotificationStatus(): Boolean {
         return sharedPreferences.getNotificationStatus()
     }
 
-    fun saveLocation(latitude: Double, longitude: Double) {
+    override fun saveLocation(latitude: Double, longitude: Double) {
         sharedPreferences.setLocation(latitude = latitude, longitude = longitude)
     }
 
-    fun getLocation(): Pair<Double, Double>? {
+    override fun getLocation(): Pair<Double, Double>? {
         return sharedPreferences.getLocation()
     }
 

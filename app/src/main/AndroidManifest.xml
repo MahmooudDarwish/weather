@@ -19,10 +19,6 @@
         <activity
             android:name=".features.map.view.Map"
             android:exported="false" />
-        <activity
-            android:name=".features.home.view.Home"
-            android:exported="false" />
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyClhqoW-wsg9-KQF_qpy4mg7WerXWICmD8" />

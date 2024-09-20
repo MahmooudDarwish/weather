@@ -17,7 +17,7 @@ class SharedPreferences(context: Context) {
     }
 
     fun getLanguage(): Language {
-        val lang = sharedPreferences.getString(Keys.LANGUAGE_KEY, Keys.DEFAULT_LANGUAGE) ?: Keys.DEFAULT_LANGUAGE
+        val lang = sharedPreferences.getString(Keys.LANGUAGE_KEY, Language.ENGLISH.name) ?: Language.ENGLISH.name
         return Language.valueOf(lang)
     }
 
@@ -27,7 +27,7 @@ class SharedPreferences(context: Context) {
     }
 
     fun getTemperatureUnit(): Temperature {
-        val tempUnit = sharedPreferences.getString(Keys.TEMPERATURE_UNIT_KEY, Temperature.CELSIUS.name) ?: Keys.DEFAULT_TEMPERATURE_UNIT
+        val tempUnit = sharedPreferences.getString(Keys.TEMPERATURE_UNIT_KEY, Temperature.CELSIUS.name) ?: Temperature.CELSIUS.name
         return Temperature.valueOf(tempUnit)
     }
 
@@ -37,7 +37,7 @@ class SharedPreferences(context: Context) {
     }
 
     fun getWindSpeedUnit(): WindSpeed {
-        val windUnit = sharedPreferences.getString(Keys.WIND_SPEED_UNIT_KEY, WindSpeed.METERS_PER_SECOND.name) ?: Keys.DEFAULT_WIND_SPEED_UNIT
+        val windUnit = sharedPreferences.getString(Keys.WIND_SPEED_UNIT_KEY, WindSpeed.METERS_PER_SECOND.name) ?: WindSpeed.METERS_PER_SECOND.name
         return WindSpeed.valueOf(windUnit)
     }
 
@@ -45,9 +45,8 @@ class SharedPreferences(context: Context) {
     fun setLocationStatus(location: Location) {
         sharedPreferences.edit().putString(Keys.LOCATION_KEY, location.name).apply()
     }
-
-    fun setLocationStatus(): Location {
-        val location = sharedPreferences.getString(Keys.LOCATION_KEY, Location.GPS.name) ?: Location.GPS.name
+    fun getLocationStatus(): Location {
+        val location = sharedPreferences.getString(Keys.LOCATION_KEY, Location.MAP.name) ?: Location.MAP.name
         return Location.valueOf(location)
     }
 
