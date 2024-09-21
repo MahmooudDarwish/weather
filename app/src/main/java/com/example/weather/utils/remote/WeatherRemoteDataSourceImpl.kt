@@ -1,11 +1,11 @@
 package com.example.weather.utils.remote
 
 import android.util.Log
-import com.example.weather.utils.constants.Keys
+import com.example.weather.utils.model.ForecastResponse
+import com.example.weather.utils.model.HourlyWeatherResponse
 import com.example.weather.utils.model.WeatherResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import retrofit2.http.Query
 
 
 class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSource {
@@ -25,7 +25,7 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
     }
 
     override fun getCurrentWeather(
-        latitude: String, longitude: String, metric: String, lang: String
+        latitude: String, longitude: String, lang: String
     ): Flow<WeatherResponse?> = flow {
         try {
 
@@ -33,8 +33,6 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
                 latitude,
                 longitude,
                 lang,
-                metric,
-
             )
             if (response.isSuccessful) {
                 Log.i(TAG, "getCurrentWeatherSucess: ${response.body()?.id}")
@@ -49,4 +47,57 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
             emit(null)
         }
     }
+
+    override fun getHourlyWeather(
+        latitude: String,
+        longitude: String,
+        lang: String
+    ):  Flow<HourlyWeatherResponse?> = flow {
+        try {
+            val response = apiService.get5DayHourlyForecast(
+                latitude,
+                longitude,
+                lang,
+            )
+            if (response.isSuccessful) {
+                Log.i(TAG, "getCurrentWeatherSucess: ${response.body()}")
+                emit(response.body())
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.d(TAG, "getCurrentWeatherError: $errorBody")
+                emit(null)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getCurrentWeatherException: ${e.message.toString()}")
+            emit(null)
+        }
+    }
+
+
+    override fun get5DayForecast(
+        latitude: String,
+        longitude: String,
+        lang: String
+    ):  Flow<ForecastResponse?> = flow {
+        try {
+            val response = apiService.get5DayForecast(
+                latitude,
+                longitude,
+                lang,
+            )
+            if (response.isSuccessful) {
+                Log.i(TAG, "Daily getCurrentWeatherSucess: ${response.body()}")
+                emit(response.body())
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.d(TAG, " Daily getCurrentWeatherError: $errorBody")
+                emit(null)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Daily getCurrentWeatherException: ${e.message.toString()}")
+            emit(null)
+        }
+    }
+
+
 }

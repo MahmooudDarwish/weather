@@ -12,15 +12,20 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
 import com.example.weather.features.home.view_model.HomeViewModel
 import com.example.weather.features.home.view_model.HomeViewModelFactory
 import com.example.weather.features.map.view.Map
+import com.example.weather.utils.Utils
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.model.ForecastResponse
+import com.example.weather.utils.model.HourlyWeatherResponse
 import com.example.weather.utils.model.WeatherRepositoryImpl
 import com.example.weather.utils.model.WeatherResponse
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
@@ -37,6 +42,8 @@ class Home : Fragment() , UpdateLocationWeather{
     private lateinit var temperatureText: TextView
     private lateinit var weatherDescriptionText: TextView
     private lateinit var locationIcon: ImageView
+    private lateinit var recyclerViewHourlyWeather: RecyclerView
+    private lateinit var recyclerViewDailyWeather: RecyclerView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,7 +67,27 @@ class Home : Fragment() , UpdateLocationWeather{
                 Log.i("HomeFragment", "Current Weather: $weatherResponse")
                 updateUI(weatherResponse)
         }
+        viewModel.hourlyWeatherData.observe(this) { hourlyWeather ->
+            Log.i("HomeFragment", "Hourly Weather: $hourlyWeather")
+            updateHourlyRecyclerView(hourlyWeather)
+        }
+
+        viewModel.dailyWeatherData.observe(this) { dailyWeather ->
+            Log.i("HomeFragment", "Hourly Weather: $dailyWeather")
+            updateDailyRecyclerView(dailyWeather)
+        }
     }
+
+    private fun updateDailyRecyclerView(dailyWeather: ForecastResponse?) {
+        recyclerViewDailyWeather.adapter = dailyWeather?.let { DailyWeatherAdapter(it) }
+
+    }
+
+    private fun updateHourlyRecyclerView(hourlyWeather: HourlyWeatherResponse?) {
+        recyclerViewHourlyWeather.adapter = hourlyWeather?.let { HourlyWeatherAdapter(it) }
+
+    }
+
 
     private fun updateUI(weatherResponse: WeatherResponse?) {
         if(weatherResponse?.name!!.isEmpty()){
@@ -70,6 +97,7 @@ class Home : Fragment() , UpdateLocationWeather{
         }
         temperatureText.text = weatherResponse.main.temp.toString()
         weatherDescriptionText.text = weatherResponse.weather[0].description
+        weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
     }
 
     override fun onResume() {
@@ -79,6 +107,7 @@ class Home : Fragment() , UpdateLocationWeather{
         Log.i("DEBUGGGGGGG", "currentLocation $currentLocation")
         Log.i("DEBUGGGGGGG", "viewModel.getCurrentLocation() ${viewModel.getLocationStatus()}")
         updateLocation(currentLocation)
+
         checkLocationStatus()
     }
 
@@ -143,6 +172,12 @@ class Home : Fragment() , UpdateLocationWeather{
         temperatureText = view.findViewById(R.id.temperatureText)
         weatherDescriptionText = view.findViewById(R.id.weatherDescriptionText)
         locationIcon = view.findViewById(R.id.locationIcon)
+        recyclerViewHourlyWeather = view.findViewById(R.id.recyclerViewHourlyWeather)
+        recyclerViewHourlyWeather.layoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
+
+        recyclerViewDailyWeather = view.findViewById(R.id.recyclerViewDailyWeather)
+        recyclerViewDailyWeather.layoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
+
         checkLocationStatus()
 
     }
@@ -159,7 +194,8 @@ class Home : Fragment() , UpdateLocationWeather{
         val longitude = currentLocation.second
         Log.i("HomeFragment", "updateLocation called $latitude $longitude")
         viewModel.getWeather(longitude = longitude, latitude = latitude)
+        viewModel.fetchHourlyWeather(longitude = longitude, latitude = latitude)
+        viewModel.fetchDailyWeather(longitude = longitude, latitude = latitude)
     }
 }
 
-//        Pair(latitude.toDouble(), longitude.toDouble())

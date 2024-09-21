@@ -45,6 +45,7 @@
     <string name="navigation_drawer_close">Navigation drawer closed</string>
     <string name="unknown">Unknown</string>
     <string name="cancel">Cancel</string>
+    <string name="_24_hour_forecast">24-hour forecast</string>
 
 
 </resources>

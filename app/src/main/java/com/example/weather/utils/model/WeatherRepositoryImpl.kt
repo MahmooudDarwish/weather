@@ -42,14 +42,50 @@ class WeatherRepositoryImpl private constructor(
 
     ///API
     override fun fetchAndStoreWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?> {
-        //TODO: Get language and metric from preferences
+
+        val lang = when(getLanguage()){
+            Language.ENGLISH -> "en"
+            Language.ARABIC -> "ar"
+        }
         return remoteDataSource.getCurrentWeather(
             latitude = latitude.toString(),
             longitude = longitude.toString(),
-            metric = "metric",
-            lang = "en"
+            lang = lang
         )
         //TODO: Add additional logic here to store data in localDataSource or handle preferences
+    }
+
+    override fun fetchHourlyWeatherData(
+        longitude: Double,
+        latitude: Double
+    ): Flow<HourlyWeatherResponse?> {
+        val lang = when(getLanguage()){
+            Language.ENGLISH -> "en"
+            Language.ARABIC -> "ar"
+        }
+
+        return remoteDataSource.getHourlyWeather(
+            latitude = latitude.toString(),
+            longitude = longitude.toString(),
+            lang = lang
+        )    }
+
+
+    override fun get5DayForecast(
+        longitude: Double,
+        latitude: Double
+    ): Flow<ForecastResponse?> {
+
+        val lang = when(getLanguage()){
+            Language.ENGLISH -> "en"
+            Language.ARABIC -> "ar"
+        }
+
+        return remoteDataSource.get5DayForecast(
+            latitude = latitude.toString(),
+            longitude = longitude.toString(),
+            lang = lang
+        )
     }
     ///ROOM DATABASE
 

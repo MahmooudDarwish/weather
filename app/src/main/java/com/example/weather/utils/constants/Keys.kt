@@ -15,7 +15,7 @@ object Keys {
     const val LATITUDE_KEY = "latitude"
 
     //API Keys
-    const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
+    const val BASE_URL = "https://pro.openweathermap.org/data/2.5/"
     const val WEATHER_API_KEY = "1de10df0792496fe3df75e77821732a5"
 }
 

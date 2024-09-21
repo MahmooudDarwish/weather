@@ -11,6 +11,8 @@ interface WeatherRepository {
 
      // API
      fun fetchAndStoreWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?>
+     fun fetchHourlyWeatherData(longitude: Double, latitude: Double): Flow<HourlyWeatherResponse?>
+     fun get5DayForecast(longitude: Double, latitude: Double): Flow<ForecastResponse?>
 
      // SharedPreferences
      fun setTemperatureUnit(unit: Temperature)
