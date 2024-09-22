@@ -27,12 +27,10 @@ import com.example.weather.utils.local.shared_perefernces.SharedPreferences
 import com.example.weather.utils.model.DailyForecastItem
 import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.ForecastResponse
-import com.example.weather.utils.model.HourlyWeatherResponse
 import com.example.weather.utils.model.WeatherRepositoryImpl
 import com.example.weather.utils.model.WeatherResponse
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
-import java.text.SimpleDateFormat
-import java.util.Date
+
 import java.util.Locale
 
 class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
@@ -149,7 +147,7 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         recyclerViewDailyWeather = view.findViewById(R.id.recyclerViewDailyWeather)
         recyclerViewDailyWeather.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
-        dailyWeatherAdapter = DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure())
+        dailyWeatherAdapter = DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), requireActivity())
         recyclerViewDailyWeather.adapter = dailyWeatherAdapter
 
         checkLocationStatus()
@@ -180,24 +178,23 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         val convertedMaxTemp = Utils().getWeatherMeasure(maxTempInCelsius, selectedUnit)
         val convertedMinTemp = Utils().getWeatherMeasure(minTempInCelsius, selectedUnit)
 
-        if (Utils().getDayNameFromEpoch(weatherItem.dt) == Keys.TODAY) {
-            temperatureText.text = "$convertedMaxTemp ${Utils().getUnitSymbol(selectedUnit)}"
+        if (Utils().getDayNameFromEpoch(context = requireActivity(),epochTime = weatherItem.dt) == getString(R.string.today)) {
+            temperatureText.text = "${convertedMaxTemp.toInt()} ${Utils().getUnitSymbol(selectedUnit)}"
         } else {
             temperatureText.text =
-                "${convertedMaxTemp}/${convertedMinTemp} ${Utils().getUnitSymbol(selectedUnit)}"
+                "${convertedMaxTemp.toInt()}/${convertedMinTemp.toInt()}${Utils().getUnitSymbol(selectedUnit)}"
         }
 
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
 
-        pressureText.text = getString(R.string.hpa, weatherItem.pressure.toString())
+        pressureText.text = "${weatherItem.pressure} ${getString(R.string.hpa)}"
         humidityText.text = getString(R.string.percentage, weatherItem.humidity.toString())
         cloudText.text = getString(R.string.percentage, weatherItem.clouds.toString())
 
         val speedInMps = weatherItem.speed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
-
-        windSpeedText.text = getString(R.string.wind_speed_format, speed ,speedMeasure.toString())
+        windSpeedText.text = getString(R.string.wind_speed_format, speed ,Utils().getSpeedUnitSymbol(speedMeasure, requireActivity()))
 
         val filteredHourlyWeather = filterHourlyWeatherByDay(weatherItem.dt)
         updateHourlyRecyclerViewList(filteredHourlyWeather)
@@ -206,7 +203,7 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
 
     private fun filterHourlyWeatherByDay(dayEpoch: Long): List<ForecastItem>? {
         return viewModel.hourlyWeatherData.value?.let { hourlyWeather ->
-            if (Utils().getDayNameFromEpoch(dayEpoch) == Keys.TODAY) {
+            if (Utils().getDayNameFromEpoch(context = requireActivity() , epochTime =  dayEpoch) == getString(R.string.today)) {
                 hourlyWeather.list.take(24)
             } else {
                 hourlyWeather.list.filter {
@@ -244,13 +241,13 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
-        pressureText.text = getString(R.string.hpa, weatherResponse.main.pressure.toString())
+        pressureText.text = "${weatherResponse.main.pressure} ${getString(R.string.hpa)}"
         humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity.toString())
         val speedInMps = weatherResponse.wind.speed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
 
-        windSpeedText.text = getString(R.string.wind_speed_format, speed ,Utils().getSpeedUnitSymbol(speedMeasure))
+        windSpeedText.text = getString(R.string.wind_speed_format, speed ,Utils().getSpeedUnitSymbol(speedMeasure, requireActivity()))
 
         cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all.toString())
 

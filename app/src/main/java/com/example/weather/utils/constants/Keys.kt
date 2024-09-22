@@ -18,9 +18,7 @@ object Keys {
     const val BASE_URL = "https://pro.openweathermap.org/data/2.5/"
     const val WEATHER_API_KEY = "1de10df0792496fe3df75e77821732a5"
 
-    //Utils
-    const val TODAY = "Today"
-    const val TOMORROW = "Tomorrow"
+
 
 
 }

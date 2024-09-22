@@ -1,16 +1,15 @@
 package com.example.weather.utils
 
+import android.content.Context
+import androidx.core.content.ContextCompat.getString
 import java.text.SimpleDateFormat
 import java.util.*
-import android.util.Log
 import com.example.weather.R
-import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
-
 class Utils {
 
-    fun getDayNameFromEpoch(epochTime: Long): String {
+    fun getDayNameFromEpoch(context: Context,epochTime: Long): String {
         val date = Date(epochTime * 1000)
 
         val sdf = SimpleDateFormat("EEEE", Locale.getDefault())
@@ -32,14 +31,13 @@ class Utils {
                     tomorrowCalendar.get(Calendar.DAY_OF_MONTH) == inputDateCalendar.get(Calendar.DAY_OF_MONTH)
 
         return when {
-            isToday -> Keys.TODAY
-            isTomorrow -> Keys.TOMORROW
+            isToday -> getString(context ,R.string.today)
+            isTomorrow -> getString(context ,R.string.tomorrow)
             else -> dayName
         }
     }
 
     fun getWeatherIcon(imageName: String): Int {
-        Log.d("Utils", "getWeatherIcon: $imageName")
         when (imageName) {
             "01d" -> return R.drawable.ic_sunny
             "01n" -> return R.drawable.ic_night
@@ -101,10 +99,10 @@ class Utils {
             WindSpeed.METERS_PER_SECOND -> mps
         }
     }
-    fun getSpeedUnitSymbol(windSpeed: WindSpeed): String {
+    fun getSpeedUnitSymbol(windSpeed: WindSpeed, context: Context): String {
         return when (windSpeed) {
-            WindSpeed.METERS_PER_SECOND -> "m/s"
-            WindSpeed.MILES_PER_HOUR -> "mph"
+            WindSpeed.METERS_PER_SECOND -> getString(context, R.string.wind_speed_mps)
+            WindSpeed.MILES_PER_HOUR -> getString(context, R.string.wind_speed_mph)
         }
     }
 }

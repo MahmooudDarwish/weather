@@ -62,7 +62,19 @@ class LandingActivity : AppCompatActivity() {
     private lateinit var gpsStatusReceiver: BroadcastReceiver
     private lateinit var toolbar: Toolbar
     private lateinit var toggle: ActionBarDrawerToggle
+    private var snackbar: Snackbar? = null
+    private var isGpsStatusReceiverRegistered = false
 
+
+    private val requestLocationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            checkGpsStatusAndFetchLocation()
+        } else {
+            showGpsPermissionDeniedDialog()
+        }
+    }
 
     private val mapActivityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -88,7 +100,10 @@ class LandingActivity : AppCompatActivity() {
         gpsStatusReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 if (intent.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
-                    if (!isGpsEnabled()) {
+                    if (isGpsEnabled()) {
+                        // Hide the Snackbar when GPS is enabled
+                        hideGPSDisabledSnackBar()
+                    } else if (!isGpsEnabled() && viewModel.getLocationStatus() == LocationStatus.GPS) {
                         showGPSDisabledSnackBar()
                     }
                 }
@@ -97,34 +112,38 @@ class LandingActivity : AppCompatActivity() {
 
         val intentFilter = IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
         registerReceiver(gpsStatusReceiver, intentFilter)
+        isGpsStatusReceiverRegistered = true
     }
 
 
     private fun updateHomeLocation(latitude: Double, longitude: Double) {
-        val homeFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
-        val home = homeFragment?.childFragmentManager?.fragments?.find { it is Home } as? UpdateLocationWeather
+        val homeFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+        val home =
+            homeFragment?.childFragmentManager?.fragments?.find { it is Home } as? UpdateLocationWeather
         home?.updateLocation(Pair(latitude, longitude))
     }
 
-    private val requestLocationPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            checkGpsStatusAndFetchLocation()
-        } else {
-            showGpsPermissionDeniedDialog()
-        }
-    }
 
     override fun onStart() {
         super.onStart()
         registerGpsStatusReceiver()
     }
 
+
     override fun onStop() {
         super.onStop()
-        unregisterReceiver(gpsStatusReceiver)
+        unregisterGpsStatusReceiver()
     }
+
+
+    private fun unregisterGpsStatusReceiver() {
+        if (isGpsStatusReceiverRegistered) {
+            unregisterReceiver(gpsStatusReceiver)
+            isGpsStatusReceiverRegistered = false
+        }
+    }
+
 
     override fun onResume() {
         Log.i("DEBUGGGGGGG", "onResume called")
@@ -156,6 +175,8 @@ class LandingActivity : AppCompatActivity() {
                 if (isGpsLocationStatus) {
                     Log.i("DEBUGGGGGGG", "Location status is GPS, checking GPS status")
                     checkGpsStatusAndFetchLocation()
+                    showGPSDisabledSnackBar()
+
                 } else {
                     Log.i("DEBUGGGGGGG", "Location status is not GPS, skipping GPS check")
                 }
@@ -195,7 +216,7 @@ class LandingActivity : AppCompatActivity() {
     }
 
     private fun setupToolbar() {
-         toolbar = findViewById(R.id.toolbar)
+        toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
     }
 
@@ -204,8 +225,11 @@ class LandingActivity : AppCompatActivity() {
 
         // Setup ActionBarDrawerToggle for navigation drawer
         toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
-            R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
@@ -285,12 +309,14 @@ class LandingActivity : AppCompatActivity() {
     private fun openPermissionDialog() {
         requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
+
     private fun checkGpsStatusAndFetchLocation() {
 
         if (isGpsEnabled()) {
             fetchCurrentLocationWeather()
         } else {
             showEnableGpsDialog()
+            showGPSDisabledSnackBar()
         }
     }
 
@@ -331,12 +357,18 @@ class LandingActivity : AppCompatActivity() {
 
     private fun showGPSDisabledSnackBar() {
         val rootView = findViewById<View>(android.R.id.content)
-        Snackbar.make(rootView, R.string.gps_disabled_snackbar, Snackbar.LENGTH_INDEFINITE)
+        snackbar = Snackbar.make(rootView, R.string.gps_disabled_snackbar, Snackbar.LENGTH_INDEFINITE)
             .setAction(R.string.turn_on_gps) {
                 startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-            }.setBackgroundTint(ContextCompat.getColor(this, android.R.color.holo_red_dark))
+            }
+            .setBackgroundTint(ContextCompat.getColor(this, android.R.color.holo_red_dark))
             .setTextColor(ContextCompat.getColor(this, android.R.color.white))
-            .setActionTextColor(ContextCompat.getColor(this, android.R.color.white)).show()
+            .setActionTextColor(ContextCompat.getColor(this, android.R.color.white))
+        snackbar?.show()
+    }
+
+    private fun hideGPSDisabledSnackBar() {
+        snackbar?.dismiss()
     }
 
     private fun showGpsPermissionDeniedDialog() {

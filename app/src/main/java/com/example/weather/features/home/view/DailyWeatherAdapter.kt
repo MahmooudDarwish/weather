@@ -1,5 +1,6 @@
 package com.example.weather.features.home.view
 
+import android.content.Context
 import android.graphics.Color
 import android.util.Log
 import com.example.weather.utils.model.ForecastResponse
@@ -22,7 +23,8 @@ import java.util.Locale
 class DailyWeatherAdapter(
     private var weatherList: List<DailyForecastItem>,
     private val onDayClickListener: OnDayClickListener,
-    private val temperatureUnit: Temperature
+    private val temperatureUnit: Temperature,
+    private val context: Context
 ) : RecyclerView.Adapter<DailyWeatherAdapter.DayViewHolder>() {
 
     private var selectedPosition: Int = 0
@@ -50,7 +52,7 @@ class DailyWeatherAdapter(
     override fun onBindViewHolder(holder: DayViewHolder, position: Int) {
         val weatherItem = weatherList[position]
 
-        holder.weatherDay.text = Utils().getDayNameFromEpoch(weatherItem.dt)
+        holder.weatherDay.text = Utils().getDayNameFromEpoch(context = context, epochTime =  weatherItem.dt)
         holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
         holder.tempDesc.text = weatherItem.weather[0].description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
