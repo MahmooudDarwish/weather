@@ -46,6 +46,13 @@
     <string name="unknown">Unknown</string>
     <string name="cancel">Cancel</string>
     <string name="_24_hour_forecast">24-hour forecast</string>
+    <string name="pressure">Pressure</string>
+    <string name="humidity">Humidity</string>
+    <string name="wind">Wind</string>
+    <string name="cloud">Cloud</string>
+    <string name="m_s">%1$s m/s</string>
+    <string name="percentage">%1$s %%</string>
+    <string name="hpa">%1$s hpa</string>
 
 
 </resources>

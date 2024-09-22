@@ -4,8 +4,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
 import com.example.weather.R
+import com.example.weather.utils.constants.Keys
 
- class Utils{
+class Utils{
 
      fun getDayNameFromEpoch(epochTime: Long): String {
          val date = Date(epochTime * 1000)
@@ -28,8 +29,8 @@ import com.example.weather.R
                  tomorrowCalendar.get(Calendar.DAY_OF_MONTH) == inputDateCalendar.get(Calendar.DAY_OF_MONTH)
 
          return when {
-             isToday -> "Today"
-             isTomorrow -> "Tomorrow"
+             isToday -> Keys.TODAY
+             isTomorrow -> Keys.TOMORROW
              else -> dayName
          }
      }
@@ -58,5 +59,19 @@ import com.example.weather.R
              else -> return R.drawable.ic_partly_cloudy
 
          }
+    }
+
+    fun isSameDay(hourlyEpoch: Long, dayEpoch: Long): Boolean {
+        val hourlyDate = Date(hourlyEpoch * 1000)
+        val dayDate = Date(dayEpoch * 1000)
+
+        val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        return dateFormat.format(hourlyDate) == dateFormat.format(dayDate)
+    }
+
+     fun getCurrentDate(): String {
+        val dateFormat = SimpleDateFormat("EEE, dd MMM", Locale.getDefault())
+        val date = Date()
+        return dateFormat.format(date)
     }
 }

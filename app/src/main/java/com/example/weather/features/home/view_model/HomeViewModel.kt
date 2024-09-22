@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weather.utils.enums.LocationStatus
+import com.example.weather.utils.enums.Temperature
+import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.model.ForecastResponse
 import com.example.weather.utils.model.HourlyWeatherResponse
 import com.example.weather.utils.model.WeatherRepositoryImpl
@@ -55,6 +57,15 @@ class HomeViewModel(
                 _currentWeather.postValue(response)
             }
         }
+    }
+
+    fun getWeatherMeasure(): Temperature {
+        Log.d("HomeViewModel", "getLocationStatus called ${weatherRepository.getLocationStatus()}")
+        return weatherRepository.getTemperatureUnit()
+    }
+
+    fun getWindMeasure(): WindSpeed {
+        return weatherRepository.getWindSpeedUnit()
     }
 
     fun getLocationStatus(): LocationStatus {

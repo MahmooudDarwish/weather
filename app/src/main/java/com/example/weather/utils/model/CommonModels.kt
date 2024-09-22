@@ -46,7 +46,7 @@ data class Sys(
 )
 
 data class ForecastItem(
-    val dt: Int,
+    val dt: Long,
     val main: Main,
     val weather: List<Weather>,
     val clouds: Clouds,

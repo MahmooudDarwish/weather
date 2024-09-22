@@ -9,9 +9,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
 import com.example.weather.utils.Utils
+import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.HourlyWeatherResponse
 
-class HourlyWeatherAdapter(private val weatherList: HourlyWeatherResponse) :
+class HourlyWeatherAdapter(private var weatherList: List<ForecastItem>) :
     RecyclerView.Adapter<HourlyWeatherAdapter.WeatherViewHolder>() {
 
     class WeatherViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -26,8 +27,13 @@ class HourlyWeatherAdapter(private val weatherList: HourlyWeatherResponse) :
         return WeatherViewHolder(view)
     }
 
+    fun updateHourlyWeatherList(filteredList : List<ForecastItem>){
+        weatherList = filteredList
+        notifyDataSetChanged()
+    }
+
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
-        val weatherItem = weatherList.list[position]
+        val weatherItem = weatherList[position]
 
         holder.time.text = weatherItem.dt_txt.substring(11, 16)
         holder.temp.text = "${weatherItem.main.temp.toInt()}°C"
@@ -37,6 +43,6 @@ class HourlyWeatherAdapter(private val weatherList: HourlyWeatherResponse) :
     }
 
     override fun getItemCount(): Int {
-        return minOf(weatherList.list.size, 24) // Display a maximum of 8 items
+        return minOf(weatherList.size, 24)
     }
 }
