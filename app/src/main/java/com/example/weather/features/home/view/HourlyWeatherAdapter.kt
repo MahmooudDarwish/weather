@@ -9,10 +9,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
 import com.example.weather.utils.Utils
+import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.HourlyWeatherResponse
 
-class HourlyWeatherAdapter(private var weatherList: List<ForecastItem>) :
+class HourlyWeatherAdapter(
+    private var weatherList: List<ForecastItem>,
+    private val temperatureUnit: Temperature
+
+) :
     RecyclerView.Adapter<HourlyWeatherAdapter.WeatherViewHolder>() {
 
     class WeatherViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -34,13 +39,17 @@ class HourlyWeatherAdapter(private var weatherList: List<ForecastItem>) :
 
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
         val weatherItem = weatherList[position]
+        val convertedTemp = Utils().getWeatherMeasure(weatherItem.main.temp.toInt(), temperatureUnit)
 
         holder.time.text = weatherItem.dt_txt.substring(11, 16)
-        holder.temp.text = "${weatherItem.main.temp.toInt()}°C"
+        holder.temp.text = "${convertedTemp.toInt()}${Utils().getUnitSymbol(temperatureUnit)}"
+
 
         holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
 
     }
+
+
 
     override fun getItemCount(): Int {
         return minOf(weatherList.size, 24)

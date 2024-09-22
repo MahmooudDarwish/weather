@@ -35,7 +35,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
+class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
     lateinit var viewModel: HomeViewModel
 
     private lateinit var countryName: TextView
@@ -70,10 +70,11 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
 
     override fun onResume() {
         super.onResume()
-        val currentLocation : Pair<Double, Double>? = viewModel.getCurrentLocation()
+        val currentLocation: Pair<Double, Double>? = viewModel.getCurrentLocation()
         updateLocation(currentLocation)
         checkLocationStatus()
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -92,7 +93,7 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
         viewModel = ViewModelProvider(this, homeFactory).get(HomeViewModel::class.java)
 
         viewModel.currentWeather.observe(this) { weatherResponse ->
-                updateUI(weatherResponse)
+            updateUI(weatherResponse)
         }
         viewModel.hourlyWeatherData.observe(this) { hourlyWeather ->
             if (hourlyWeather != null) {
@@ -104,6 +105,7 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
             updateDailyRecyclerView(dailyWeather)
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -114,7 +116,7 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         super.onViewCreated(view, savedInstanceState)
-        val currentLocation : Pair<Double, Double>? = viewModel.getCurrentLocation()
+        val currentLocation: Pair<Double, Double>? = viewModel.getCurrentLocation()
 
         updateLocation(currentLocation)
         Log.i("HomeFragment", "onViewCreated called")
@@ -124,7 +126,7 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
 
     }
 
-    private fun initUi(view: View){
+    private fun initUi(view: View) {
         countryName = view.findViewById(R.id.countryName)
         todayDate = view.findViewById(R.id.todayDate)
         weatherIcon = view.findViewById(R.id.weatherIcon)
@@ -138,14 +140,16 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
 
 
         recyclerViewHourlyWeather = view.findViewById(R.id.recyclerViewHourlyWeather)
-        recyclerViewHourlyWeather.layoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
-        hourlyWeatherAdapter = HourlyWeatherAdapter(emptyList())
+        recyclerViewHourlyWeather.layoutManager =
+            LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
+        hourlyWeatherAdapter = HourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure())
         recyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
 
 
         recyclerViewDailyWeather = view.findViewById(R.id.recyclerViewDailyWeather)
-        recyclerViewDailyWeather.layoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
-        dailyWeatherAdapter = DailyWeatherAdapter(emptyList(), this)
+        recyclerViewDailyWeather.layoutManager =
+            LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
+        dailyWeatherAdapter = DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure())
         recyclerViewDailyWeather.adapter = dailyWeatherAdapter
 
         checkLocationStatus()
@@ -170,18 +174,30 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
 
-        if(Utils().getDayNameFromEpoch(weatherItem.dt) == Keys.TODAY){
-            temperatureText.text = "${viewModel.currentWeather.value?.main?.temp?.toInt()}°C"
+        val selectedUnit = viewModel.getWeatherMeasure()
+        val maxTempInCelsius = weatherItem.temp.max.toInt()
+        val minTempInCelsius = weatherItem.temp.min.toInt()
+        val convertedMaxTemp = Utils().getWeatherMeasure(maxTempInCelsius, selectedUnit)
+        val convertedMinTemp = Utils().getWeatherMeasure(minTempInCelsius, selectedUnit)
 
-        }else{
-            temperatureText.text = "${weatherItem.temp.max}/${weatherItem.temp.min.toInt()}°C"
+        if (Utils().getDayNameFromEpoch(weatherItem.dt) == Keys.TODAY) {
+            temperatureText.text = "$convertedMaxTemp ${Utils().getUnitSymbol(selectedUnit)}"
+        } else {
+            temperatureText.text =
+                "${convertedMaxTemp}/${convertedMinTemp} ${Utils().getUnitSymbol(selectedUnit)}"
         }
+
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
 
         pressureText.text = getString(R.string.hpa, weatherItem.pressure.toString())
         humidityText.text = getString(R.string.percentage, weatherItem.humidity.toString())
         cloudText.text = getString(R.string.percentage, weatherItem.clouds.toString())
-        windSpeedText.text = getString(R.string.m_s, weatherItem.speed.toString())
+
+        val speedInMps = weatherItem.speed
+        val speedMeasure = viewModel.getWindMeasure()
+        val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
+
+        windSpeedText.text = getString(R.string.wind_speed_format, speed ,speedMeasure.toString())
 
         val filteredHourlyWeather = filterHourlyWeatherByDay(weatherItem.dt)
         updateHourlyRecyclerViewList(filteredHourlyWeather)
@@ -200,7 +216,7 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
         }
     }
 
-    private fun updateHourlyRecyclerViewList(filteredList : List<ForecastItem>?){
+    private fun updateHourlyRecyclerViewList(filteredList: List<ForecastItem>?) {
         if (filteredList != null) {
             hourlyWeatherAdapter.updateHourlyWeatherList(filteredList)
         }
@@ -209,32 +225,50 @@ class Home : Fragment() , UpdateLocationWeather, OnDayClickListener{
 
 
     private fun updateUI(weatherResponse: WeatherResponse?) {
-        if(weatherResponse?.name!!.isEmpty()){
+        if (weatherResponse?.name!!.isEmpty()) {
             countryName.text = getString(R.string.unknown)
-        }else{
+        } else {
+
             countryName.text = weatherResponse.name
         }
-        temperatureText.text = weatherResponse.main.temp.toString()
-        weatherDescriptionText.text = weatherResponse.weather[0].description
+
+        val temperatureInCelsius = weatherResponse.main.temp.toInt()
+        val selectedUnit = viewModel.getWeatherMeasure()
+        val convertedTemperature = Utils().getWeatherMeasure(temperatureInCelsius, selectedUnit)
+
+        temperatureText.text = getString(
+            R.string.temperature_format, convertedTemperature, Utils().getUnitSymbol(selectedUnit)
+        )
+
+        weatherDescriptionText.text = weatherResponse.weather[0].description.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
+        }
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
         pressureText.text = getString(R.string.hpa, weatherResponse.main.pressure.toString())
         humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity.toString())
-        windSpeedText.text = getString(R.string.m_s, weatherResponse.wind.speed.toString())
+        val speedInMps = weatherResponse.wind.speed
+        val speedMeasure = viewModel.getWindMeasure()
+        val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
+
+        windSpeedText.text = getString(R.string.wind_speed_format, speed ,Utils().getSpeedUnitSymbol(speedMeasure))
+
         cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all.toString())
 
     }
 
     private fun checkLocationStatus() {
-        if(viewModel.getLocationStatus() == LocationStatus.MAP){
+        if (viewModel.getLocationStatus() == LocationStatus.MAP) {
             locationIcon.visibility = View.VISIBLE
-        }else{
+        } else {
             locationIcon.visibility = View.GONE
         }
     }
+
     private fun navigateToMaps() {
         mapActivityResultLauncher.launch(Intent(requireActivity(), Map::class.java))
     }
-    override fun updateLocation(currentLocation : Pair<Double, Double>?) {
+
+    override fun updateLocation(currentLocation: Pair<Double, Double>?) {
         if (currentLocation == null) {
             return
         }

@@ -14,13 +14,15 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
 import com.example.weather.utils.Utils
+import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.model.DailyForecastItem
 import java.util.Locale
 
 
 class DailyWeatherAdapter(
     private var weatherList: List<DailyForecastItem>,
-    private val onDayClickListener: OnDayClickListener
+    private val onDayClickListener: OnDayClickListener,
+    private val temperatureUnit: Temperature
 ) : RecyclerView.Adapter<DailyWeatherAdapter.DayViewHolder>() {
 
     private var selectedPosition: Int = 0
@@ -30,7 +32,7 @@ class DailyWeatherAdapter(
         val tempMinMax: TextView = view.findViewById(R.id.tempMinMax)
         val icon: ImageView = view.findViewById(R.id.weatherDayIcon)
         val tempDesc: TextView = view.findViewById(R.id.weatherDayDesc)
-        val card : CardView = view.findViewById(R.id.weatherDayCard)
+        val card: CardView = view.findViewById(R.id.weatherDayCard)
     }
 
     fun updateData(newList: List<DailyForecastItem>) {
@@ -38,6 +40,7 @@ class DailyWeatherAdapter(
         weatherList = newList
         notifyDataSetChanged()
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DayViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_weather_daily, parent, false)
@@ -52,8 +55,14 @@ class DailyWeatherAdapter(
         holder.tempDesc.text = weatherItem.weather[0].description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
-        holder.tempMinMax.text = "${weatherItem.temp.max.toInt()}/${weatherItem.temp.min.toInt()}°C"
 
+        val maxTempInCelsius = weatherItem.temp.max.toInt()
+        val minTempInCelsius = weatherItem.temp.min.toInt()
+        val convertedMaxTemp = Utils().getWeatherMeasure(maxTempInCelsius, temperatureUnit)
+        val convertedMinTemp = Utils().getWeatherMeasure(minTempInCelsius, temperatureUnit)
+        val unitSymbol = Utils().getUnitSymbol(temperatureUnit)
+
+        holder.tempMinMax.text = "${convertedMaxTemp.toInt()}/${convertedMinTemp.toInt()}$unitSymbol"
 
         if (position == selectedPosition) {
             holder.card.setCardBackgroundColor(Color.parseColor("#ffc107"))
@@ -67,7 +76,6 @@ class DailyWeatherAdapter(
             notifyItemChanged(previousPosition)
             notifyItemChanged(selectedPosition)
             onDayClickListener.onDayClick(weatherItem)
-
         }
     }
 
