@@ -201,7 +201,6 @@ class LandingActivity : AppCompatActivity() {
                 remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
                 localDataSource = WeatherLocalDataSourceImpl(
                     AppDatabase.getDatabase(this).weatherDao(),
-                    AppDatabase.getDatabase(this).forecastDao()
                 ),
                 sharedPreferences = SharedPreferences(this)
 

@@ -24,11 +24,11 @@ import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferences
-import com.example.weather.utils.model.DailyForecastItem
+import com.example.weather.utils.model.API.DailyForecastItem
 import com.example.weather.utils.model.ForecastItem
-import com.example.weather.utils.model.ForecastResponse
+import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.WeatherRepositoryImpl
-import com.example.weather.utils.model.WeatherResponse
+import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 
 import java.util.Locale
@@ -81,7 +81,6 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
                 remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
                 localDataSource = WeatherLocalDataSourceImpl(
                     AppDatabase.getDatabase(requireActivity()).weatherDao(),
-                    AppDatabase.getDatabase(requireActivity()).forecastDao()
                 ),
                 sharedPreferences = SharedPreferences(requireActivity())
 
@@ -160,7 +159,7 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         }
     }
 
-    private fun updateDailyRecyclerView(dailyWeather: ForecastResponse?) {
+    private fun updateDailyRecyclerView(dailyWeather: DailyWeatherResponse?) {
         if (dailyWeather != null) {
             dailyWeatherAdapter.updateData(dailyWeather.list)
         }

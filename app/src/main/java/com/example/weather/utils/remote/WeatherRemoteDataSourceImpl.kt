@@ -1,9 +1,9 @@
 package com.example.weather.utils.remote
 
 import android.util.Log
-import com.example.weather.utils.model.ForecastResponse
-import com.example.weather.utils.model.HourlyWeatherResponse
-import com.example.weather.utils.model.WeatherResponse
+import com.example.weather.utils.model.API.DailyWeatherResponse
+import com.example.weather.utils.model.API.HourlyWeatherResponse
+import com.example.weather.utils.model.API.WeatherResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -78,7 +78,7 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
         latitude: String,
         longitude: String,
         lang: String
-    ):  Flow<ForecastResponse?> = flow {
+    ):  Flow<DailyWeatherResponse?> = flow {
         try {
             val response = apiService.get5DayForecast(
                 latitude,

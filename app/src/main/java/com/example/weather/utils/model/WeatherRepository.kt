@@ -5,6 +5,9 @@ import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
+import com.example.weather.utils.model.API.WeatherResponse
+import com.example.weather.utils.model.API.DailyWeatherResponse
+import com.example.weather.utils.model.API.HourlyWeatherResponse
 import kotlinx.coroutines.flow.Flow
 
 interface WeatherRepository {
@@ -12,7 +15,7 @@ interface WeatherRepository {
      // API
      fun fetchAndStoreWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?>
      fun fetchHourlyWeatherData(longitude: Double, latitude: Double): Flow<HourlyWeatherResponse?>
-     fun get5DayForecast(longitude: Double, latitude: Double): Flow<ForecastResponse?>
+     fun get5DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?>
 
      // SharedPreferences
      fun setTemperatureUnit(unit: Temperature)

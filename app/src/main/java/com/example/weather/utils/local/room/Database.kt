@@ -4,16 +4,23 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.weather.utils.local.room.Dao.ForecastDao
 import com.example.weather.utils.local.room.Dao.WeatherDao
-import com.example.weather.utils.model.ForecastEntity
-import com.example.weather.utils.model.WeatherEntity
+import com.example.weather.utils.model.Local.DailyWeatherEntity
+import com.example.weather.utils.model.Local.HourlyWeatherEntity
+import com.example.weather.utils.model.Local.WeatherEntity
 
 
-@Database(entities = [WeatherEntity::class, ForecastEntity::class], version = 1)
+@Database(
+    entities = [
+        WeatherEntity::class,
+        DailyWeatherEntity::class,
+        HourlyWeatherEntity::class
+    ],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
-    abstract fun forecastDao(): ForecastDao
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

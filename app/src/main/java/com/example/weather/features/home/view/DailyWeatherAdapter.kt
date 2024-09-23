@@ -3,7 +3,6 @@ package com.example.weather.features.home.view
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
-import com.example.weather.utils.model.ForecastResponse
 
 
 import android.view.LayoutInflater
@@ -16,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
 import com.example.weather.utils.Utils
 import com.example.weather.utils.enums.Temperature
-import com.example.weather.utils.model.DailyForecastItem
+import com.example.weather.utils.model.API.DailyForecastItem
 import java.util.Locale
 
 

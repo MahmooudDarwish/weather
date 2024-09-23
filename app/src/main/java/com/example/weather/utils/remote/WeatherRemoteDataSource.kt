@@ -1,8 +1,8 @@
 package com.example.weather.utils.remote
 
-import com.example.weather.utils.model.ForecastResponse
-import com.example.weather.utils.model.HourlyWeatherResponse
-import com.example.weather.utils.model.WeatherResponse
+import com.example.weather.utils.model.API.DailyWeatherResponse
+import com.example.weather.utils.model.API.HourlyWeatherResponse
+import com.example.weather.utils.model.API.WeatherResponse
 import kotlinx.coroutines.flow.Flow
 
 interface  WeatherRemoteDataSource {
@@ -18,5 +18,5 @@ interface  WeatherRemoteDataSource {
         latitude: String,
         longitude: String,
         lang: String
-    ) : Flow<ForecastResponse?>
+    ) : Flow<DailyWeatherResponse?>
 }

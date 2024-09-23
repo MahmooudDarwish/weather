@@ -1,9 +1,9 @@
 package com.example.weather.utils.remote
 
 import com.example.weather.utils.constants.Keys
-import com.example.weather.utils.model.ForecastResponse
-import com.example.weather.utils.model.HourlyWeatherResponse
-import com.example.weather.utils.model.WeatherResponse
+import com.example.weather.utils.model.API.DailyWeatherResponse
+import com.example.weather.utils.model.API.HourlyWeatherResponse
+import com.example.weather.utils.model.API.WeatherResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -28,7 +28,7 @@ interface WeatherApiService {
         @Query("cnt") cnt: String = "5",
         @Query("units") units: String = "metric",
         @Query("appid") apiKey: String = Keys.WEATHER_API_KEY,
-        ): Response<ForecastResponse>
+        ): Response<DailyWeatherResponse>
 
     @GET("forecast/hourly")
     suspend fun get5DayHourlyForecast(

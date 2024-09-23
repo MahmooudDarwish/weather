@@ -11,7 +11,6 @@ import com.example.weather.R
 import com.example.weather.utils.Utils
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.model.ForecastItem
-import com.example.weather.utils.model.HourlyWeatherResponse
 
 class HourlyWeatherAdapter(
     private var weatherList: List<ForecastItem>,

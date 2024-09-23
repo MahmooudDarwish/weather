@@ -61,7 +61,8 @@
 
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
-
+    <string name="no_favorites_yet">No favorites yet</string>
+    <string name="add_to_favorites">Add To Favorites</string>
 
 
 </resources>

@@ -1,4 +1,5 @@
-package com.example.weather.features.home.view_model
+package com.example.weather.features.favorites.view_model
+
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -15,7 +16,8 @@ import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
 
-class HomeViewModel(
+
+class FavoritesViewModel(
     private val weatherRepository: WeatherRepositoryImpl
 ) : ViewModel() {
 
