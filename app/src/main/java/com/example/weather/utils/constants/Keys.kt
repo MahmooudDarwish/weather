@@ -2,6 +2,7 @@ package com.example.weather.utils.constants
 
 
 object Keys {
+
     //Shared Preferences Keys
     const val SHARED_PREFERENCES_NAME = "WeatherAppPrefs"
 
@@ -13,6 +14,8 @@ object Keys {
     const val LANDING_OPTION_KEY = "landing_option"
     const val LONGITUDE_KEY = "longitude"
     const val LATITUDE_KEY = "latitude"
+    const val CITY_KEY =  "city"
+
 
     //API Keys
     const val BASE_URL = "https://pro.openweathermap.org/data/2.5/"

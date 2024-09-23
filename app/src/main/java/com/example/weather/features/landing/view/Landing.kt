@@ -33,7 +33,7 @@ import com.example.weather.features.landing.view_model.LandingViewModel
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferences
-import com.example.weather.utils.model.WeatherRepositoryImpl
+import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.material.navigation.NavigationView
 import com.example.weather.features.map.view.Map

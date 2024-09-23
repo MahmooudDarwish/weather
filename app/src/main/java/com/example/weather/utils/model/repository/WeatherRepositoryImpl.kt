@@ -1,4 +1,4 @@
-package com.example.weather.utils.model
+package com.example.weather.utils.model.repository
 
 
 import com.example.weather.utils.remote.WeatherRemoteDataSource
@@ -13,6 +13,9 @@ import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSo
 import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.API.HourlyWeatherResponse
+import com.example.weather.utils.model.Local.DailyWeatherEntity
+import com.example.weather.utils.model.Local.HourlyWeatherEntity
+import com.example.weather.utils.model.Local.WeatherEntity
 import kotlinx.coroutines.flow.Flow
 
 
@@ -44,7 +47,7 @@ class WeatherRepositoryImpl private constructor(
 
 
     ///API
-    override fun fetchAndStoreWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?> {
+    override fun fetchWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?> {
 
         val lang = when(getLanguage()){
             Language.ENGLISH -> "en"
@@ -55,7 +58,6 @@ class WeatherRepositoryImpl private constructor(
             longitude = longitude.toString(),
             lang = lang
         )
-        //TODO: Add additional logic here to store data in localDataSource or handle preferences
     }
 
     override fun fetchHourlyWeatherData(
@@ -71,7 +73,9 @@ class WeatherRepositoryImpl private constructor(
             latitude = latitude.toString(),
             longitude = longitude.toString(),
             lang = lang
-        )    }
+        )
+
+    }
 
 
     override fun get5DayForecast(
@@ -89,8 +93,50 @@ class WeatherRepositoryImpl private constructor(
             longitude = longitude.toString(),
             lang = lang
         )
+
     }
+
     ///ROOM DATABASE
+
+    override fun getFavoriteWeather(lon: Double, lat: Double): Flow<WeatherEntity?> {
+        return localDataSource.getCurrentWeather(lon, lat)
+    }
+
+    override fun getFavoriteDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
+        return localDataSource.getDailyWeather(lon, lat)
+    }
+
+    override fun getFavoriteHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
+        return localDataSource.getHourlyWeather(lon, lat)
+    }
+
+    override fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
+        return localDataSource.getAllFavoriteWeather()
+    }
+
+    override suspend fun insertFavoriteWeather(weather: WeatherEntity) {
+        localDataSource.insertCurrentWeather(weather)
+    }
+
+    override suspend fun insertFavoriteDailyWeather(dailyWeather: List<DailyWeatherEntity>) {
+        localDataSource.insertDailyWeather(dailyWeather)
+    }
+
+    override suspend fun insertFavoriteHourlyWeather(hourlyWeather: List<HourlyWeatherEntity>) {
+        localDataSource.insertHourlyWeather(hourlyWeather)
+    }
+
+    override suspend fun deleteFavoriteWeather(lon: Double, lat: Double) {
+        localDataSource.deleteCurrentWeather(lon, lat)
+    }
+
+    override suspend fun deleteFavoriteDailyWeather(lon: Double, lat: Double) {
+        localDataSource.deleteDailyWeather(lon, lat)
+    }
+
+    override suspend fun deleteFavoriteHourlyWeather(lon: Double, lat: Double) {
+        localDataSource.deleteHourlyWeather(lon, lat)
+    }
 
 
     ///SharedPreferences

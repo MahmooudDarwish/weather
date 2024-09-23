@@ -2,7 +2,7 @@ package com.example.weather.features.settings.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.weather.utils.model.WeatherRepository
+import com.example.weather.utils.model.repository.WeatherRepository
 
 class SettingsViewModelFactory(
     private val repository: WeatherRepository

@@ -1,6 +1,7 @@
 package com.example.weather.utils
 
 import android.content.Context
+
 import androidx.core.content.ContextCompat.getString
 import java.text.SimpleDateFormat
 import java.util.*
@@ -8,6 +9,7 @@ import com.example.weather.R
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 class Utils {
+
 
     fun getDayNameFromEpoch(context: Context,epochTime: Long): String {
         val date = Date(epochTime * 1000)

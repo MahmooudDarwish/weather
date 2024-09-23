@@ -1,5 +1,7 @@
 package com.example.weather.utils.model.API
 
+import com.example.weather.utils.model.City
+import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Weather
 
 data class DailyWeatherResponse(
@@ -7,6 +9,7 @@ data class DailyWeatherResponse(
     val message: Double,
     val cnt: Int,
     val list: List<DailyForecastItem>,
+    val city: City
 )
 
 data class DailyForecastItem(
@@ -24,3 +27,22 @@ data class Temperature(
    val max: Double,
 )
 
+
+
+fun DailyWeatherResponse.toDailyWeatherEntities(): List<DailyWeatherEntity> {
+    return list.map { item ->
+        DailyWeatherEntity(
+            longitude = city.coord.lon,
+            latitude = city.coord.lat,
+            dt = item.dt,
+            minTemp = item.temp.min,
+            maxTemp = item.temp.max,
+            windSpeed = item.speed,
+            pressure = item.pressure,
+            humidity = item.humidity,
+            description = item.weather.firstOrNull()?.description ?: "",
+            icon = item.weather.firstOrNull()?.icon ?: "",
+            clouds = item.clouds
+        )
+    }
+}

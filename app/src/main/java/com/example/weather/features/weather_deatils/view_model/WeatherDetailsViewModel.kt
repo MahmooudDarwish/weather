@@ -1,29 +1,22 @@
-package com.example.weather.features.home.view_model
+package com.example.weather.features.weather_deatils.view_model
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.API.HourlyWeatherResponse
-import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.model.API.WeatherResponse
+import com.example.weather.utils.model.Local.WeatherEntity
+import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import kotlinx.coroutines.Dispatchers
-
 import kotlinx.coroutines.launch
 
-class HomeViewModel(
+class WeatherDetailsViewModel(
     private val weatherRepository: WeatherRepositoryImpl
 ) : ViewModel() {
-
-    private val _currentWeather = MutableLiveData<WeatherResponse?>()
-    val currentWeather: MutableLiveData<WeatherResponse?>
-        get() = _currentWeather
-
-
     private val _hourlyWeatherData = MutableLiveData<HourlyWeatherResponse?>()
     val hourlyWeatherData: MutableLiveData<HourlyWeatherResponse?>
         get() = _hourlyWeatherData
@@ -34,6 +27,11 @@ class HomeViewModel(
         get() = _dailyWeatherData
 
 
+    private val _favoriteWeatherData = MutableLiveData<WeatherEntity?>()
+    val favoriteWeatherData: MutableLiveData<WeatherEntity?>
+        get() = _favoriteWeatherData
+
+
     fun fetchHourlyWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             weatherRepository.fetchHourlyWeatherData(longitude, latitude).collect { response ->
@@ -41,14 +39,26 @@ class HomeViewModel(
             }
         }
     }
+
     fun fetchDailyWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             weatherRepository.get5DayForecast(longitude, latitude).collect { response ->
-                Log.d("HomeViewModel", "[forest Response: $response")
                 _dailyWeatherData.postValue(response)
             }
         }
     }
+
+    fun fetchFavoriteWeather(latitude: Double, longitude: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            weatherRepository.getFavoriteWeather(longitude, latitude).collect { response ->
+                _favoriteWeatherData.postValue(response)
+            }
+        }
+    }
+
+    private val _currentWeather = MutableLiveData<WeatherResponse?>()
+    val currentWeather: MutableLiveData<WeatherResponse?>
+        get() = _currentWeather
 
     fun getWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -66,21 +76,6 @@ class HomeViewModel(
 
     fun getWindMeasure(): WindSpeed {
         return weatherRepository.getWindSpeedUnit()
-    }
-
-    fun getLocationStatus(): LocationStatus {
-        Log.d("HomeViewModel", "getLocationStatus called ${weatherRepository.getLocationStatus()}")
-        return weatherRepository.getLocationStatus()
-    }
-
-    fun saveCurrentLocation(latitude: Double, longitude: Double) {
-        viewModelScope.launch {
-            weatherRepository.saveCurrentLocation(latitude, longitude)
-        }
-    }
-
-    fun getCurrentLocation(): Pair<Double, Double>? {
-        return weatherRepository.getCurrentLocation()
     }
 
 }

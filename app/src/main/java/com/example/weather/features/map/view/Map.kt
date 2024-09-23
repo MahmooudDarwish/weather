@@ -47,9 +47,11 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         selectLocationButton.setOnClickListener {
             Log.d("MapsActivity", "Select Location button clicked")
             selectedMarker?.let {
+                val city = getAddressFromLocation(it.position.latitude, it.position.longitude)
                 val resultIntent = Intent().apply {
                     putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.latitude ?: 0.0)
                     putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.longitude ?: 0.0)
+                    putExtra(Keys.CITY_KEY, city)
                 }
                 setResult(Activity.RESULT_OK, resultIntent)
 
@@ -119,12 +121,21 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         selectedMarker = map?.addMarker(MarkerOptions().position(location))
     }
 
-    private fun getAddressFromLocation(latitude: Double, longitude: Double) {
+    private fun getAddressFromLocation(latitude: Double, longitude: Double): String {
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-        val address = addresses?.get(0)?.getAddressLine(0) ?: "Unknown location"
-        Toast.makeText(this, "Address: $address", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "City: ${addresses?.get(0)?.locality}", Toast.LENGTH_SHORT).show()
+
+        return if (!addresses.isNullOrEmpty()) {
+            val city = addresses[0].locality ?: getString(R.string.unknown)
+            Log.d("MapsActivity", "City: $city")
+            city
+        } else {
+            Log.e("MapsActivity", "No city found for coordinates: $latitude, $longitude")
+            getString(R.string.unknown)
+        }
     }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
@@ -135,7 +146,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             val latitude = latLng.latitude
             val longitude = latLng.longitude
             getAddressFromLocation(latitude, longitude)
-            Toast.makeText(this, "Lat: $latitude, Lng: $longitude", Toast.LENGTH_SHORT).show()
         }
 
         if (ActivityCompat.checkSelfPermission(

@@ -14,10 +14,17 @@ interface WeatherDao {
 
     // Insert Current Weather
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCurrentWeather(weather: WeatherEntity)
+    suspend fun insertFavoriteWeather(weather: WeatherEntity)
 
     @Query("SELECT * FROM current_weather WHERE longitude = :lon AND latitude = :lat")
-    fun getCurrentWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
+    fun getFavoriteWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
+
+    @Query("SELECT * FROM current_weather")
+    fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>
+
+    // Delete Current Weather
+    @Query("DELETE FROM current_weather WHERE longitude = :lon AND latitude = :lat")
+    suspend fun deleteCurrentWeather(lon: Double, lat: Double)
 
     // Insert Daily Weather
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -25,6 +32,12 @@ interface WeatherDao {
 
     @Query("SELECT * FROM daily_weather WHERE longitude = :lon AND latitude = :lat")
     fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
+    @Query("SELECT * FROM daily_weather")
+    fun getAllDailyWeather(): Flow<List<DailyWeatherEntity>>
+
+    // Delete Daily Weather
+    @Query("DELETE FROM daily_weather WHERE longitude = :lon AND latitude = :lat")
+    suspend fun deleteDailyWeather(lon: Double, lat: Double)
 
     // Insert Hourly Weather
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -32,4 +45,11 @@ interface WeatherDao {
 
     @Query("SELECT * FROM hourly_weather WHERE longitude = :lon AND latitude = :lat")
     fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
+
+    @Query("SELECT * FROM hourly_weather")
+    fun getAllHourlyWeather(): Flow<List<HourlyWeatherEntity>>
+
+    // Delete Hourly Weather
+    @Query("DELETE FROM hourly_weather WHERE longitude = :lon AND latitude = :lat")
+    suspend fun deleteHourlyWeather(lon: Double, lat: Double)
 }

@@ -1,88 +1,72 @@
 package com.example.weather.features.favorites.view_model
 
-
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weather.utils.enums.LocationStatus
-import com.example.weather.utils.enums.Temperature
-import com.example.weather.utils.enums.WindSpeed
-import com.example.weather.utils.model.API.DailyWeatherResponse
-import com.example.weather.utils.model.API.HourlyWeatherResponse
-import com.example.weather.utils.model.WeatherRepositoryImpl
-import com.example.weather.utils.model.API.WeatherResponse
+import com.example.weather.utils.model.API.toDailyWeatherEntities
+import com.example.weather.utils.model.API.toHourlyWeatherEntities
+import com.example.weather.utils.model.API.toWeatherEntity
+import com.example.weather.utils.model.Local.WeatherEntity
+import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import kotlinx.coroutines.Dispatchers
-
 import kotlinx.coroutines.launch
-
 
 class FavoritesViewModel(
     private val weatherRepository: WeatherRepositoryImpl
 ) : ViewModel() {
 
-    private val _currentWeather = MutableLiveData<WeatherResponse?>()
-    val currentWeather: MutableLiveData<WeatherResponse?>
-        get() = _currentWeather
+    private val _favorites = MutableLiveData<List<WeatherEntity?>>()
+    val favorites: MutableLiveData<List<WeatherEntity?>>
+        get() = _favorites
 
-
-    private val _hourlyWeatherData = MutableLiveData<HourlyWeatherResponse?>()
-    val hourlyWeatherData: MutableLiveData<HourlyWeatherResponse?>
-        get() = _hourlyWeatherData
-
-
-    private val _dailyWeatherData = MutableLiveData<DailyWeatherResponse?>()
-    val dailyWeatherData: MutableLiveData<DailyWeatherResponse?>
-        get() = _dailyWeatherData
-
-
-    fun fetchHourlyWeather(latitude: Double, longitude: Double) {
+    fun getWeatherAndSaveToDatabase(latitude: Double, longitude: Double, city: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            weatherRepository.fetchHourlyWeatherData(longitude, latitude).collect { response ->
-                _hourlyWeatherData.postValue(response)
-            }
-        }
-    }
-    fun fetchDailyWeather(latitude: Double, longitude: Double) {
-        viewModelScope.launch(Dispatchers.IO) {
-            weatherRepository.get5DayForecast(longitude, latitude).collect { response ->
-                Log.d("HomeViewModel", "[forest Response: $response")
-                _dailyWeatherData.postValue(response)
-            }
-        }
-    }
+            try {
+                // Collect and save current weather data
+                weatherRepository.fetchWeatherData(longitude, latitude).collect { currentWeather ->
+                    currentWeather?.let {
+                        weatherRepository.insertFavoriteWeather(it.toWeatherEntity(city))
+                    }
+                }
 
-    fun getWeather(latitude: Double, longitude: Double) {
-        viewModelScope.launch(Dispatchers.IO) {
-            weatherRepository.fetchAndStoreWeatherData(longitude, latitude).collect { response ->
-                Log.d("HomeViewModel", "Response: $response")
-                _currentWeather.postValue(response)
+                // Collect and save daily weather data
+                weatherRepository.get5DayForecast(longitude, latitude).collect { dailyWeather ->
+                    dailyWeather?.let {
+                        weatherRepository.insertFavoriteDailyWeather(it.toDailyWeatherEntities())
+                    }
+                }
+
+                // Collect and save hourly weather data
+                weatherRepository.fetchHourlyWeatherData(longitude, latitude).collect { hourlyWeather ->
+                    hourlyWeather?.let {
+                        weatherRepository.insertFavoriteHourlyWeather(it.toHourlyWeatherEntities())
+                    }
+                }
+
+                // Update favorites list
+                fetchAllFavoriteWeather()
+            } catch (e: Exception) {
+                Log.e("FavoritesViewModel", "Error fetching or saving weather data", e)
             }
         }
     }
 
-    fun getWeatherMeasure(): Temperature {
-        Log.d("HomeViewModel", "getLocationStatus called ${weatherRepository.getLocationStatus()}")
-        return weatherRepository.getTemperatureUnit()
+    fun fetchAllFavoriteWeather() {
+        viewModelScope.launch(Dispatchers.IO) {
+            weatherRepository.getAllFavoriteWeather().collect { response ->
+                Log.d("FavoritesViewModel", "Response: $response")
+                _favorites.postValue(response)
+            }
+        }
     }
 
-    fun getWindMeasure(): WindSpeed {
-        return weatherRepository.getWindSpeedUnit()
-    }
 
-    fun getLocationStatus(): LocationStatus {
-        Log.d("HomeViewModel", "getLocationStatus called ${weatherRepository.getLocationStatus()}")
-        return weatherRepository.getLocationStatus()
-    }
-
-    fun saveCurrentLocation(latitude: Double, longitude: Double) {
+    fun deleteFavorite(weatherEntity: WeatherEntity) {
         viewModelScope.launch {
-            weatherRepository.saveCurrentLocation(latitude, longitude)
+            weatherRepository.deleteFavoriteWeather(weatherEntity.longitude, weatherEntity.latitude)
+            fetchAllFavoriteWeather()  // Refresh the list after deletion
+
         }
     }
-
-    fun getCurrentLocation(): Pair<Double, Double>? {
-        return weatherRepository.getCurrentLocation()
-    }
-
 }

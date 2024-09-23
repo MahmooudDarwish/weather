@@ -2,6 +2,7 @@ package com.example.weather.features.home.view
 
 import android.app.Activity
 import android.content.Intent
+import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -27,7 +28,7 @@ import com.example.weather.utils.local.shared_perefernces.SharedPreferences
 import com.example.weather.utils.model.API.DailyForecastItem
 import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.API.DailyWeatherResponse
-import com.example.weather.utils.model.WeatherRepositoryImpl
+import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 
@@ -52,6 +53,7 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
     private lateinit var windSpeedText: TextView
     private lateinit var cloudText: TextView
 
+
     private val mapActivityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -59,8 +61,8 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
             val data = result.data
             val latitude = data?.getDoubleExtra(Keys.LATITUDE_KEY, 0.0) ?: 0.0
             val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
+
             Log.d("HomeActivity", "Latitude: $latitude, Longitude: $longitude")
-            viewModel.saveCurrentLocation(latitude, longitude)
             updateLocation(Pair(latitude, longitude))
         }
     }
@@ -123,6 +125,20 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
 
     }
 
+    private fun getAddressFromLocation(latitude: Double, longitude: Double): String {
+        val geocoder = Geocoder(requireActivity(), Locale.getDefault())
+        val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+
+        return if (!addresses.isNullOrEmpty()) {
+            val city = addresses[0].locality ?: getString(R.string.unknown)
+            Log.d("MapsActivity", "City: $city")
+            city
+        } else {
+            Log.e("MapsActivity", "No city found for coordinates: $latitude, $longitude")
+            getString(R.string.unknown)
+        }
+    }
+
     private fun initUi(view: View) {
         countryName = view.findViewById(R.id.countryName)
         todayDate = view.findViewById(R.id.todayDate)
@@ -146,7 +162,8 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         recyclerViewDailyWeather = view.findViewById(R.id.recyclerViewDailyWeather)
         recyclerViewDailyWeather.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
-        dailyWeatherAdapter = DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), requireActivity())
+        dailyWeatherAdapter =
+            DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), requireActivity())
         recyclerViewDailyWeather.adapter = dailyWeatherAdapter
 
         checkLocationStatus()
@@ -177,11 +194,20 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         val convertedMaxTemp = Utils().getWeatherMeasure(maxTempInCelsius, selectedUnit)
         val convertedMinTemp = Utils().getWeatherMeasure(minTempInCelsius, selectedUnit)
 
-        if (Utils().getDayNameFromEpoch(context = requireActivity(),epochTime = weatherItem.dt) == getString(R.string.today)) {
-            temperatureText.text = "${convertedMaxTemp.toInt()} ${Utils().getUnitSymbol(selectedUnit)}"
+        if (Utils().getDayNameFromEpoch(
+                context = requireActivity(),
+                epochTime = weatherItem.dt
+            ) == getString(R.string.today)
+        ) {
+            temperatureText.text =
+                "${convertedMaxTemp.toInt()} ${Utils().getUnitSymbol(selectedUnit)}"
         } else {
             temperatureText.text =
-                "${convertedMaxTemp.toInt()}/${convertedMinTemp.toInt()}${Utils().getUnitSymbol(selectedUnit)}"
+                "${convertedMaxTemp.toInt()}/${convertedMinTemp.toInt()}${
+                    Utils().getUnitSymbol(
+                        selectedUnit
+                    )
+                }"
         }
 
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
@@ -193,7 +219,11 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         val speedInMps = weatherItem.speed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
-        windSpeedText.text = getString(R.string.wind_speed_format, speed ,Utils().getSpeedUnitSymbol(speedMeasure, requireActivity()))
+        windSpeedText.text = getString(
+            R.string.wind_speed_format,
+            speed,
+            Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
+        )
 
         val filteredHourlyWeather = filterHourlyWeatherByDay(weatherItem.dt)
         updateHourlyRecyclerViewList(filteredHourlyWeather)
@@ -202,7 +232,11 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
 
     private fun filterHourlyWeatherByDay(dayEpoch: Long): List<ForecastItem>? {
         return viewModel.hourlyWeatherData.value?.let { hourlyWeather ->
-            if (Utils().getDayNameFromEpoch(context = requireActivity() , epochTime =  dayEpoch) == getString(R.string.today)) {
+            if (Utils().getDayNameFromEpoch(
+                    context = requireActivity(),
+                    epochTime = dayEpoch
+                ) == getString(R.string.today)
+            ) {
                 hourlyWeather.list.take(24)
             } else {
                 hourlyWeather.list.filter {
@@ -222,7 +256,8 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
 
     private fun updateUI(weatherResponse: WeatherResponse?) {
         if (weatherResponse?.name!!.isEmpty()) {
-            countryName.text = getString(R.string.unknown)
+            countryName.text =
+                getAddressFromLocation(weatherResponse.coord.lat, weatherResponse.coord.lon)
         } else {
 
             countryName.text = weatherResponse.name
@@ -246,7 +281,11 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
 
-        windSpeedText.text = getString(R.string.wind_speed_format, speed ,Utils().getSpeedUnitSymbol(speedMeasure, requireActivity()))
+        windSpeedText.text = getString(
+            R.string.wind_speed_format,
+            speed,
+            Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
+        )
 
         cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all.toString())
 
@@ -274,6 +313,8 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         viewModel.getWeather(longitude = longitude, latitude = latitude)
         viewModel.fetchHourlyWeather(longitude = longitude, latitude = latitude)
         viewModel.fetchDailyWeather(longitude = longitude, latitude = latitude)
+        viewModel.saveCurrentLocation(longitude = longitude, latitude = latitude)
+
     }
 
     override fun onDayClick(item: DailyForecastItem) {

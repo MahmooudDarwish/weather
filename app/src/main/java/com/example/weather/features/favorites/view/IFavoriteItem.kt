@@ -1,9 +1,11 @@
 package com.example.weather.features.favorites.view
 
-interface IFavoriteItem {
-   fun onDeleteItem()
+import com.example.weather.utils.model.Local.WeatherEntity
 
-   fun onClickItem()
+interface IFavoriteItem {
+   fun onDeleteItem(weatherEntity: WeatherEntity)
+
+   fun onClickItem(weatherEntity: WeatherEntity)
 
 
 }

@@ -20,6 +20,12 @@ data class Wind(
     val speed: Double,
 )
 
+data class City(
+    val coord: Coordinates
+)
+
+
+
 
 data class Clouds(
     val all: Int

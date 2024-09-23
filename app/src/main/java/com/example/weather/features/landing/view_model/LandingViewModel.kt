@@ -3,7 +3,7 @@ package com.example.weather.features.landing.view_model
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weather.utils.enums.LocationStatus
-import com.example.weather.utils.model.WeatherRepository
+import com.example.weather.utils.model.repository.WeatherRepository
 import kotlinx.coroutines.launch
 
 
