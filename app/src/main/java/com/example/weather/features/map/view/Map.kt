@@ -57,7 +57,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
 
                 finish()
             } ?: run {
-                Toast.makeText(this, "No location selected", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.no_location_selected), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -110,7 +110,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
                     getAddressFromLocation(latitude, longitude)
                 } ?: run {
                     Log.e("MapsActivity", "Location is null")
-                    Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.unable_to_get_location), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -124,13 +124,13 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     private fun getAddressFromLocation(latitude: Double, longitude: Double): String {
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-        Toast.makeText(this, "City: ${addresses?.get(0)?.locality}", Toast.LENGTH_SHORT).show()
 
         return if (!addresses.isNullOrEmpty()) {
-            val city = addresses[0].locality ?: getString(R.string.unknown)
-            Log.d("MapsActivity", "City: $city")
+            val city: String = addresses[0].locality ?: getString(R.string.unknown)
+            Toast.makeText(this, "${getString(R.string.city)}: $city", Toast.LENGTH_SHORT).show()
             city
         } else {
+            Toast.makeText(this, getString(R.string.unknown), Toast.LENGTH_SHORT).show()
             Log.e("MapsActivity", "No city found for coordinates: $latitude, $longitude")
             getString(R.string.unknown)
         }
