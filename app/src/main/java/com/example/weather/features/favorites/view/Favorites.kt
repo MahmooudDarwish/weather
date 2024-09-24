@@ -18,6 +18,7 @@ import com.example.weather.R
 import com.example.weather.features.favorites.view_model.FavoritesViewModel
 import com.example.weather.features.favorites.view_model.FavoritesViewModelFactory
 import com.example.weather.features.map.view.Map
+import com.example.weather.features.weather_deatils.view.FavoriteDetails
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
@@ -27,13 +28,13 @@ import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class Favorites : Fragment() , IFavoriteItem{
+class Favorites : Fragment(), IFavoriteItem {
 
-    private lateinit var  viewModel: FavoritesViewModel
-    private lateinit var  favoritesIcon : ImageView
-    private lateinit var  addFavoritesFAB : FloatingActionButton
-    private lateinit var  noFavoritesTextView : TextView
-    private lateinit var  favoritesRecyclerView : RecyclerView
+    private lateinit var viewModel: FavoritesViewModel
+    private lateinit var favoritesIcon: ImageView
+    private lateinit var addFavoritesFAB: FloatingActionButton
+    private lateinit var noFavoritesTextView: TextView
+    private lateinit var favoritesRecyclerView: RecyclerView
     private lateinit var favoritesAdapter: FavoritesAdapter
 
     private val mapActivityResultLauncher = registerForActivityResult(
@@ -71,6 +72,7 @@ class Favorites : Fragment() , IFavoriteItem{
         viewModel.fetchAllFavoriteWeather()
 
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -107,7 +109,6 @@ class Favorites : Fragment() , IFavoriteItem{
         favoritesRecyclerView.adapter = favoritesAdapter
 
 
-
     }
 
     private fun observeFavorites() {
@@ -117,15 +118,15 @@ class Favorites : Fragment() , IFavoriteItem{
         }
     }
 
-    private fun observeNoFavorites(favoriteExist: Boolean){
-        if(favoriteExist){
+    private fun observeNoFavorites(favoriteExist: Boolean) {
+        if (favoriteExist) {
             Log.d("Favorites", "Favorites exist")
             noFavoritesTextView.visibility = View.GONE
-            favoritesIcon.visibility =  View.GONE
-        }else{
+            favoritesIcon.visibility = View.GONE
+        } else {
             Log.d("Favorites", "Favorites not exist")
             noFavoritesTextView.visibility = View.VISIBLE
-            favoritesIcon.visibility =  View.VISIBLE
+            favoritesIcon.visibility = View.VISIBLE
 
         }
 
@@ -135,15 +136,26 @@ class Favorites : Fragment() , IFavoriteItem{
         mapActivityResultLauncher.launch(Intent(requireActivity(), Map::class.java))
     }
 
-    private fun saveFavoriteLocation(location: Pair<Double, Double>,  city : String) {
+    private fun saveFavoriteLocation(location: Pair<Double, Double>, city: String) {
         viewModel.getWeatherAndSaveToDatabase(location.first, location.second, city)
     }
+
     override fun onDeleteItem(weatherEntity: WeatherEntity) {
         viewModel.deleteFavorite(weatherEntity)
     }
 
     override fun onClickItem(weatherEntity: WeatherEntity) {
+        val latitude = weatherEntity.latitude // or wherever you get latitude
+        val longitude = weatherEntity.longitude // or wherever you get longitude
+        navigateToFavoriteDetails(latitude, longitude)
+    }
 
+    private fun navigateToFavoriteDetails(latitude: Double, longitude: Double) {
+        val intent = Intent(requireContext(), FavoriteDetails::class.java).apply {
+            putExtra(Keys.LATITUDE_KEY, latitude)
+            putExtra(Keys.LONGITUDE_KEY, longitude)
+        }
+        startActivity(intent)
     }
 
 }

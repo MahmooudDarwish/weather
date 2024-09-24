@@ -45,7 +45,7 @@ import android.location.Location
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.ContextCompat
 import com.example.weather.features.home.view.Home
-import com.example.weather.features.home.view.UpdateLocationWeather
+//import com.example.weather.features.home.view.UpdateLocationWeather
 import com.example.weather.utils.enums.LocationStatus
 import com.google.android.material.snackbar.Snackbar
 
@@ -85,7 +85,7 @@ class LandingActivity : AppCompatActivity() {
             val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
             Log.d("LandingActivity", "Latitude: $latitude, Longitude: $longitude")
             viewModel.saveCurrentLocation(latitude, longitude)
-            updateHomeLocation(latitude, longitude)
+           // updateHomeLocation(latitude, longitude)
         } else {
             showInitialSetupDialog()
         }
@@ -116,14 +116,14 @@ class LandingActivity : AppCompatActivity() {
     }
 
 
-    private fun updateHomeLocation(latitude: Double, longitude: Double) {
+   /* private fun updateHomeLocation(latitude: Double, longitude: Double) {
         val homeFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
         val home =
             homeFragment?.childFragmentManager?.fragments?.find { it is Home } as? UpdateLocationWeather
         home?.updateLocation(Pair(latitude, longitude))
     }
-
+*/
 
     override fun onStart() {
         super.onStart()
@@ -330,7 +330,7 @@ class LandingActivity : AppCompatActivity() {
                     val latitude = it.latitude
                     val longitude = it.longitude
                     viewModel.saveCurrentLocation(latitude, longitude)
-                    updateHomeLocation(latitude, longitude)
+                    //updateHomeLocation(latitude, longitude)
                     Log.i("DEBUGGGGGGG", "Latitude: $latitude, Longitude: $longitude")
 
                 } ?: run {

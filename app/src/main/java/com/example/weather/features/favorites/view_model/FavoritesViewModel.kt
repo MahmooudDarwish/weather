@@ -29,20 +29,24 @@ class FavoritesViewModel(
                         weatherRepository.insertFavoriteWeather(it.toWeatherEntity(city))
                     }
                 }
-
                 // Collect and save daily weather data
-                weatherRepository.get5DayForecast(longitude, latitude).collect { dailyWeather ->
-                    dailyWeather?.let {
-                        weatherRepository.insertFavoriteDailyWeather(it.toDailyWeatherEntities())
+                launch {
+                    weatherRepository.get5DayForecast(longitude, latitude).collect { dailyWeather ->
+                        dailyWeather?.let {
+                            weatherRepository.insertFavoriteDailyWeather(it.toDailyWeatherEntities())
+                        }
                     }
                 }
 
                 // Collect and save hourly weather data
-                weatherRepository.fetchHourlyWeatherData(longitude, latitude).collect { hourlyWeather ->
-                    hourlyWeather?.let {
-                        weatherRepository.insertFavoriteHourlyWeather(it.toHourlyWeatherEntities())
+                launch {
+                    weatherRepository.fetchHourlyWeatherData(longitude, latitude).collect { hourlyWeather ->
+                        hourlyWeather?.let {
+                            weatherRepository.insertFavoriteHourlyWeather(it.toHourlyWeatherEntities())
+                        }
                     }
                 }
+
 
                 // Update favorites list
                 fetchAllFavoriteWeather()

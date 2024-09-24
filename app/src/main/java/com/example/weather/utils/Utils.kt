@@ -39,6 +39,8 @@ class Utils {
         }
     }
 
+
+
     fun getWeatherIcon(imageName: String): Int {
         when (imageName) {
             "01d" -> return R.drawable.ic_sunny

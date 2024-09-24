@@ -33,8 +33,8 @@ import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 
 import java.util.Locale
-
-class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
+//UpdateLocationWeather
+class Home : Fragment(), OnDayClickListener {
     lateinit var viewModel: HomeViewModel
 
     private lateinit var countryName: TextView
@@ -303,7 +303,7 @@ class Home : Fragment(), UpdateLocationWeather, OnDayClickListener {
         mapActivityResultLauncher.launch(Intent(requireActivity(), Map::class.java))
     }
 
-    override fun updateLocation(currentLocation: Pair<Double, Double>?) {
+    fun updateLocation(currentLocation: Pair<Double, Double>?) {
         if (currentLocation == null) {
             return
         }
