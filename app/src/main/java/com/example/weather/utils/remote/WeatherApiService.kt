@@ -30,6 +30,15 @@ interface WeatherApiService {
         @Query("appid") apiKey: String = Keys.WEATHER_API_KEY,
         ): Response<DailyWeatherResponse>
 
+    @GET("forecast/climate")
+    suspend fun get30DayForecast(
+        @Query("lat") lat: String,
+        @Query("lon") lon: String,
+        @Query("lang") lang: String,
+        @Query("units") units: String = "metric",
+        @Query("appid") apiKey: String = Keys.WEATHER_API_KEY,
+    ): Response<DailyWeatherResponse>
+
     @GET("forecast/hourly")
     suspend fun get5DayHourlyForecast(
         @Query("lat") lat: String,

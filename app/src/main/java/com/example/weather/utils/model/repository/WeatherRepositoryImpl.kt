@@ -13,6 +13,7 @@ import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSo
 import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.API.HourlyWeatherResponse
+import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -96,6 +97,22 @@ class WeatherRepositoryImpl private constructor(
 
     }
 
+    override fun get30DayForecast(
+        longitude: Double,
+        latitude: Double
+    ): Flow<DailyWeatherResponse?> {
+        val lang = when(getLanguage()){
+            Language.ENGLISH -> "en"
+            Language.ARABIC -> "ar"
+        }
+
+        return remoteDataSource.get30DayForecast(
+            latitude = latitude.toString(),
+            longitude = longitude.toString(),
+            lang = lang
+        )
+    }
+
     ///ROOM DATABASE
 
     override fun getFavoriteWeather(lon: Double, lat: Double): Flow<WeatherEntity?> {
@@ -136,6 +153,18 @@ class WeatherRepositoryImpl private constructor(
 
     override suspend fun deleteFavoriteHourlyWeather(lon: Double, lat: Double) {
         localDataSource.deleteHourlyWeather(lon, lat)
+    }
+
+    override suspend fun insertAlarm(alarm: AlarmEntity) {
+        localDataSource.insertAlarm(alarm)
+    }
+
+    override fun getAllAlarms(): Flow<List<AlarmEntity>> {
+       return localDataSource.getAllAlarm()
+    }
+
+    override suspend fun deleteAlarm(alarm: AlarmEntity) {
+        localDataSource.deleteAlarm(alarm)
     }
 
 

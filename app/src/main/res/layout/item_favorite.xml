@@ -25,13 +25,13 @@
             android:maxLines="1"
             android:textSize="16sp"
             card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintEnd_toStartOf="@+id/weatherDayIcon"
+            card_view:layout_constraintEnd_toStartOf="@+id/deleteFavoriteIcon"
             card_view:layout_constraintStart_toStartOf="parent"
             card_view:layout_constraintTop_toTopOf="parent"
             card_view:layout_constraintVertical_bias="0.5" />
 
         <ImageView
-            android:id="@+id/weatherDayIcon"
+            android:id="@+id/deleteFavoriteIcon"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="10dp"

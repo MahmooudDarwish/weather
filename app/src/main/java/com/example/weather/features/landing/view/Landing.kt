@@ -44,7 +44,6 @@ import com.google.android.gms.tasks.Task
 import android.location.Location
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.ContextCompat
-import com.example.weather.features.home.view.Home
 //import com.example.weather.features.home.view.UpdateLocationWeather
 import com.example.weather.utils.enums.LocationStatus
 import com.google.android.material.snackbar.Snackbar
@@ -201,6 +200,7 @@ class LandingActivity : AppCompatActivity() {
                 remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
                 localDataSource = WeatherLocalDataSourceImpl(
                     AppDatabase.getDatabase(this).weatherDao(),
+                    AppDatabase.getDatabase(this).alarmDao()
                 ),
                 sharedPreferences = SharedPreferences(this)
 

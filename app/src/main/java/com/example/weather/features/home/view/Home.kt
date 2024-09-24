@@ -83,6 +83,7 @@ class Home : Fragment(), OnDayClickListener {
                 remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
                 localDataSource = WeatherLocalDataSourceImpl(
                     AppDatabase.getDatabase(requireActivity()).weatherDao(),
+                    AppDatabase.getDatabase(requireActivity()).alarmDao()
                 ),
                 sharedPreferences = SharedPreferences(requireActivity())
 

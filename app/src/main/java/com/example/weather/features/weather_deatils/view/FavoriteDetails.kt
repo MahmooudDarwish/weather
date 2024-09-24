@@ -57,6 +57,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                 remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
                 localDataSource = WeatherLocalDataSourceImpl(
                     AppDatabase.getDatabase(this).weatherDao(),
+                    AppDatabase.getDatabase(this).alarmDao()
                 ),
                 sharedPreferences = SharedPreferences(this)
 

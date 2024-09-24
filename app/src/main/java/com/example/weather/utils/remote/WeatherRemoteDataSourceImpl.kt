@@ -99,5 +99,30 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
         }
     }
 
+    override fun get30DayForecast(
+        latitude: String,
+        longitude: String,
+        lang: String
+    ): Flow<DailyWeatherResponse?> = flow {
+        try {
+            val response = apiService.get30DayForecast(
+                latitude,
+                longitude,
+                lang,
+            )
+            if (response.isSuccessful) {
+                Log.i(TAG, "Daily getCurrentWeatherSucess: ${response.body()}")
+                emit(response.body())
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.d(TAG, " Daily getCurrentWeatherError: $errorBody")
+                emit(null)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Daily getCurrentWeatherException: ${e.message.toString()}")
+            emit(null)
+        }
+    }
+
 
 }

@@ -1,6 +1,5 @@
 package com.example.weather.utils.model.repository
 
-
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
@@ -8,6 +7,7 @@ import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.API.HourlyWeatherResponse
+import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -19,6 +19,8 @@ interface WeatherRepository {
      fun fetchWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?>
      fun fetchHourlyWeatherData(longitude: Double, latitude: Double): Flow<HourlyWeatherResponse?>
      fun get5DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?>
+
+     fun get30DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?>
 
      /// Database
      fun getFavoriteWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
@@ -36,6 +38,10 @@ interface WeatherRepository {
      suspend fun deleteFavoriteDailyWeather(lon: Double, lat: Double)
      suspend fun deleteFavoriteHourlyWeather(lon: Double, lat: Double)
 
+     // Methods for handle alarms
+     suspend fun insertAlarm(alarm: AlarmEntity)
+     fun getAllAlarms(): Flow<List<AlarmEntity>>
+     suspend fun deleteAlarm(alarm: AlarmEntity)
 
      /// SharedPreferences
      fun setTemperatureUnit(unit: Temperature)

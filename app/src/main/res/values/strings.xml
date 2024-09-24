@@ -75,6 +75,16 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="enter_location">Enter Location</string>
+    <string name="no_alerts_yet">No Alerts yet</string>
+    <string name="date">Date: %1$s</string>
+    <string name="at">At: %1$s</string>
+    <string name="from_to">From: %1$s To: %2$s</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="alarm">Alarm</string>
+    <string name="notification">Notification</string>
+    <string name="save">Save</string>
+    <string name="in">In</string>
 
 
 </resources>

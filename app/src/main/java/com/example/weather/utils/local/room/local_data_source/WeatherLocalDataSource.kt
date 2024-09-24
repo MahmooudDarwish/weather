@@ -1,5 +1,6 @@
 package com.example.weather.utils.local.room.local_data_source
 
+import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -22,4 +23,9 @@ interface WeatherLocalDataSource {
     suspend fun deleteCurrentWeather(lon: Double, lat: Double)
     suspend fun deleteDailyWeather(lon: Double, lat: Double)
     suspend fun deleteHourlyWeather(lon: Double, lat: Double)
+
+    //Methods for alarm
+    suspend fun insertAlarm(alarm: AlarmEntity)
+    suspend fun deleteAlarm(alarm: AlarmEntity)
+    fun getAllAlarm(): Flow<List<AlarmEntity>>
 }

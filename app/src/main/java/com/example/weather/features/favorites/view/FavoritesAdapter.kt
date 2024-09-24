@@ -16,7 +16,7 @@ class FavoritesAdapter(
 
     inner class FavoritesViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val locationName: TextView = itemView.findViewById(R.id.locationAddress)
-        private val deleteButton: View = itemView.findViewById(R.id.weatherDayIcon)
+        private val deleteButton: View = itemView.findViewById(R.id.deleteFavoriteIcon)
 
         fun bind(weatherEntity: WeatherEntity) {
             locationName.text = weatherEntity.name

@@ -19,4 +19,10 @@ interface  WeatherRemoteDataSource {
         longitude: String,
         lang: String
     ) : Flow<DailyWeatherResponse?>
+
+    fun get30DayForecast(
+        latitude: String,
+        longitude: String,
+        lang: String
+    ) : Flow<DailyWeatherResponse?>
 }
