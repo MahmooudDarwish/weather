@@ -7,12 +7,33 @@
     android:layout_height="match_parent"
     tools:context=".features.map.view.Map">
 
+
+
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/mapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         class="com.google.android.gms.maps.SupportMapFragment"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <AutoCompleteTextView
+        android:visibility="gone"
+        android:id="@+id/et_search_location"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/search_box_bg"
+        android:drawableEnd="@drawable/ic_search"
+        android:hint="@string/enter_location"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

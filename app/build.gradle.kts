@@ -71,6 +71,8 @@ dependencies {
 
     //google services
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation ("com.google.android.libraries.places:places:3.1.0")
+
 
     //Navigation component
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.0")

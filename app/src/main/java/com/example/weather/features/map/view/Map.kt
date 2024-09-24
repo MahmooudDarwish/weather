@@ -9,7 +9,9 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -25,6 +27,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import java.util.Locale
 
 class Map : AppCompatActivity(), OnMapReadyCallback {
@@ -38,23 +44,38 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        // Initialize Places API
+        if (!Places.isInitialized()) {
+            Places.initialize(applicationContext, getString(R.string.google_maps_key), Locale.US)
+        }
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         requestLocationPermission()
 
-        // Inside the Map activity
+        // Autocomplete feature
+        val searchEditText = findViewById<AutoCompleteTextView>(R.id.et_search_location)
+        val autocompleteAdapter = PlacesAutoCompleteAdapter(this, Places.createClient(this))
+        searchEditText.setAdapter(autocompleteAdapter)
+
+        searchEditText.setOnItemClickListener { _, _, position, _ ->
+            val selectedPlace = autocompleteAdapter.getItem(position)
+            selectedPlace?.let {
+                searchLocationByPlace(it)
+            }
+        }
+
+
+
         val selectLocationButton: Button = findViewById(R.id.btnGetWeather)
         selectLocationButton.setOnClickListener {
-            Log.d("MapsActivity", "Select Location button clicked")
             selectedMarker?.let {
                 val city = getAddressFromLocation(it.position.latitude, it.position.longitude)
                 val resultIntent = Intent().apply {
                     putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.latitude ?: 0.0)
-                    putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.longitude ?: 0.0)
+                    putExtra(Keys.LONGITUDE_KEY, selectedMarker?.position?.longitude ?: 0.0)
                     putExtra(Keys.CITY_KEY, city)
                 }
                 setResult(Activity.RESULT_OK, resultIntent)
-
                 finish()
             } ?: run {
                 Toast.makeText(this, getString(R.string.no_location_selected), Toast.LENGTH_SHORT).show()
@@ -64,6 +85,24 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
+
+    private fun searchLocationByPlace(placePrediction: AutocompletePrediction) {
+        val placeId = placePrediction.placeId
+        val placeFields = listOf(Place.Field.LAT_LNG)
+
+        val request = FetchPlaceRequest.builder(placeId, placeFields).build()
+        Places.createClient(this).fetchPlace(request).addOnSuccessListener { response ->
+            val place = response.place
+            place.latLng?.let { latLng ->
+                map?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                addMarker(latLng)
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("MapsActivity", "Place not found: ${exception.message}")
+            Toast.makeText(this, "Place not found", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     private fun requestLocationPermission() {
         if (ActivityCompat.checkSelfPermission(
