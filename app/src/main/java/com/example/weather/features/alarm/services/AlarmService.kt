@@ -9,16 +9,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Build
 import android.os.IBinder
-import android.provider.Settings
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.databinding.DataBindingUtil
 import com.example.weather.R
@@ -32,30 +30,33 @@ class AlarmService : Service() {
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var binding: AlarmLayoutBinding
 
-    private val CHANNEL_ID = "alarm_channel_id"
+    private val ALERT_CHANNEL_ID = "alert_channel_id"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
         showAlarmOverlay(intent)
-        createNotificationChannel()
+        createAlertChannel()
         val notification = getNotification()
-       startForeground(1, notification)
+        startForeground(1, notification)
 
         mediaPlayer = MediaPlayer.create(this, R.raw.rain_alarm).apply {
             isLooping = true
             start()
         }
-
         return START_STICKY
+
     }
 
+
     private fun getNotification(): Notification {
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Weather Alert")
-            .setContentText("Alarm is active")
-            .setSmallIcon(R.drawable.ic_cloud)
-            .setOngoing(false)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+        return NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
+                .setContentTitle("Weather Alert")
+                .setContentText("Alarm is active")
+                .setSmallIcon(R.drawable.ic_cloud)
+                .setOngoing(false)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build()
+
     }
 
     private fun showAlarmOverlay(intent: Intent?) {
@@ -82,21 +83,22 @@ class AlarmService : Service() {
         binding = DataBindingUtil.bind(overlayView)!!
         binding.alertTitle.text = intent?.getStringExtra("alarmTitle") ?: "Weather Alert!"
         binding.alertDesc.text = intent?.getStringExtra("alarmDescription") ?: "Check the weather!"
-        val alarmIcon = intent?.getStringExtra("alarmIcon")
-        binding.weatherAlertIcon.setImageResource(Utils().getWeatherIcon(alarmIcon ?: ""))
+        binding.weatherAlertIcon.setImageResource(Utils().getWeatherIcon(intent?.getStringExtra("alarmIcon") ?: "01d"))
 
         val dismissButton: Button = overlayView.findViewById(R.id.dismissButton)
         dismissButton.setOnClickListener {
             stopSelf()
+
         }
     }
 
-    private fun createNotificationChannel() {
+    private fun createAlertChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
+                ALERT_CHANNEL_ID,
                 "Alarm Channel",
-                NotificationManager.IMPORTANCE_LOW
+              NotificationManager.IMPORTANCE_LOW
+
             ).apply {
                 description = "Channel for alarm notifications"
             }
@@ -107,14 +109,20 @@ class AlarmService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+Log.d("AlarmService", "onDestroy called")
         if (::mediaPlayer.isInitialized) {
+            Log.d("AlarmService", "MediaPlayer released")
             mediaPlayer.stop()
             mediaPlayer.release()
         }
         if (::windowManager.isInitialized && ::overlayView.isInitialized) {
             windowManager.removeView(overlayView)
         }
+
     }
+
+
 
     override fun onBind(intent: Intent?): IBinder? = null
 }

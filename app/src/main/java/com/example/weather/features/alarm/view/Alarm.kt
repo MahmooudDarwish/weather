@@ -30,11 +30,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.weather.R
 import com.example.weather.features.alarm.model.DialogComponents
 import com.example.weather.features.alarm.services.AlarmReceiver
 import com.example.weather.features.alarm.services.AlarmService
-import com.example.weather.features.alarm.services.AlarmWorker
+import com.example.weather.features.alarm.services.NotificationWorker
 import com.example.weather.features.alarm.view_model.AlarmViewModel
 import com.example.weather.features.alarm.view_model.AlarmViewModelFactory
 import com.example.weather.utils.Utils
@@ -53,6 +56,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class Alarm : Fragment(), OnDeleteClicked {
 
@@ -283,6 +287,8 @@ class Alarm : Fragment(), OnDeleteClicked {
             val timeTo = timeToTxt.text.toString()
             val selectedAlarmType = alarmTypeRadioGroup.checkedRadioButtonId
 
+
+
             // Validate if date and time fields are not empty
             if (dateFrom.isEmpty() || dateTo.isEmpty() || timeFrom.isEmpty() || timeTo.isEmpty()) {
                 Toast.makeText(requireContext(), "Please provide valid date and time.", Toast.LENGTH_SHORT).show()
@@ -319,6 +325,7 @@ class Alarm : Fragment(), OnDeleteClicked {
 
                         val weatherEntry = selectedWeatherData.firstOrNull()
                         weatherEntry?.let { weather ->
+
                             val alarmEntity = AlarmEntity(
                                 title = weather.description.replaceFirstChar {
                                     if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
@@ -334,12 +341,18 @@ class Alarm : Fragment(), OnDeleteClicked {
                                 date = weather.dt * 1000,
                                 isAlarm = selectedAlarmType == R.id.alarmSoundRadioButton
                             )
+                            Log.i("Alarm", "AlarmEntity: ${selectedAlarmType == R.id.alarmSoundRadioButton}")
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
                                 requestExactAlarmPermission(alarmEntity)
                             } else {
                                 viewModel.addAlert(alarmEntity)
-                                scheduleAlarm(alarmEntity)
+                                if (alarmEntity.isAlarm){
+                                    scheduleAlarm(alarmEntity)
+
+                                }else{
+                                    scheduleNotification(alarmEntity)
+                                }
                                 alertDialog.dismiss()
                             }
                         }
@@ -350,6 +363,33 @@ class Alarm : Fragment(), OnDeleteClicked {
             }
         }
     }
+
+    private fun scheduleNotification(alarmEntity: AlarmEntity) {
+        //59000 this number becuase the user can choose the same minute
+        val triggerTimeMillis = alarmEntity.startDate + 59000 - System.currentTimeMillis()
+
+        Log.i("Alarm", "triggerTimeMillis: $triggerTimeMillis")
+        val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setInitialDelay(triggerTimeMillis, TimeUnit.MILLISECONDS)
+            .setInputData(
+                Data.Builder()
+                    .putString("alarmTitle", alarmEntity.title)
+                    .putString("alarmDescription", alarmEntity.description)
+
+                    .build()
+            )
+            .addTag(alarmEntity.startDate.toString())
+            .build()
+
+        Log.i("Alarm", "workRequest: ${alarmEntity.startDate}")
+        WorkManager.getInstance(requireContext()).enqueue(workRequest)
+    }
+    private fun cancelNotification(alarmEntity: AlarmEntity) {
+        val uniqueId = alarmEntity.startDate.toString()
+        Log.i("Alarm", "uniqueId: $uniqueId")
+        WorkManager.getInstance(requireContext()).cancelAllWorkByTag(uniqueId)
+    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -397,15 +437,17 @@ class Alarm : Fragment(), OnDeleteClicked {
             putExtra("alarmTitle", alarmEntity.title)
             putExtra("alarmDescription", alarmEntity.description)
             putExtra("alarmIcon", alarmEntity.icon)
-            putExtra("alertID", alarmEntity.id)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
             requireActivity(),
-            alarmEntity.hashCode(),
+            alarmEntity.date.toInt(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        Log.d("AlarmService", "Alarm hascode for creation : ${alarmEntity.date.toInt()}")
+
 
         val alarmManager = requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val triggerTime =  alarmEntity.startDate
@@ -453,6 +495,45 @@ class Alarm : Fragment(), OnDeleteClicked {
 
     override fun deleteClicked(alarm: AlarmEntity) {
         viewModel.deleteAlert(alarm)
+        Log.d("Alarm", "Alarm deleted: $alarm")
+        if(alarm.isAlarm){
+            cancelExactAlarm(alarm)
+
+        }else{
+            cancelNotification(alarm)
+        }
+
+
+    }
+
+    private fun cancelExactAlarm(alarmEntity: AlarmEntity) {
+        // Cancel the alarm
+        val intent = Intent(requireActivity(), AlarmReceiver::class.java).apply {
+            putExtra("alarmTitle", alarmEntity.title)
+            putExtra("alarmDescription", alarmEntity.description)
+            putExtra("alarmIcon", alarmEntity.icon)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            requireActivity(),
+            alarmEntity.date.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        Log.d("AlarmService", "Alarm hascode for deletion : ${alarmEntity.date.toInt()}")
+
+        val alarmManager = requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.cancel(pendingIntent)
+
+      //  stopAlarmService(requireContext())
+    }
+
+    private fun stopAlarmService(context: Context) {
+        Log.d("AlarmService", "Stopping alarm service")
+        val stopIntent = Intent(context, AlarmService::class.java)
+        context.stopService(stopIntent)
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(1)
     }
 
     private fun openDatePickerDialog(onDateSet: (Calendar) -> Unit) {
@@ -507,134 +588,3 @@ class Alarm : Fragment(), OnDeleteClicked {
 
 }
 
-/*    private fun openAddAlertDialog() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.add_alert_dialog, null)
-
-        val dateFrom: LinearLayout = dialogView.findViewById(R.id.dateFromLayout)
-        val dateTo: LinearLayout = dialogView.findViewById(R.id.dateToLayout)
-        val dateFromBtn : Button = dialogView.findViewById(R.id.btnFrom)
-        val saveBtn : Button = dialogView.findViewById(R.id.saveBtn)
-
-        val timeFromTxt: TextView = dialogView.findViewById(R.id.timeFromTxt)
-        val dateFromTxt: TextView = dialogView.findViewById(R.id.dateFromTxt)
-        val timeToTxt: TextView = dialogView.findViewById(R.id.timeToTxt)
-        val dateToTxt: TextView = dialogView.findViewById(R.id.dateToTxt)
-        val alarmTypeRadioGroup: RadioGroup = dialogView.findViewById(R.id.alarmTypeRadioGroup)
-
-        // Initialize date and time
-        val calendar = Calendar.getInstance()
-        val currentTime = calendar.time
-
-        timeFromTxt.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(currentTime)
-        dateFromTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentTime)
-
-        calendar.add(Calendar.HOUR_OF_DAY, 1)
-        val futureTime = calendar.time
-        timeToTxt.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(futureTime)
-        dateToTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(futureTime)
-
-        val defaultSelectedRadioButtonId = R.id.alarmSoundRadioButton
-        alarmTypeRadioGroup.check(defaultSelectedRadioButtonId)
-
-        val dialogBuilder = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-
-        val alertDialog = dialogBuilder.create()
-        alertDialog.show()
-
-        alarmTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.alarmSoundRadioButton -> {
-                    dateTo.visibility = View.VISIBLE
-                    dateFromBtn.text = getString(R.string.from)
-
-                }
-                R.id.notificationRadioButton -> {
-                    dateTo.visibility = View.GONE
-                    dateFromBtn.text = getString(R.string.`in`)
-                }
-            }
-        }
-
-        dateFrom.setOnClickListener {
-            openDatePickerDialog { selectedDate ->
-                openTimePickerDialog(selectedDate) { selectedTime ->
-                    timeFromTxt.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(selectedTime.time)
-                    dateFromTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate.time)
-                }
-            }
-        }
-
-        dateTo.setOnClickListener {
-            openDatePickerDialog { selectedDate ->
-                openTimePickerDialog(selectedDate) { selectedTime ->
-                    timeToTxt.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(selectedTime.time)
-                    dateToTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate.time)
-                }
-            }
-        }
-
-        saveBtn.setOnClickListener {
-            val dateFrom = dateFromTxt.text.toString()
-            val dateTo = dateToTxt.text.toString()
-            val selectedAlarmType = alarmTypeRadioGroup.checkedRadioButtonId
-
-            Log.d("Alarm", "Selected Date Range: $dateFrom - $dateTo")
-
-            // Convert date strings to Date objects
-            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val dateFromParsed = format.parse(dateFrom)
-            val dateToParsed = format.parse(dateTo)
-
-            if (dateFromParsed != null && dateToParsed != null) {
-                // Convert to Date objects for comparison
-                val startDate = dateFromParsed
-                val endDate = Calendar.getInstance().apply {
-                    time = dateToParsed
-                    add(Calendar.DAY_OF_MONTH, 1) // Include the entire end date
-                    add(Calendar.MILLISECOND, -1) // Adjust to the end of the day
-                }.time
-
-                // Fetch weather data
-                viewModel.fetch30DayWeather()
-                viewModel.weatherData.observe(viewLifecycleOwner) { weatherList ->
-                    // Filter weather data based on the date range
-                    val selectedWeatherData = weatherList.filter { weather ->
-                        val weatherDate = Date(weather.dt * 1000) // Convert epoch seconds to Date object
-                        Log.d("Alarm", "Weather Date: $weatherDate")
-                        Log.d("Alarm", "Selected Date Range: $startDate - $endDate")
-                        weatherDate in startDate..endDate
-                    }
-
-                    // Example: Handle the selected weather data (for the first available date in the range)
-                    val weatherEntry = selectedWeatherData.firstOrNull()
-                    weatherEntry?.let { weather ->
-                        val alarmEntity = AlarmEntity(
-                            title = "Weather Alert ${weather.minTemp}",
-                            description = "Weather min ${weather.minTemp} and the max ${weather.maxTemp}",
-                            sound = if (selectedAlarmType == R.id.alarmSoundRadioButton) "sound_file_path" else "",
-                            icon = weather.icon,
-                            fromHour = timeFromTxt.text.toString().substring(0, 2).toInt(),
-                            fromMinute = timeFromTxt.text.toString().substring(3, 5).toInt(),
-                            toHour = timeToTxt.text.toString().substring(0, 2).toInt(),
-                            toMinute = timeToTxt.text.toString().substring(3, 5).toInt(),
-                            date = weather.dt * 1000, // Convert seconds back to milliseconds
-                            isAlarm = selectedAlarmType == R.id.alarmSoundRadioButton
-                        )
-                        Log.d("Alarm", "HEre 1")
-                        viewModel.addAlert(alarmEntity)
-                        scheduleAlarm(alarmEntity)
-                        alertDialog.dismiss()
-                    } ?: run {
-                        Toast.makeText(requireContext(), "No weather data available for the selected range", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } else {
-                // Handle date parsing error
-                Toast.makeText(requireContext(), "Invalid date range", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-
-    }
-*/

@@ -44,6 +44,8 @@ import com.google.android.gms.tasks.Task
 import android.location.Location
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.ContextCompat
+import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.example.weather.utils.enums.LocationStatus
 import com.google.android.material.snackbar.Snackbar
 
@@ -187,6 +189,8 @@ class LandingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing)
+        //WorkManager.initialize(this, Configuration.Builder().build())
+
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
