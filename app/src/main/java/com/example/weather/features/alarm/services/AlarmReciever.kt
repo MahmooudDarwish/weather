@@ -12,10 +12,13 @@ class AlarmReceiver : BroadcastReceiver() {
         val title : String = intent?.getStringExtra("alarmTitle") ?: "Weather Alert!"
         val description : String = intent?.getStringExtra("alarmDescription") ?: "Check the weather!"
         val weatherIcon: String = intent?.getStringExtra("weatherIcon") ?: "10d"
+        val id:Long = intent?.getLongExtra("alarmId", 0) ?: 0
+
 
         alarmIntent.putExtra("alarmTitle", title)
         alarmIntent.putExtra("alarmDescription", description)
         alarmIntent.putExtra("weatherIcon", weatherIcon)
+        alarmIntent.putExtra("alarmId", id)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(alarmIntent)

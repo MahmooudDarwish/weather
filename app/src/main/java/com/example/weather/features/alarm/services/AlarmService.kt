@@ -19,6 +19,7 @@ import android.view.WindowManager
 import android.widget.Button
 import androidx.core.app.NotificationCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.viewModelScope
 import com.example.weather.R
 import com.example.weather.databinding.AlarmLayoutBinding
 import com.example.weather.utils.Utils
@@ -28,6 +29,9 @@ import com.example.weather.utils.local.shared_perefernces.SharedPreferences
 import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AlarmService : Service() {
 
@@ -55,13 +59,18 @@ class AlarmService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        val id:Long = intent?.getLongExtra("alarmId") ?: 0
+        val id:Long = intent?.getLongExtra("alarmId", 0) ?: 0
+
 
         if (!repo.getNotificationStatus()) {
             startForeground(1,  NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
                 .setOngoing(false)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build())
+
+            CoroutineScope(Dispatchers.IO).launch {
+                repo.deleteAlarm(id)
+            }
 
             stopSelf()
             return START_NOT_STICKY
@@ -120,8 +129,13 @@ class AlarmService : Service() {
         binding.alertDesc.text = intent?.getStringExtra("alarmDescription") ?: "Check the weather!"
         binding.weatherAlertIcon.setImageResource(Utils().getWeatherIcon(intent?.getStringExtra("alarmIcon") ?: "01d"))
 
+        val id :Long = intent?.getLongExtra("alarmId", 0) ?: 0
+
         val dismissButton: Button = overlayView.findViewById(R.id.dismissButton)
         dismissButton.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                repo.deleteAlarm(id)
+            }
             stopSelf()
 
         }
@@ -145,7 +159,8 @@ class AlarmService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
-Log.d("AlarmService", "onDestroy called")
+
+
         if (::mediaPlayer.isInitialized) {
             Log.d("AlarmService", "MediaPlayer released")
             mediaPlayer.stop()

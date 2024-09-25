@@ -461,6 +461,7 @@ class Alarm : Fragment(), OnDeleteClicked {
             putExtra("alarmTitle", alarmEntity.title)
             putExtra("alarmDescription", alarmEntity.description)
             putExtra("alarmIcon", alarmEntity.icon)
+            putExtra("alarmId", alarmEntity.startDate)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
