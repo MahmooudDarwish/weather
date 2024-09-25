@@ -75,9 +75,9 @@ class AlarmViewModel(
     }
 
 
-    fun deleteAlert(alert: AlarmEntity) {
+    fun deleteAlert(id: Long) {
         viewModelScope.launch {
-            weatherRepository.deleteAlarm(alert)
+            weatherRepository.deleteAlarm(id)
             getAlerts()
 
         }

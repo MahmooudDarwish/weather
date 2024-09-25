@@ -70,7 +70,6 @@ class Alarm : Fragment(), OnDeleteClicked {
     val REQUEST_OVERLAY_PERMISSION = 1234
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -276,8 +275,15 @@ class Alarm : Fragment(), OnDeleteClicked {
         saveBtn.setOnClickListener {
 
             if (!Settings.canDrawOverlays(requireActivity())) {
-                Toast.makeText(requireContext(), "Please grant overlay permission to display alerts", Toast.LENGTH_LONG).show()
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${requireActivity().packageName}"))
+                Toast.makeText(
+                    requireContext(),
+                    "Please grant overlay permission to display alerts",
+                    Toast.LENGTH_LONG
+                ).show()
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:${requireActivity().packageName}")
+                )
                 startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
                 return@setOnClickListener
             }
@@ -288,10 +294,13 @@ class Alarm : Fragment(), OnDeleteClicked {
             val selectedAlarmType = alarmTypeRadioGroup.checkedRadioButtonId
 
 
-
             // Validate if date and time fields are not empty
             if (dateFrom.isEmpty() || dateTo.isEmpty() || timeFrom.isEmpty() || timeTo.isEmpty()) {
-                Toast.makeText(requireContext(), "Please provide valid date and time.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Please provide valid date and time.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
@@ -341,16 +350,19 @@ class Alarm : Fragment(), OnDeleteClicked {
                                 date = weather.dt * 1000,
                                 isAlarm = selectedAlarmType == R.id.alarmSoundRadioButton
                             )
-                            Log.i("Alarm", "AlarmEntity: ${selectedAlarmType == R.id.alarmSoundRadioButton}")
+                            Log.i(
+                                "Alarm",
+                                "AlarmEntity: ${selectedAlarmType == R.id.alarmSoundRadioButton}"
+                            )
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
                                 requestExactAlarmPermission(alarmEntity)
                             } else {
                                 viewModel.addAlert(alarmEntity)
-                                if (alarmEntity.isAlarm){
+                                if (alarmEntity.isAlarm) {
                                     scheduleAlarm(alarmEntity)
 
-                                }else{
+                                } else {
                                     scheduleNotification(alarmEntity)
                                 }
                                 alertDialog.dismiss()
@@ -365,8 +377,7 @@ class Alarm : Fragment(), OnDeleteClicked {
     }
 
     private fun scheduleNotification(alarmEntity: AlarmEntity) {
-        //59000 this number becuase the user can choose the same minute
-        val triggerTimeMillis = alarmEntity.startDate + 59000 - System.currentTimeMillis()
+        val triggerTimeMillis = alarmEntity.startDate + 10000 - System.currentTimeMillis()
 
         Log.i("Alarm", "triggerTimeMillis: $triggerTimeMillis")
         val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
@@ -375,6 +386,7 @@ class Alarm : Fragment(), OnDeleteClicked {
                 Data.Builder()
                     .putString("alarmTitle", alarmEntity.title)
                     .putString("alarmDescription", alarmEntity.description)
+                    .putLong("alarmId", alarmEntity.startDate)
 
                     .build()
             )
@@ -384,6 +396,7 @@ class Alarm : Fragment(), OnDeleteClicked {
         Log.i("Alarm", "workRequest: ${alarmEntity.startDate}")
         WorkManager.getInstance(requireContext()).enqueue(workRequest)
     }
+
     private fun cancelNotification(alarmEntity: AlarmEntity) {
         val uniqueId = alarmEntity.startDate.toString()
         Log.i("Alarm", "uniqueId: $uniqueId")
@@ -395,15 +408,17 @@ class Alarm : Fragment(), OnDeleteClicked {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_OVERLAY_PERMISSION) {
             if (Settings.canDrawOverlays(requireActivity())) {
-                Toast.makeText(requireContext(), "Overlay permission granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Overlay permission granted", Toast.LENGTH_SHORT)
+                    .show()
             } else {
-                Toast.makeText(requireContext(), "Overlay permission denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Overlay permission denied", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
 
     private fun alarmPermissionGranted(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requireActivity().getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
         } else {
             true
@@ -413,8 +428,15 @@ class Alarm : Fragment(), OnDeleteClicked {
     private fun requestExactAlarmPermission(alarmEntity: AlarmEntity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Log.d("Alarm", "Sdk version is greater than 31")
-            Toast.makeText(requireActivity(), "Please grant permission to schedule exact alarms", Toast.LENGTH_LONG).show()
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${requireActivity().packageName}")).apply {
+            Toast.makeText(
+                requireActivity(),
+                "Please grant permission to schedule exact alarms",
+                Toast.LENGTH_LONG
+            ).show()
+            val intent = Intent(
+                Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                Uri.parse("package:${requireActivity().packageName}")
+            ).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             requireActivity().startActivity(intent)
@@ -423,6 +445,7 @@ class Alarm : Fragment(), OnDeleteClicked {
             scheduleExactAlarm(alarmEntity)
         }
     }
+
     private fun scheduleAlarm(alarmEntity: AlarmEntity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Log.d("Alarm", "Sdk version is greater than 31")
@@ -432,6 +455,7 @@ class Alarm : Fragment(), OnDeleteClicked {
             scheduleExactAlarm(alarmEntity)
         }
     }
+
     private fun scheduleExactAlarm(alarmEntity: AlarmEntity) {
         val intent = Intent(requireActivity(), AlarmReceiver::class.java).apply {
             putExtra("alarmTitle", alarmEntity.title)
@@ -450,11 +474,14 @@ class Alarm : Fragment(), OnDeleteClicked {
 
 
         val alarmManager = requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val triggerTime =  alarmEntity.startDate
+        val triggerTime = alarmEntity.startDate
 
 
         try {
-            Log.d("AlarmService", "Scheduling exact alarm for ${System.currentTimeMillis() + 60000}")
+            Log.d(
+                "AlarmService",
+                "Scheduling exact alarm for ${System.currentTimeMillis() + 60000}"
+            )
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
             Log.d("AlarmService", "Alarm scheduled at $triggerTime")
         } catch (e: SecurityException) {
@@ -479,6 +506,7 @@ class Alarm : Fragment(), OnDeleteClicked {
         timeToTxt.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(futureTime)
         dateToTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(futureTime)
     }
+
     private fun initUi(view: View) {
         alertIcon = view.findViewById(R.id.alarmIcon)
         noAlertsTextView = view.findViewById(R.id.noAlertsText)
@@ -494,12 +522,12 @@ class Alarm : Fragment(), OnDeleteClicked {
     }
 
     override fun deleteClicked(alarm: AlarmEntity) {
-        viewModel.deleteAlert(alarm)
+        viewModel.deleteAlert(alarm.startDate)
         Log.d("Alarm", "Alarm deleted: $alarm")
-        if(alarm.isAlarm){
+        if (alarm.isAlarm) {
             cancelExactAlarm(alarm)
 
-        }else{
+        } else {
             cancelNotification(alarm)
         }
 
@@ -525,16 +553,16 @@ class Alarm : Fragment(), OnDeleteClicked {
         val alarmManager = requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.cancel(pendingIntent)
 
-      //  stopAlarmService(requireContext())
+        //  stopAlarmService(requireContext())
     }
-
-    private fun stopAlarmService(context: Context) {
-        Log.d("AlarmService", "Stopping alarm service")
-        val stopIntent = Intent(context, AlarmService::class.java)
-        context.stopService(stopIntent)
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(1)
-    }
+    /*
+        private fun stopAlarmService(context: Context) {
+            Log.d("AlarmService", "Stopping alarm service")
+            val stopIntent = Intent(context, AlarmService::class.java)
+            context.stopService(stopIntent)
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(1)
+        }*/
 
     private fun openDatePickerDialog(onDateSet: (Calendar) -> Unit) {
         val calendar = Calendar.getInstance()

@@ -22,8 +22,16 @@ import androidx.databinding.DataBindingUtil
 import com.example.weather.R
 import com.example.weather.databinding.AlarmLayoutBinding
 import com.example.weather.utils.Utils
+import com.example.weather.utils.local.room.AppDatabase
+import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
+import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.model.repository.WeatherRepository
+import com.example.weather.utils.model.repository.WeatherRepositoryImpl
+import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 
 class AlarmService : Service() {
+
+    private lateinit var repo: WeatherRepository
 
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
@@ -32,12 +40,39 @@ class AlarmService : Service() {
 
     private val ALERT_CHANNEL_ID = "alert_channel_id"
 
+    override fun onCreate() {
+        super.onCreate()
+        repo =  WeatherRepositoryImpl.getInstance(
+            remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
+            localDataSource = WeatherLocalDataSourceImpl(
+                AppDatabase.getDatabase(this).weatherDao(),
+                AppDatabase.getDatabase(this).alarmDao()
+            ),
+            sharedPreferences = SharedPreferences(this)
+
+        )
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+        val id:Long = intent?.getLongExtra("alarmId") ?: 0
+
+        if (!repo.getNotificationStatus()) {
+            startForeground(1,  NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
+                .setOngoing(false)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .build())
+
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
         showAlarmOverlay(intent)
         createAlertChannel()
         val notification = getNotification()
         startForeground(1, notification)
+
+
 
         mediaPlayer = MediaPlayer.create(this, R.raw.rain_alarm).apply {
             isLooping = true

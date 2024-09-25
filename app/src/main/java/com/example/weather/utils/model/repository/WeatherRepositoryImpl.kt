@@ -163,8 +163,8 @@ class WeatherRepositoryImpl private constructor(
        return localDataSource.getAllAlarm()
     }
 
-    override suspend fun deleteAlarm(alarm: AlarmEntity) {
-        localDataSource.deleteAlarm(alarm)
+    override suspend fun deleteAlarm(id: Long) {
+        localDataSource.deleteAlarmById(id)
     }
 
 

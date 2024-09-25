@@ -41,7 +41,7 @@ interface WeatherRepository {
      // Methods for handle alarms
      suspend fun insertAlarm(alarm: AlarmEntity)
      fun getAllAlarms(): Flow<List<AlarmEntity>>
-     suspend fun deleteAlarm(alarm: AlarmEntity)
+     suspend fun deleteAlarm(id: Long)
 
      /// SharedPreferences
      fun setTemperatureUnit(unit: Temperature)

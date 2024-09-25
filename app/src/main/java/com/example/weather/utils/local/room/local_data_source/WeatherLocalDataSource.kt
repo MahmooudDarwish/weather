@@ -26,6 +26,6 @@ interface WeatherLocalDataSource {
 
     //Methods for alarm
     suspend fun insertAlarm(alarm: AlarmEntity)
-    suspend fun deleteAlarm(alarm: AlarmEntity)
+    suspend fun deleteAlarmById(id: Long)
     fun getAllAlarm(): Flow<List<AlarmEntity>>
 }

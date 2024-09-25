@@ -54,8 +54,8 @@ class WeatherLocalDataSourceImpl(private val weatherDao: WeatherDao, private val
        alarmDao.insertAlarm(alarm)
     }
 
-    override suspend fun deleteAlarm(alarm: AlarmEntity) {
-        alarmDao.deleteAlarm(alarm)
+    override suspend fun deleteAlarmById(id: Long) {
+        alarmDao.deleteAlarmById(id)
     }
 
     override fun getAllAlarm(): Flow<List<AlarmEntity>> {

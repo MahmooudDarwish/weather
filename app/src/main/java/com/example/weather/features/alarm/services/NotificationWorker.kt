@@ -11,18 +11,52 @@ import androidx.work.WorkerParameters
 
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.viewModelScope
+import androidx.work.CoroutineWorker
 import com.example.weather.R
+import com.example.weather.utils.local.room.AppDatabase
+import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
+import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.model.repository.WeatherRepository
+import com.example.weather.utils.model.repository.WeatherRepositoryImpl
+import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import kotlinx.coroutines.launch
+
 
 class NotificationWorker(
     context: Context,
     workerParams: WorkerParameters
-) : Worker(context, workerParams) {
+) : CoroutineWorker(context, workerParams) {
 
-    override fun doWork(): Result {
-        Log.d("NotificationWorker", "doWork() called")
+    private lateinit var repo: WeatherRepository
+
+
+    override suspend fun doWork(): Result {
         val context = applicationContext
+
+        repo =  WeatherRepositoryImpl.getInstance(
+            remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
+            localDataSource = WeatherLocalDataSourceImpl(
+                AppDatabase.getDatabase(context).weatherDao(),
+                AppDatabase.getDatabase(context).alarmDao()
+            ),
+            sharedPreferences = SharedPreferences(context)
+
+        )
+        Log.d("NotificationWorker", "doWork() called")
         val title: String = inputData.getString("alarmTitle") ?: "Weather Alert!"
         val body: String = inputData.getString("alarmDescription") ?: "Check the weather!"
+        val id: Long = inputData.getLong("alarmId", 0)
+        val notificationStatus = repo.getNotificationStatus()
+
+
+        if (!notificationStatus) {
+            Log.d("NotificationWorker", "Notification is disabled, skipping notification.")
+
+            repo.deleteAlarm(id)
+
+            return Result.success() // Skip the notification
+        }
 
         createNotificationChannel()
 
@@ -38,6 +72,7 @@ class NotificationWorker(
 
         notificationManager.notify(1, notification)
 
+        repo.deleteAlarm(id)
         return Result.success()
     }
 
@@ -56,6 +91,7 @@ class NotificationWorker(
             notificationManager.createNotificationChannel(channel)
         }
     }
+
 
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "notification_channel_id"
