@@ -20,6 +20,7 @@
             android:id="@+id/alertInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:orientation="vertical"
             card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintEnd_toStartOf="@+id/weatherDayIcon"
@@ -39,6 +40,7 @@
                 card_view:layout_constraintStart_toStartOf="parent"
                 card_view:layout_constraintTop_toTopOf="parent"
                 card_view:layout_constraintVertical_bias="1.0" />
+
             <TextView
                 android:id="@+id/alertDate"
                 android:layout_width="match_parent"

@@ -8,6 +8,8 @@ import java.util.*
 import com.example.weather.R
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
+import java.text.ParseException
+
 class Utils {
 
 
@@ -39,6 +41,17 @@ class Utils {
         }
     }
 
+    fun convertToDateTimeInMillis(date: String, time: String): Long? {
+        return try {
+            val dateTimeString = "$date $time"
+            val format = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+            val dateTime = format.parse(dateTimeString)
+            dateTime?.time
+        } catch (e: ParseException) {
+            e.printStackTrace()
+            null
+        }
+    }
 
 
 
@@ -110,4 +123,9 @@ class Utils {
             WindSpeed.MILES_PER_HOUR -> getString(context, R.string.wind_speed_mph)
         }
     }
+}
+
+fun Long.toDateString(): String {
+    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    return sdf.format(Date(this * 1000)) // Convert seconds to milliseconds
 }

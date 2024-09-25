@@ -85,6 +85,7 @@
     <string name="notification">Notification</string>
     <string name="save">Save</string>
     <string name="in">In</string>
+    <string name="dismiss">Dismiss</string>
 
 
 </resources>

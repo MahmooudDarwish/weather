@@ -20,7 +20,7 @@ import com.example.weather.utils.model.Local.WeatherEntity
         AlarmEntity::class
 
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

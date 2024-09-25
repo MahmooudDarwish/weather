@@ -22,7 +22,7 @@ class AlarmAdapter(private var alarms: List<AlarmEntity?>, private val onDeleteC
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.fragment_alarm, parent, false)
+            .inflate(R.layout.item_alert, parent, false)
         return AlarmViewHolder(view)
     }
 
@@ -50,6 +50,7 @@ class AlarmAdapter(private var alarms: List<AlarmEntity?>, private val onDeleteC
     override fun getItemCount(): Int = alarms.size
 
     fun setAlarms(alarms: List<AlarmEntity?>) {
+        this.alarms = emptyList()
         this.alarms = alarms
         notifyDataSetChanged()
     }
