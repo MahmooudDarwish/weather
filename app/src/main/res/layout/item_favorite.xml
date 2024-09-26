@@ -21,6 +21,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
+            android:textColor="@android:color/white"
+
             android:ellipsize="end"
             android:maxLines="1"
             android:textSize="16sp"

@@ -39,6 +39,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:textColor="@android:color/white"
                 android:layout_marginTop="20dp"
                 android:textSize="20sp"
                 app:layout_constraintStart_toEndOf="@+id/weatherAlertIcon"
@@ -47,6 +48,8 @@
             <TextView
                 android:id="@+id/alertDesc"
                 android:layout_width="0dp"
+                android:textColor="@android:color/white"
+
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="16dp"
@@ -63,7 +66,6 @@
                 android:paddingHorizontal="24dp"
                 android:paddingVertical="18dp"
                 android:text="@string/dismiss"
-                android:textColor="@color/white"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/alertDesc" />
 

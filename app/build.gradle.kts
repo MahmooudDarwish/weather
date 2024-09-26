@@ -84,13 +84,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
 
     implementation ("com.wdullaer:materialdatetimepicker:4.2.3")
-
-
-
-
-
-
-
+    implementation("com.airbnb.android:lottie:6.0.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

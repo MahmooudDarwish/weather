@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.airbnb.lottie.LottieAnimationView
 import com.example.weather.R
 import com.example.weather.features.landing.view.LandingActivity
 import com.example.weather.features.settings.view_model.SettingsViewModel
@@ -28,16 +29,14 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 class Splash : AppCompatActivity() {
+
+    private lateinit var lottieAnimationView: LottieAnimationView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_splash)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        setUpLottieAnimation()
 
         val settingsFactory = SettingsViewModelFactory(
             WeatherRepositoryImpl.getInstance(
@@ -66,6 +65,12 @@ class Splash : AppCompatActivity() {
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
         }, 3000)
+    }
+
+    private fun setUpLottieAnimation() {
+        lottieAnimationView = findViewById(R.id.lottieAnimationView)
+        lottieAnimationView.playAnimation()
+        lottieAnimationView.speed = 1.5f
     }
 
 
