@@ -31,7 +31,7 @@ import com.example.weather.features.landing.view_model.LandingFactory
 import com.example.weather.features.landing.view_model.LandingViewModel
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.material.navigation.NavigationView
@@ -152,19 +152,14 @@ class LandingActivity : AppCompatActivity() {
         Log.i("onResume", "onResume called")
         super.onResume()
 
-        // Check if location permission is granted
         val isLocationPermissionGranted = ContextCompat.checkSelfPermission(
             this, Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-        // Check if location status is set to GPS in the ViewModel
         val isGpsLocationStatus = viewModel.getLocationStatus() == LocationStatus.GPS
-        Log.i("onResume", "isGpsLocationStatus: $isGpsLocationStatus")
 
-        // If location permission is granted, proceed
         if (isLocationPermissionGranted) {
             Log.i("onResume", "Location permission is granted, proceeding")
 
-            // Check if GPS is enabled
             if (isGpsEnabled() && isGpsLocationStatus) {
                 Log.i("onResume", "GPS is enabled, fetching current location weather")
                 fetchCurrentLocationWeather()
@@ -205,7 +200,7 @@ class LandingActivity : AppCompatActivity() {
                     AppDatabase.getDatabase(this).weatherDao(),
                     AppDatabase.getDatabase(this).alarmDao()
                 ),
-                sharedPreferences = SharedPreferences(this)
+                sharedPreferences = SharedPreferencesManager(this.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
             )
         )
@@ -336,8 +331,10 @@ class LandingActivity : AppCompatActivity() {
             fusedLocationClient.requestLocationUpdates(locationRequest, object : LocationCallback() {
                 override fun onLocationResult(p0: LocationResult) {
                     p0.let {
+
                         val location = it.lastLocation
                         if (location != null) {
+                            Log.i("LandingActivity", "long: ${location.longitude}, lat: ${location.longitude}")
                             val latitude = location.latitude
                             val longitude = location.longitude
                             viewModel.saveCurrentLocation(latitude, longitude)

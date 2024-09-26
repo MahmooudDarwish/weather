@@ -37,11 +37,12 @@ import com.example.weather.features.alarm.services.NotificationWorker
 import com.example.weather.features.alarm.view_model.AlarmViewModel
 import com.example.weather.features.alarm.view_model.AlarmViewModelFactory
 import com.example.weather.utils.Utils
+import com.example.weather.utils.constants.Keys
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
@@ -75,7 +76,7 @@ class Alarm : Fragment(), OnDeleteClicked {
                     AppDatabase.getDatabase(requireActivity()).weatherDao(),
                     AppDatabase.getDatabase(requireActivity()).alarmDao()
                 ),
-                sharedPreferences = SharedPreferences(requireActivity())
+                sharedPreferences =  SharedPreferencesManager(requireActivity().getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
             )
         )
@@ -266,11 +267,10 @@ class Alarm : Fragment(), OnDeleteClicked {
                     requireActivity(), Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     ActivityCompat.requestPermissions(
                         requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0
                     )
-                }
+
                 return@setOnClickListener
             }
             if (!Settings.canDrawOverlays(requireActivity())) {

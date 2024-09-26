@@ -1,0 +1,86 @@
+<resources>
+    <string name="app_name">الطقس</string>
+    <string name="weather_api_key">7c6b62db0288453b19dcecf900970e80</string>
+    <string name="google_maps_key">AIzaSyClhqoW-wsg9-KQF_qpy4mg7WerXWICmD8</string>
+    <string name="initial_setup">الإعداد الأولي</string>
+    <string name="location">الموقع</string>
+    <string name="gps">نظام تحديد المواقع</string>
+    <string name="map">الخريطة</string>
+    <string name="notifications">الإشعارات</string>
+    <string name="ok">موافق</string>
+    <string name="settings">الإعدادات</string>
+    <string name="alerts">التنبيهات</string>
+    <string name="favorites">المفضلة</string>
+    <string name="home">الرئيسية</string>
+    <string name="open_drawer">فتح سحب القائمة</string>
+    <string name="close_drawer">إغلاق سحب القائمة</string>
+
+    <string name="get_weather">الحصول على الطقس</string>
+    <string name="fahrenheit">فهرنهايت</string>
+    <string name="kelvin">كيلفن</string>
+    <string name="celsius">سيلسيوس</string>
+    <string name="temperature">درجة الحرارة</string>
+    <string name="arabic">العربية</string>
+    <string name="english">الإنجليزية</string>
+    <string name="language">اللغة</string>
+    <string name="meter_sec">متر / ثانية</string>
+    <string name="mile_hour">ميل / ساعة</string>
+    <string name="wind_speed">سرعة الرياح</string>
+    <string name="enable">تفعيل</string>
+    <string name="disable">تعطيل</string>
+    <string name="initial_setup_dialog_message">الإعداد الأولي مطلوب.</string>
+    <string name="gps_disabled_message">نظام تحديد المواقع مفعل. يرجى تشغيله للحصول على موقعك.</string>
+    <string name="turn_on_gps">تشغيل</string>
+    <string name="continue_with_specific_location">الاستمرار بموقع محدد</string>
+    <string name="gps_permission_required">إذن الموقع مطلوب للحصول على بيانات الطقس باستخدام نظام تحديد المواقع.</string>
+    <string name="ok_try_again">موافق، حاول مرة أخرى</string>
+    <string name="gps_permission_denied_permanently">إذن الموقع مرفوض نهائيًا. يجب عليك تمكينه من إعدادات التطبيق.</string>
+    <string name="open_settings">فتح الإعدادات</string>
+
+    <!-- Snackbar Messages -->
+    <string name="gps_disabled_snackbar">نظام تحديد المواقع غير مفعل. يرجى تشغيله.</string>
+    <string name="gps_permission_denied_dialog_message">إذن الموقع مرفوض نهائيًا. يجب عليك تمكينه من إعدادات التطبيق.</string>
+    <string name="navigation_drawer_open">سحب القائمة مفتوح</string>
+    <string name="navigation_drawer_close">سحب القائمة مغلق</string>
+
+    <string name="unknown">غير معروف</string>
+    <string name="cancel">إلغاء</string>
+    <string name="_24_hour_forecast">توقعات الـ 24 ساعة</string>
+    <string name="pressure">الضغط</string>
+    <string name="humidity">الرطوبة</string>
+    <string name="wind">الرياح</string>
+    <string name="cloud">السحاب</string>
+    <string name="percentage">%1$s %%</string>
+    <string name="temperature_format">%.0f%s</string>
+    <string name="wind_speed_format">%.2f %s</string>
+    <string name="hpa">هيكتوباسكال</string>
+
+    <string name="wind_speed_mps">م/ث</string>
+    <string name="wind_speed_mph">ميل/ساعة</string>
+
+    <string name="today">اليوم</string>
+    <string name="tomorrow">غدًا</string>
+    <string name="no_favorites_yet">لا توجد مفضلة بعد</string>
+    <string name="add_to_favorites">إضافة إلى المفضلة</string>
+    <string name="unable_to_get_location">غير قادر على الحصول على موقعك</string>
+
+    <string name="no_location_selected">لم يتم تحديد موقع</string>
+
+    <string name="city">المدينة</string>
+    <string name="first_fragment_label">الجزء الأول</string>
+    <string name="second_fragment_label">الجزء الثاني</string>
+    <string name="next">التالي</string>
+    <string name="previous">السابق</string>
+    <string name="enter_location">أدخل الموقع</string>
+    <string name="no_alerts_yet">لا تنبيهات بعد</string>
+    <string name="date">التاريخ: %1$s</string>
+    <string name="at">في: %1$s</string>
+    <string name="from_to">من: %1$s إلى: %2$s</string>
+    <string name="from">من</string>
+    <string name="to">إلى</string>
+    <string name="alarm">تنبيه</string>
+    <string name="notification">إشعار</string>
+    <string name="save">حفظ</string>
+    <string name="in">في</string>
+    <string name="dismiss">تجاهل</string>
+</resources>

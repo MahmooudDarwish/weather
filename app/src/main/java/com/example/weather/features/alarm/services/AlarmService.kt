@@ -3,7 +3,6 @@ package com.example.weather.features.alarm.services
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -19,13 +18,13 @@ import android.view.WindowManager
 import android.widget.Button
 import androidx.core.app.NotificationCompat
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.viewModelScope
 import com.example.weather.R
 import com.example.weather.databinding.AlarmLayoutBinding
 import com.example.weather.utils.Utils
+import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
@@ -52,7 +51,7 @@ class AlarmService : Service() {
                 AppDatabase.getDatabase(this).weatherDao(),
                 AppDatabase.getDatabase(this).alarmDao()
             ),
-            sharedPreferences = SharedPreferences(this)
+            sharedPreferences = SharedPreferencesManager(this.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
         )
     }
@@ -61,6 +60,7 @@ class AlarmService : Service() {
 
         val id:Long = intent?.getLongExtra("alarmId", 0) ?: 0
 
+        createAlertChannel()
 
         if (!repo.getNotificationStatus()) {
             startForeground(1,  NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
@@ -77,7 +77,6 @@ class AlarmService : Service() {
         }
 
         showAlarmOverlay(intent)
-        createAlertChannel()
         val notification = getNotification()
         startForeground(1, notification)
 
@@ -158,9 +157,6 @@ class AlarmService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-
-
-
         if (::mediaPlayer.isInitialized) {
             Log.d("AlarmService", "MediaPlayer released")
             mediaPlayer.stop()
@@ -171,8 +167,6 @@ class AlarmService : Service() {
         }
 
     }
-
-
 
     override fun onBind(intent: Intent?): IBinder? = null
 }

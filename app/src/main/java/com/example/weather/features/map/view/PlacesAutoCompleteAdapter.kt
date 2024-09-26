@@ -21,7 +21,7 @@ class PlacesAutoCompleteAdapter(context: Context, private val placesClient: Plac
         return predictions.size
     }
 
-    override fun getItem(position: Int): AutocompletePrediction? {
+    override fun getItem(position: Int): AutocompletePrediction {
         return predictions[position]
     }
 
@@ -29,7 +29,7 @@ class PlacesAutoCompleteAdapter(context: Context, private val placesClient: Plac
         val view = super.getView(position, convertView, parent)
         val textView = view.findViewById<TextView>(android.R.id.text1)
         val prediction = getItem(position)
-        textView.text = prediction?.getPrimaryText(null)?.toString()
+        textView.text = prediction.getPrimaryText(null).toString()
         return view
     }
 

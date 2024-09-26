@@ -1,6 +1,7 @@
 package com.example.weather.features.favorites.view
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -22,7 +23,7 @@ import com.example.weather.features.weather_deatils.view.FavoriteDetails
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
@@ -63,7 +64,7 @@ class Favorites : Fragment(), IFavoriteItem {
                     AppDatabase.getDatabase(requireActivity()).weatherDao(),
                     AppDatabase.getDatabase(requireActivity()).alarmDao()
                 ),
-                sharedPreferences = SharedPreferences(requireActivity())
+                sharedPreferences = SharedPreferencesManager(requireActivity().getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
             )
         )

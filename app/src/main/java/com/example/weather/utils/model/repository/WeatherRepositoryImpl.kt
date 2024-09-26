@@ -4,7 +4,7 @@ package com.example.weather.utils.model.repository
 import com.example.weather.utils.remote.WeatherRemoteDataSource
 
 
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.Flow
 class WeatherRepositoryImpl private constructor(
     private val remoteDataSource: WeatherRemoteDataSource,
     private val localDataSource: WeatherLocalDataSource,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferencesManager
 ) : WeatherRepository {
 
     companion object {
@@ -33,7 +33,7 @@ class WeatherRepositoryImpl private constructor(
         fun getInstance(
             remoteDataSource: WeatherRemoteDataSource,
             localDataSource: WeatherLocalDataSource,
-            sharedPreferences: SharedPreferences
+            sharedPreferences: SharedPreferencesManager
         ): WeatherRepositoryImpl {
             return instance ?: synchronized(this) {
                 instance ?: WeatherRepositoryImpl(

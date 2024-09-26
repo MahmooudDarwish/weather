@@ -1,15 +1,14 @@
 package com.example.weather.utils.local.shared_perefernces
 
 
-import android.content.Context
+import android.content.SharedPreferences
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.constants.Keys
 
-class SharedPreferences(context: Context) {
-    private val sharedPreferences = context.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+class SharedPreferencesManager(val sharedPreferences: SharedPreferences) {
 
     //landing options
     fun setFirstLaunchCompleted(status: Boolean) {

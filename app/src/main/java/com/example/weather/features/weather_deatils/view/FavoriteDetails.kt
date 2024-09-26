@@ -19,7 +19,7 @@ import com.example.weather.utils.Utils
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -59,7 +59,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                     AppDatabase.getDatabase(this).weatherDao(),
                     AppDatabase.getDatabase(this).alarmDao()
                 ),
-                sharedPreferences = SharedPreferences(this)
+                sharedPreferences =SharedPreferencesManager(this.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
             )
         )

@@ -1,6 +1,7 @@
 package com.example.weather.features.home.view
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.location.Geocoder
 import android.os.Bundle
@@ -24,7 +25,7 @@ import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.API.DailyForecastItem
 import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.API.DailyWeatherResponse
@@ -86,7 +87,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                     AppDatabase.getDatabase(requireActivity()).weatherDao(),
                     AppDatabase.getDatabase(requireActivity()).alarmDao()
                 ),
-                sharedPreferences = SharedPreferences(requireActivity())
+                sharedPreferences = SharedPreferencesManager(requireActivity().getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
             )
         )

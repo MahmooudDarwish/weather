@@ -5,9 +5,11 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -24,17 +26,19 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.weather.R
 import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
+import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
-import com.example.weather.utils.local.shared_perefernces.SharedPreferences
+import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import java.util.Locale
 
 class Settings : Fragment() {
 
@@ -87,7 +91,11 @@ class Settings : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_settings, container, false)
 
+
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+
 
         factory = SettingsViewModelFactory(
             WeatherRepositoryImpl.getInstance(
@@ -96,7 +104,8 @@ class Settings : Fragment() {
                     AppDatabase.getDatabase(requireActivity()).weatherDao(),
                     AppDatabase.getDatabase(requireActivity()).alarmDao()
                 ),
-                sharedPreferences = SharedPreferences(requireActivity())
+                sharedPreferences = SharedPreferencesManager(requireActivity().getSharedPreferences(
+                    Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
             )
         )
         viewModel = ViewModelProvider(this, factory).get(SettingsViewModel::class.java)
@@ -131,11 +140,22 @@ class Settings : Fragment() {
             }
         }
 
+
+
+
         radioGroupLanguage.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
-                R.id.rbEnglish -> viewModel.saveLanguage(Language.ENGLISH)
-                R.id.rbArabic -> viewModel.saveLanguage(Language.ARABIC)
+                R.id.rbEnglish -> {
+                    viewModel.saveLanguage(Language.ENGLISH)
+
+                    updateLocale(requireContext(), "en")
+                }
+                R.id.rbArabic -> {
+                    viewModel.saveLanguage(Language.ARABIC)
+                    updateLocale(requireContext(), "ar")
+                }
             }
+            requireActivity().recreate()
         }
         radioGroupLocation.setOnCheckedChangeListener { _, checkedId ->
             if (isListenerEnabled) {
@@ -203,6 +223,24 @@ class Settings : Fragment() {
             }
         }
     }
+
+
+
+    private fun updateLocale(context: Context, language: String): Context {
+        val locale = Locale(language)
+        Locale.setDefault(locale)
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            context.createConfigurationContext(config)
+        } else {
+            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+            context
+        }
+    }
+
 
     private fun showEnableGpsDialog() {
             AlertDialog.Builder(requireActivity()).setMessage(getString(R.string.gps_disabled_message))
