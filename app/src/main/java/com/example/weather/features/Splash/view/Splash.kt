@@ -55,7 +55,7 @@ class Splash : AppCompatActivity() {
 
         lifecycleScope.launch {
             settingsViewModel.languageFlow.collect { language ->
-                Log.i("LandingActivity", "language: $language")
+                Log.i("DEBGUGG", "language: $language")
                 when (language) {
                     Language.ENGLISH -> updateLocale("en")
                     Language.ARABIC -> updateLocale("ar")

@@ -20,6 +20,7 @@ import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
 import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModel
 import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModelFactory
+import com.example.weather.utils.SharedDataManager
 import com.example.weather.utils.Utils
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.Language
@@ -31,6 +32,7 @@ import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -51,6 +53,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
     private lateinit var humidityText: TextView
     private lateinit var windSpeedText: TextView
     private lateinit var cloudText: TextView
+    private lateinit var languageJob: Job
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,24 +74,9 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
             )
         )
-
-        val settingsFactory = SettingsViewModelFactory(
-            WeatherRepositoryImpl.getInstance(
-                remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
-                localDataSource = WeatherLocalDataSourceImpl(
-                    AppDatabase.getDatabase(this).weatherDao(),
-                    AppDatabase.getDatabase(this).alarmDao()
-                ),
-                sharedPreferences = SharedPreferencesManager(this.getSharedPreferences(
-                    Keys.SHARED_PREFERENCES_NAME, MODE_PRIVATE
-                ))
-            )
-        )
-        val settingsViewModel = ViewModelProvider(this, settingsFactory).get(SettingsViewModel::class.java)
-
-        lifecycleScope.launch {
-            settingsViewModel.languageFlow.collect { language ->
-                Log.i("LandingActivity", "language: $language")
+        languageJob = lifecycleScope.launch {
+            SharedDataManager.languageFlow.collect { language ->
+                Log.i("DEBGUGG", "languageDetails: $language")
                 when (language) {
                     Language.ENGLISH -> updateLocale("en")
                     Language.ARABIC -> updateLocale("ar")

@@ -2,12 +2,12 @@ package com.example.weather.features.settings.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.weather.utils.SharedDataManager
 import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +15,7 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val repository: WeatherRepository) : ViewModel() {
 
-    private val _languageFlow = MutableSharedFlow<Language>(replay = 1)
-    val languageFlow: SharedFlow<Language> = _languageFlow
+    val languageFlow: SharedFlow<Language> = SharedDataManager.languageFlow
 
     private val _locationStatusFlow = MutableStateFlow(LocationStatus.MAP)
     val locationStatusFlow: StateFlow<LocationStatus> = _locationStatusFlow
@@ -32,7 +31,8 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
 
     init {
         viewModelScope.launch {
-            _languageFlow.emit(repository.getLanguage())
+            val language = repository.getLanguage()
+            SharedDataManager.emitLanguage(language)
             _locationStatusFlow.emit(repository.getLocationStatus())
             _temperatureFlow.emit(repository.getTemperatureUnit())
             _windSpeedFlow.emit(repository.getWindSpeedUnit())
@@ -50,7 +50,7 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
     fun saveLanguage(lang: Language) {
         viewModelScope.launch {
             repository.setLanguage(lang)
-            _languageFlow.emit(lang)
+            SharedDataManager.emitLanguage(lang)
         }
     }
 

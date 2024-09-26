@@ -1,23 +1,15 @@
-import android.content.Context
-import android.content.SharedPreferences
+package com.example.weather.utils
+
+import com.example.weather.utils.enums.Language
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
-class LanguageManager(private val sharedPreferences: SharedPreferences) {
+object SharedDataManager {
 
-    private val _languageFlow = MutableSharedFlow<String>(replay = 1)
-    val languageFlow = _languageFlow.asSharedFlow()
+    private val _languageFlow = MutableSharedFlow<Language>(replay = 1)
+    val languageFlow: SharedFlow<Language> = _languageFlow
 
-    init {
-        _languageFlow.tryEmit(getSavedLanguage())
-    }
-
-    fun setLanguage(languageCode: String) {
-        sharedPreferences.edit().putString("language_code", languageCode).apply()
-        _languageFlow.tryEmit(languageCode)
-    }
-
-    fun getSavedLanguage(): String {
-        return sharedPreferences.getString("language_code", "en") ?: "en"
+    suspend fun emitLanguage(language: Language) {
+        _languageFlow.emit(language)
     }
 }
