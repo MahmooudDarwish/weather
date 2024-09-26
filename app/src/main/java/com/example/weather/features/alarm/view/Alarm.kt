@@ -2,9 +2,7 @@ package com.example.weather.features.alarm.view
 
 import android.Manifest
 import android.app.AlarmManager
-import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -24,8 +22,7 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,7 +33,6 @@ import androidx.work.WorkManager
 import com.example.weather.R
 import com.example.weather.features.alarm.model.DialogComponents
 import com.example.weather.features.alarm.services.AlarmReceiver
-import com.example.weather.features.alarm.services.AlarmService
 import com.example.weather.features.alarm.services.NotificationWorker
 import com.example.weather.features.alarm.view_model.AlarmViewModel
 import com.example.weather.features.alarm.view_model.AlarmViewModelFactory
@@ -47,7 +43,6 @@ import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferences
 import com.example.weather.utils.model.Local.AlarmEntity
-import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -98,8 +93,7 @@ class Alarm : Fragment(), OnDeleteClicked {
 
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_alarm, container, false)
     }
@@ -188,9 +182,7 @@ class Alarm : Fragment(), OnDeleteClicked {
     private fun openAddAlertDialog() {
         val dialogView =
             LayoutInflater.from(requireContext()).inflate(R.layout.add_alert_dialog, null)
-        val alertDialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .create()
+        val alertDialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
 
         val components = initializeDialogView(dialogView)
 
@@ -201,9 +193,7 @@ class Alarm : Fragment(), OnDeleteClicked {
             components.dateToTxt
         )
         setupAlarmTypeRadioGroup(
-            components.alarmTypeRadioGroup,
-            components.dateTo,
-            components.dateFromBtn
+            components.alarmTypeRadioGroup, components.dateTo, components.dateFromBtn
         )
         setupDateTimePickers(
             components.dateFrom,
@@ -242,8 +232,7 @@ class Alarm : Fragment(), OnDeleteClicked {
                     timeFromTxt.text =
                         SimpleDateFormat("HH:mm", Locale.getDefault()).format(selectedTime.time)
                     dateFromTxt.text = SimpleDateFormat(
-                        "yyyy-MM-dd",
-                        Locale.getDefault()
+                        "yyyy-MM-dd", Locale.getDefault()
                     ).format(selectedDate.time)
                 }
             }
@@ -255,8 +244,7 @@ class Alarm : Fragment(), OnDeleteClicked {
                     timeToTxt.text =
                         SimpleDateFormat("HH:mm", Locale.getDefault()).format(selectedTime.time)
                     dateToTxt.text = SimpleDateFormat(
-                        "yyyy-MM-dd",
-                        Locale.getDefault()
+                        "yyyy-MM-dd", Locale.getDefault()
                     ).format(selectedDate.time)
                 }
             }
@@ -274,6 +262,17 @@ class Alarm : Fragment(), OnDeleteClicked {
     ) {
         saveBtn.setOnClickListener {
 
+            if (ActivityCompat.checkSelfPermission(
+                    requireActivity(), Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ActivityCompat.requestPermissions(
+                        requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0
+                    )
+                }
+                return@setOnClickListener
+            }
             if (!Settings.canDrawOverlays(requireActivity())) {
                 Toast.makeText(
                     requireContext(),
@@ -297,9 +296,7 @@ class Alarm : Fragment(), OnDeleteClicked {
             // Validate if date and time fields are not empty
             if (dateFrom.isEmpty() || dateTo.isEmpty() || timeFrom.isEmpty() || timeTo.isEmpty()) {
                 Toast.makeText(
-                    requireContext(),
-                    "Please provide valid date and time.",
-                    Toast.LENGTH_SHORT
+                    requireContext(), "Please provide valid date and time.", Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
@@ -358,15 +355,16 @@ class Alarm : Fragment(), OnDeleteClicked {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
                                 requestExactAlarmPermission(alarmEntity)
                             } else {
-                                viewModel.addAlert(alarmEntity)
-                                if (alarmEntity.isAlarm) {
-                                    scheduleAlarm(alarmEntity)
+                                    viewModel.addAlert(alarmEntity)
+                                    if (alarmEntity.isAlarm) {
+                                        scheduleAlarm(alarmEntity)
 
-                                } else {
-                                    scheduleNotification(alarmEntity)
+                                    } else {
+                                        scheduleNotification(alarmEntity)
+                                    }
+                                    alertDialog.dismiss()
+
                                 }
-                                alertDialog.dismiss()
-                            }
                         }
                     }
                 }
@@ -380,18 +378,16 @@ class Alarm : Fragment(), OnDeleteClicked {
         val triggerTimeMillis = alarmEntity.startDate + 10000 - System.currentTimeMillis()
 
         Log.i("Alarm", "triggerTimeMillis: $triggerTimeMillis")
-        val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
-            .setInitialDelay(triggerTimeMillis, TimeUnit.MILLISECONDS)
-            .setInputData(
-                Data.Builder()
-                    .putString("alarmTitle", alarmEntity.title)
+        val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>().setInitialDelay(
+                triggerTimeMillis,
+                TimeUnit.MILLISECONDS
+            ).setInputData(
+                Data.Builder().putString("alarmTitle", alarmEntity.title)
                     .putString("alarmDescription", alarmEntity.description)
                     .putLong("alarmId", alarmEntity.startDate)
 
                     .build()
-            )
-            .addTag(alarmEntity.startDate.toString())
-            .build()
+            ).addTag(alarmEntity.startDate.toString()).build()
 
         Log.i("Alarm", "workRequest: ${alarmEntity.startDate}")
         WorkManager.getInstance(requireContext()).enqueue(workRequest)
@@ -480,8 +476,7 @@ class Alarm : Fragment(), OnDeleteClicked {
 
         try {
             Log.d(
-                "AlarmService",
-                "Scheduling exact alarm for ${System.currentTimeMillis() + 60000}"
+                "AlarmService", "Scheduling exact alarm for ${System.currentTimeMillis() + 60000}"
             )
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
             Log.d("AlarmService", "Alarm scheduled at $triggerTime")
@@ -491,10 +486,7 @@ class Alarm : Fragment(), OnDeleteClicked {
     }
 
     private fun setupInitialDateTime(
-        timeFromTxt: TextView,
-        dateFromTxt: TextView,
-        timeToTxt: TextView,
-        dateToTxt: TextView
+        timeFromTxt: TextView, dateFromTxt: TextView, timeToTxt: TextView, dateToTxt: TextView
     ) {
         val calendar = Calendar.getInstance()
         val currentTime = calendar.time
@@ -555,8 +547,7 @@ class Alarm : Fragment(), OnDeleteClicked {
         alarmManager.cancel(pendingIntent)
 
         //  stopAlarmService(requireContext())
-    }
-    /*
+    }/*
         private fun stopAlarmService(context: Context) {
             Log.d("AlarmService", "Stopping alarm service")
             val stopIntent = Intent(context, AlarmService::class.java)
@@ -589,9 +580,12 @@ class Alarm : Fragment(), OnDeleteClicked {
     private fun openTimePickerDialog(selectedDate: Calendar, onTimeSet: (Calendar) -> Unit) {
         val currentTime = Calendar.getInstance()
 
-        val isToday = selectedDate.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR) &&
-                selectedDate.get(Calendar.MONTH) == currentTime.get(Calendar.MONTH) &&
-                selectedDate.get(Calendar.DAY_OF_MONTH) == currentTime.get(Calendar.DAY_OF_MONTH)
+        val isToday =
+            selectedDate.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR) && selectedDate.get(
+                Calendar.MONTH
+            ) == currentTime.get(Calendar.MONTH) && selectedDate.get(Calendar.DAY_OF_MONTH) == currentTime.get(
+                Calendar.DAY_OF_MONTH
+            )
 
         val minHour = if (isToday) currentTime.get(Calendar.HOUR_OF_DAY) else 0
         val minMinute = if (isToday) currentTime.get(Calendar.MINUTE) else 0
@@ -601,10 +595,7 @@ class Alarm : Fragment(), OnDeleteClicked {
                 selectedDate.set(Calendar.HOUR_OF_DAY, hourOfDay)
                 selectedDate.set(Calendar.MINUTE, minute)
                 onTimeSet(selectedDate)
-            },
-            minHour,
-            minMinute,
-            true
+            }, minHour, minMinute, true
         ).apply {
             if (isToday) {
                 setMinTime(minHour, minMinute, 0)

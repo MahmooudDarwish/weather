@@ -3,15 +3,12 @@ package com.example.weather.features.alarm.services
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.util.Log
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.viewModelScope
 import androidx.work.CoroutineWorker
 import com.example.weather.R
 import com.example.weather.utils.local.room.AppDatabase
@@ -20,7 +17,6 @@ import com.example.weather.utils.local.shared_perefernces.SharedPreferences
 import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
-import kotlinx.coroutines.launch
 
 
 class NotificationWorker(
@@ -28,21 +24,20 @@ class NotificationWorker(
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
-    private lateinit var repo: WeatherRepository
-
-
-    override suspend fun doWork(): Result {
-        val context = applicationContext
-
-        repo =  WeatherRepositoryImpl.getInstance(
+    private val repo: WeatherRepository by lazy {
+        WeatherRepositoryImpl.getInstance(
             remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
             localDataSource = WeatherLocalDataSourceImpl(
                 AppDatabase.getDatabase(context).weatherDao(),
                 AppDatabase.getDatabase(context).alarmDao()
             ),
             sharedPreferences = SharedPreferences(context)
-
         )
+    }
+
+    override suspend fun doWork(): Result {
+        val context = applicationContext
+
         Log.d("NotificationWorker", "doWork() called")
         val title: String = inputData.getString("alarmTitle") ?: "Weather Alert!"
         val body: String = inputData.getString("alarmDescription") ?: "Check the weather!"
@@ -55,7 +50,7 @@ class NotificationWorker(
 
             repo.deleteAlarm(id)
 
-            return Result.success() // Skip the notification
+            return Result.success()
         }
 
         createNotificationChannel()
