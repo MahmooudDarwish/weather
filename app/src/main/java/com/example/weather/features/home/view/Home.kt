@@ -34,7 +34,7 @@ import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 
 import java.util.Locale
 //UpdateLocationWeather
-class Home : Fragment(), OnDayClickListener {
+class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     lateinit var viewModel: HomeViewModel
 
     private lateinit var countryName: TextView
@@ -70,6 +70,7 @@ class Home : Fragment(), OnDayClickListener {
 
     override fun onResume() {
         super.onResume()
+        Log.i("DEBUGGGGGGG", "onResume called Home")
         val currentLocation: Pair<Double, Double>? = viewModel.getCurrentLocation()
         updateLocation(currentLocation)
         checkLocationStatus()
@@ -304,13 +305,12 @@ class Home : Fragment(), OnDayClickListener {
         mapActivityResultLauncher.launch(Intent(requireActivity(), Map::class.java))
     }
 
-    fun updateLocation(currentLocation: Pair<Double, Double>?) {
+    override fun updateLocation(currentLocation: Pair<Double, Double>?) {
         if (currentLocation == null) {
             return
         }
         val latitude = currentLocation.first
         val longitude = currentLocation.second
-        Log.i("HomeFragment", "updateLocation called $latitude $longitude")
         viewModel.getWeather(longitude = longitude, latitude = latitude)
         viewModel.fetchHourlyWeather(longitude = longitude, latitude = latitude)
         viewModel.fetchDailyWeather(longitude = longitude, latitude = latitude)
