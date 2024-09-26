@@ -158,7 +158,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         recyclerViewHourlyWeather = view.findViewById(R.id.recyclerViewHourlyWeather)
         recyclerViewHourlyWeather.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
-        hourlyWeatherAdapter = HourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure())
+        hourlyWeatherAdapter = HourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure(), requireActivity())
         recyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
 
 

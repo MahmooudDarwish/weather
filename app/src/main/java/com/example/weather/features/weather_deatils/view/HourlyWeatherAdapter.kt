@@ -1,6 +1,7 @@
 package com.example.weather.features.weather_deatils.view
 
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +16,10 @@ import com.example.weather.utils.model.Local.HourlyWeatherEntity
 
 class FavoriteHourlyWeatherAdapter(
     private var weatherList: List<HourlyWeatherEntity?>,
-    private val temperatureUnit: Temperature
+    private val temperatureUnit: Temperature,
+    private val context: Context,
 
-) :
+    ) :
     RecyclerView.Adapter<FavoriteHourlyWeatherAdapter.WeatherViewHolder>() {
 
     class WeatherViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -41,12 +43,12 @@ class FavoriteHourlyWeatherAdapter(
         val weatherItem = weatherList.get(position)
         val convertedTemp = Utils().getWeatherMeasure(weatherItem?.temp!!.toInt(), temperatureUnit)
 
+
         holder.time.text = weatherItem.dt_txt.substring(11, 16)
-        holder.temp.text = "${convertedTemp.toInt()}${Utils().getUnitSymbol(temperatureUnit)}"
+        holder.temp.text = context.getString(R.string.temperature_format, convertedTemp,Utils().getUnitSymbol(temperatureUnit ))
 
 
         holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))
-
     }
 
 

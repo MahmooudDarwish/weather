@@ -1,65 +1,78 @@
 package com.example.weather.features.settings.view_model
 
 import androidx.lifecycle.ViewModel
-import com.example.weather.utils.model.repository.WeatherRepository
-
 import androidx.lifecycle.viewModelScope
+import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val repository: WeatherRepository) : ViewModel() {
 
-    fun saveNotificationStatus(status: Boolean) {
+    private val _languageFlow = MutableSharedFlow<Language>(replay = 1)
+    val languageFlow: SharedFlow<Language> = _languageFlow
+
+    private val _locationStatusFlow = MutableStateFlow(LocationStatus.MAP)
+    val locationStatusFlow: StateFlow<LocationStatus> = _locationStatusFlow
+
+    private val _temperatureFlow = MutableStateFlow(Temperature.CELSIUS)
+    val temperatureFlow: StateFlow<Temperature> = _temperatureFlow
+
+    private val _windSpeedFlow = MutableStateFlow(WindSpeed.METERS_PER_SECOND)
+    val windSpeedFlow: StateFlow<WindSpeed> = _windSpeedFlow
+
+    private val _notificationStatusFlow = MutableStateFlow(false)
+    val notificationStatusFlow: StateFlow<Boolean> = _notificationStatusFlow
+
+    init {
         viewModelScope.launch {
-            repository.setNotificationStatus(status)
+            _languageFlow.emit(repository.getLanguage())
+            _locationStatusFlow.emit(repository.getLocationStatus())
+            _temperatureFlow.emit(repository.getTemperatureUnit())
+            _windSpeedFlow.emit(repository.getWindSpeedUnit())
+            _notificationStatusFlow.emit(repository.getNotificationStatus())
         }
     }
 
-    fun getNotificationStatus(): Boolean {
-        return repository.getNotificationStatus()
+    fun saveNotificationStatus(status: Boolean) {
+        viewModelScope.launch {
+            repository.setNotificationStatus(status)
+            _notificationStatusFlow.emit(status)
+        }
     }
 
     fun saveLanguage(lang: Language) {
         viewModelScope.launch {
             repository.setLanguage(lang)
+            _languageFlow.emit(lang)
         }
-    }
-
-    fun getLanguage(): Language {
-        return repository.getLanguage()
     }
 
     fun saveLocationStatus(locationStatus: LocationStatus) {
         viewModelScope.launch {
             repository.setLocationStatus(locationStatus)
+            _locationStatusFlow.emit(locationStatus)
         }
-    }
-
-    fun getLocationStatus(): LocationStatus {
-        return repository.getLocationStatus()
     }
 
     fun saveTemperatureUnit(unit: Temperature) {
         viewModelScope.launch {
             repository.setTemperatureUnit(unit)
+            _temperatureFlow.emit(unit)
         }
-    }
-
-    fun getTemperatureUnit(): Temperature {
-        return repository.getTemperatureUnit()
     }
 
     fun saveWindSpeedUnit(unit: WindSpeed) {
         viewModelScope.launch {
             repository.setWindSpeedUnit(unit)
+            _windSpeedFlow.emit(unit)
         }
-    }
-
-    fun getWindSpeedUnit(): WindSpeed {
-        return repository.getWindSpeedUnit()
     }
 
     fun saveCurrentLocation(latitude: Double, longitude: Double) {

@@ -29,8 +29,16 @@
                 app:contentInsetStart="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent">
 
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/home"
+                    android:textSize="20sp" />
+            </androidx.appcompat.widget.Toolbar>
         </androidx.cardview.widget.CardView>
 
         <androidx.fragment.app.FragmentContainerView
@@ -39,8 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:defaultNavHost="true"
-            app:navGraph="@navigation/nav_graph_drawer"
-            />
+            app:navGraph="@navigation/nav_graph_drawer" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

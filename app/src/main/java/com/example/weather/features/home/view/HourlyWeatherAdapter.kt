@@ -1,6 +1,7 @@
 package com.example.weather.features.home.view
 
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,8 @@ import com.example.weather.utils.model.ForecastItem
 
 class HourlyWeatherAdapter(
     private var weatherList: List<ForecastItem>,
-    private val temperatureUnit: Temperature
+    private val temperatureUnit: Temperature,
+    private val context: Context
 
 ) :
     RecyclerView.Adapter<HourlyWeatherAdapter.WeatherViewHolder>() {
@@ -41,7 +43,7 @@ class HourlyWeatherAdapter(
         val convertedTemp = Utils().getWeatherMeasure(weatherItem.main.temp.toInt(), temperatureUnit)
 
         holder.time.text = weatherItem.dt_txt.substring(11, 16)
-        holder.temp.text = "${convertedTemp.toInt()}${Utils().getUnitSymbol(temperatureUnit)}"
+        holder.temp.text = context.getString(R.string.temperature_format, convertedTemp,Utils().getUnitSymbol(temperatureUnit ))
 
 
         holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))

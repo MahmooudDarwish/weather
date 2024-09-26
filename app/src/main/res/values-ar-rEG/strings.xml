@@ -21,7 +21,7 @@
     <string name="celsius">سيلسيوس</string>
     <string name="temperature">درجة الحرارة</string>
     <string name="arabic">العربية</string>
-    <string name="english">الإنجليزية</string>
+    <string name="english">English</string>
     <string name="language">اللغة</string>
     <string name="meter_sec">متر / ثانية</string>
     <string name="mile_hour">ميل / ساعة</string>
@@ -54,6 +54,7 @@
     <string name="temperature_format">%.0f%s</string>
     <string name="wind_speed_format">%.2f %s</string>
     <string name="hpa">هيكتوباسكال</string>
+    <string name="temp_min_max_format">%1$d/%2$d%3$s</string>
 
     <string name="wind_speed_mps">م/ث</string>
     <string name="wind_speed_mph">ميل/ساعة</string>
@@ -83,4 +84,6 @@
     <string name="save">حفظ</string>
     <string name="in">في</string>
     <string name="dismiss">تجاهل</string>
+    <string name="weather">الطقس</string>
+
 </resources>

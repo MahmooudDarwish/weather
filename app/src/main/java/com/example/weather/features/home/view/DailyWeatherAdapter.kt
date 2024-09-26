@@ -63,7 +63,12 @@ class DailyWeatherAdapter(
         val convertedMinTemp = Utils().getWeatherMeasure(minTempInCelsius, temperatureUnit)
         val unitSymbol = Utils().getUnitSymbol(temperatureUnit)
 
-        holder.tempMinMax.text = "${convertedMaxTemp.toInt()}/${convertedMinTemp.toInt()}$unitSymbol"
+        val formattedTemp = context.getString(R.string.temp_min_max_format,
+            convertedMaxTemp.toInt(),
+            convertedMinTemp.toInt(),
+            unitSymbol)
+
+        holder.tempMinMax.text = formattedTemp
 
         if (position == selectedPosition) {
             holder.card.setCardBackgroundColor(Color.parseColor("#ffc107"))

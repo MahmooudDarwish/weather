@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
@@ -23,6 +24,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.weather.R
 import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
@@ -38,6 +40,7 @@ import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class Settings : Fragment() {
@@ -64,28 +67,6 @@ class Settings : Fragment() {
             showGpsPermissionDeniedDialog()
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-
-        Log.i("DEBUGGGGGGG", "viewModel.settings() ${viewModel.getLocationStatus()}")
-
-
-        val isLocationPermissionGranted = ContextCompat.checkSelfPermission(
-            requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        if (isLocationPermissionGranted) {
-            if (isGpsEnabled()) {
-                fetchCurrentLocationWeather()
-            }else{
-                if (viewModel.getLocationStatus() == LocationStatus.GPS) {
-                    checkGpsStatusAndFetchLocation()
-                }
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -111,7 +92,7 @@ class Settings : Fragment() {
         viewModel = ViewModelProvider(this, factory).get(SettingsViewModel::class.java)
 
         initUI(view)
-        getSavedSettings()
+        collectSettingsFlows()
         setUpListeners()
 
         return view
@@ -140,19 +121,15 @@ class Settings : Fragment() {
             }
         }
 
-
-
-
         radioGroupLanguage.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.rbEnglish -> {
                     viewModel.saveLanguage(Language.ENGLISH)
-
-                    updateLocale(requireContext(), "en")
+                    updateLocale("en")
                 }
                 R.id.rbArabic -> {
                     viewModel.saveLanguage(Language.ARABIC)
-                    updateLocale(requireContext(), "ar")
+                    updateLocale("ar")
                 }
             }
             requireActivity().recreate()
@@ -226,19 +203,15 @@ class Settings : Fragment() {
 
 
 
-    private fun updateLocale(context: Context, language: String): Context {
+    private fun updateLocale(language:String) {
         val locale = Locale(language)
         Locale.setDefault(locale)
 
-        val config = Configuration(context.resources.configuration)
+        val resources: Resources = requireActivity().resources
+        val config: Configuration = resources.configuration
         config.setLocale(locale)
-
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            context.createConfigurationContext(config)
-        } else {
-            context.resources.updateConfiguration(config, context.resources.displayMetrics)
-            context
-        }
+        requireActivity().createConfigurationContext(config)
+        this.resources.updateConfiguration(config, requireActivity().resources.displayMetrics)
     }
 
 
@@ -258,7 +231,6 @@ class Settings : Fragment() {
                 requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION
             )
         ) {
-            // If the user hasn't permanently denied the permission, we can show the dialog again.
             AlertDialog.Builder(requireActivity()).setMessage(R.string.gps_permission_required)
                 .setPositiveButton(R.string.ok_try_again) { dialog, _ ->
                     openPermissionDialog()
@@ -273,7 +245,6 @@ class Settings : Fragment() {
     }
 
     private fun cancelGPSPermissionDialog() {
-        //Use flag to not trigger the listener while change the value
         isListenerEnabled = false
         radioGroupLocation.check(R.id.rbSettingsMap)
         viewModel.saveLocationStatus(LocationStatus.MAP)
@@ -303,30 +274,71 @@ class Settings : Fragment() {
 
     }
 
-    private fun getSavedSettings() {
-        when (viewModel.getTemperatureUnit()) {
-            Temperature.CELSIUS -> radioGroupTemperature.check(R.id.rbCelsius)
-            Temperature.FAHRENHEIT -> radioGroupTemperature.check(R.id.rbFahrenheit)
-            Temperature.KELVIN -> radioGroupTemperature.check(R.id.rbKelvin)
+    private fun collectSettingsFlows() {
+        lifecycleScope.launch {
+            viewModel.languageFlow.collect { language ->
+                when (language) {
+                    Language.ENGLISH -> radioGroupLanguage.check(R.id.rbEnglish)
+                    Language.ARABIC -> radioGroupLanguage.check(R.id.rbArabic)
+                }
+            }
         }
 
-        when (viewModel.getWindSpeedUnit()) {
-            WindSpeed.METERS_PER_SECOND -> radioGroupWindSpeed.check(R.id.rbMeterPerSecond)
-            WindSpeed.MILES_PER_HOUR -> radioGroupWindSpeed.check(R.id.rbMilePerHour)
-        }
-        when (viewModel.getNotificationStatus()) {
-            false -> radioGroupNotification.check(R.id.rbDisable)
-            true -> radioGroupNotification.check(R.id.rbEnable)
-        }
-        when (viewModel.getLanguage()) {
-            Language.ENGLISH -> radioGroupLanguage.check(R.id.rbEnglish)
-            Language.ARABIC -> radioGroupLanguage.check(R.id.rbArabic)
+        fun checkLocationPermission(status: LocationStatus){
+            val isLocationPermissionGranted = ContextCompat.checkSelfPermission(
+                requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (isLocationPermissionGranted) {
+                if (isGpsEnabled()) {
+                    fetchCurrentLocationWeather()
+                }else{
+                    if (status == LocationStatus.GPS) {
+                        checkGpsStatusAndFetchLocation()
+                    }
+                }
+            }
         }
 
-        when (viewModel.getLocationStatus()) {
-            LocationStatus.GPS -> radioGroupLocation.check(R.id.rbSettingsGPS)
-            LocationStatus.MAP -> radioGroupLocation.check(R.id.rbSettingsMap)
+        lifecycleScope.launch {
+            viewModel.locationStatusFlow.collect { status ->
+                checkLocationPermission(status)
+                when (status) {
+                    LocationStatus.GPS -> radioGroupLocation.check(R.id.rbSettingsGPS)
+                    LocationStatus.MAP -> radioGroupLocation.check(R.id.rbSettingsMap)
+                }
+            }
         }
+
+        lifecycleScope.launch {
+            viewModel.temperatureFlow.collect { temperature ->
+                when (temperature) {
+                    Temperature.CELSIUS -> radioGroupTemperature.check(R.id.rbCelsius)
+                    Temperature.FAHRENHEIT -> radioGroupTemperature.check(R.id.rbFahrenheit)
+                    Temperature.KELVIN -> radioGroupTemperature.check(R.id.rbKelvin)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.windSpeedFlow.collect { windSpeed ->
+                when (windSpeed) {
+                    WindSpeed.METERS_PER_SECOND -> radioGroupWindSpeed.check(R.id.rbMeterPerSecond)
+                    WindSpeed.MILES_PER_HOUR -> radioGroupWindSpeed.check(R.id.rbMilePerHour)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.notificationStatusFlow.collect { isEnabled ->
+                if (isEnabled) {
+                    radioGroupNotification.check(R.id.rbEnable)
+                } else {
+                    radioGroupNotification.check(R.id.rbDisable)
+                }
+            }
+        }
+
     }
 
 

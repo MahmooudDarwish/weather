@@ -7,8 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.location.LocationManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -40,10 +43,16 @@ import com.example.weather.utils.constants.Keys
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.os.Looper
+import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDestination
 import com.example.weather.features.home.view.Home
 import com.example.weather.features.home.view.UpdateLocationWeather
+import com.example.weather.features.settings.view_model.SettingsViewModel
+import com.example.weather.features.settings.view_model.SettingsViewModelFactory
+import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.google.android.gms.location.Granularity
 import com.google.android.gms.location.LocationCallback
@@ -51,6 +60,9 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 
 class LandingActivity : AppCompatActivity() {
@@ -68,6 +80,8 @@ class LandingActivity : AppCompatActivity() {
     private var snackbar: Snackbar? = null
     private var isGpsStatusReceiverRegistered = false
     private var isOpenLocation = false
+    private lateinit var toolbarTitle: TextView
+
 
 
     private val requestLocationPermissionLauncher = registerForActivityResult(
@@ -203,7 +217,10 @@ class LandingActivity : AppCompatActivity() {
                 sharedPreferences = SharedPreferencesManager(this.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
             )
+
+
         )
+
 
 
         viewModel = ViewModelProvider(this, landingFactory).get(LandingViewModel::class.java)
@@ -212,8 +229,12 @@ class LandingActivity : AppCompatActivity() {
         }
     }
 
+
+
     private fun setupToolbar() {
         toolbar = findViewById(R.id.toolbar)
+        toolbar.title = ""
+        toolbarTitle = findViewById(R.id.toolbar_title)
         setSupportActionBar(toolbar)
     }
 
@@ -238,13 +259,25 @@ class LandingActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
         NavigationUI.setupWithNavController(navView, navController)
-
-        navController.addOnDestinationChangedListener { _, _, _ ->
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            updateToolbarTitle(destination)
             toggle.isDrawerIndicatorEnabled = true
             toggle.syncState()
         }
     }
 
+    private fun updateToolbarTitle(destination: NavDestination) {
+
+        toolbarTitle.text = when (destination.id) {
+            R.id.nav_home -> getString(R.string.home)
+            R.id.nav_favorites -> getString(R.string.favorites)
+            R.id.nav_settings -> getString(R.string.settings)
+            R.id.nav_alerts -> getString(R.string.alerts)
+            else -> getString(R.string.app_name)
+        }
+
+
+    }
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
         return NavigationUI.navigateUp(navController, drawerLayout) || super.onSupportNavigateUp()
@@ -267,6 +300,7 @@ class LandingActivity : AppCompatActivity() {
         rbMap = dialogView.findViewById(R.id.rbDialogMAP)
         switchNotifications = dialogView.findViewById(R.id.switchNotificationsSwitch)
         btnOk = dialogView.findViewById(R.id.btnOk)
+
     }
 
     private fun setUpDialogListeners(dialog: AlertDialog) {
