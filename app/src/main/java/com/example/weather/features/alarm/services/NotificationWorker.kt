@@ -1,10 +1,14 @@
 package com.example.weather.features.alarm.services
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.work.WorkerParameters
 
 import androidx.core.app.NotificationCompat
@@ -65,7 +69,13 @@ class NotificationWorker(
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(1, notification)
+        if (ActivityCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationManager.notify(1, notification)
+        }
 
         repo.deleteAlarm(id)
         return Result.success()
