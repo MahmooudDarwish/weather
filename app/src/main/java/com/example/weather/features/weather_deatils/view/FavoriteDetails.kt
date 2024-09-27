@@ -113,6 +113,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         lifecycleScope.launch {
             viewModel.loadingState.collect { isLoading ->
                 if (isLoading) {
+
                     binding.contentLayout.visibility = View.GONE
                     binding.detailsProgressBar.visibility = View.VISIBLE
 
