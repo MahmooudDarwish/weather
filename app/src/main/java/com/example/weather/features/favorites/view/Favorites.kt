@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
@@ -28,6 +29,8 @@ import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class Favorites : Fragment(), IFavoriteItem {
 
@@ -114,9 +117,11 @@ class Favorites : Fragment(), IFavoriteItem {
     }
 
     private fun observeFavorites() {
-        viewModel.favorites.observe(viewLifecycleOwner) { favorites ->
-            favoritesAdapter.updateList(favorites)
-            observeNoFavorites(favorites.isNotEmpty())
+        lifecycleScope.launch {
+            viewModel.favorites.collect { favorites ->
+                favoritesAdapter.updateList(favorites)
+                observeNoFavorites(favorites.isNotEmpty())
+            }
         }
     }
 
