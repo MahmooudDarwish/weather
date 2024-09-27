@@ -208,7 +208,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
         return if (!addresses.isNullOrEmpty()) {
-            val city = addresses[0].locality ?: getString(R.string.unknown)
+            val city = addresses[0].locality ?: addresses[1].locality ?: addresses[0].countryName ?:getString(R.string.unknown)
             Log.d("MapsActivity", "City: $city")
             city
         } else {
@@ -297,10 +297,9 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
 
         pressureText.text =
-            getString(R.string.pressrue_format, weatherItem.pressure.toString(), getString(R.string.hpa))
-        humidityText.text = getString(R.string.percentage, weatherItem.humidity.toString())
-        cloudText.text = getString(R.string.percentage, weatherItem.clouds.toString())
-
+            getString(R.string.pressrue_format, weatherItem.pressure, getString(R.string.hpa))
+        humidityText.text = getString(R.string.percentage, weatherItem.humidity)
+        cloudText.text = getString(R.string.percentage, weatherItem.clouds)
         val speedInMps = weatherItem.speed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
@@ -376,10 +375,10 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
         pressureText.text = getString(
             R.string.pressrue_format,
-            weatherResponse.main.pressure.toString(),
+            weatherResponse.main.pressure,
             getString(R.string.hpa)
         )
-        humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity.toString())
+        humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity)
         val speedInMps = weatherResponse.wind.speed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
@@ -390,7 +389,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
         )
 
-        cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all.toString())
+        cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all)
 
     }
 

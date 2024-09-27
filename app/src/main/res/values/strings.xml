@@ -51,7 +51,7 @@
     <string name="humidity">Humidity</string>
     <string name="wind">Wind</string>
     <string name="cloud">Cloud</string>
-    <string name="percentage">%1$s %%</string>
+    <string name="percentage">%1$d %%</string>
     <string name="temperature_format">%.0f%s</string>
     <string name="wind_speed_format">%.2f %s</string>
     <string name="hpa">hpa</string>
@@ -94,7 +94,9 @@
     <string name="overlay_permission_granted">Overlay permission granted</string>
     <string name="overlay_permission_denied">Overlay permission denied</string>
     <string name="grant_alarm_permission">Please grant permission to schedule exact alarms</string>
-    <string name="pressrue_format">%1$s %2$s</string>
+    <string name="pressrue_format">%1$d %2$s</string>
+    <string name="place_not_found">Place not found</string>
+
 
 
 </resources>

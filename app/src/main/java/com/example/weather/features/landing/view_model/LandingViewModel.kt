@@ -42,8 +42,4 @@ class LandingViewModel(val repository: WeatherRepository) : ViewModel() {
             repository.setNotificationStatus(status)
         }
     }
-
-    fun getNotificationStatus(): Boolean {
-        return repository.getNotificationStatus()
-    }
 }

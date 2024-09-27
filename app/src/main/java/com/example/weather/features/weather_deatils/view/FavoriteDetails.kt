@@ -169,8 +169,12 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.icon))
-        pressureText.text = "${weatherResponse.pressure} ${getString(R.string.hpa)}"
-        humidityText.text = getString(R.string.percentage, weatherResponse.humidity.toString())
+        pressureText.text = getString(
+            R.string.pressrue_format,
+            weatherResponse.pressure,
+            getString(R.string.hpa)
+        )
+        humidityText.text = getString(R.string.percentage, weatherResponse.humidity)
         val speedInMps = weatherResponse.windSpeed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
@@ -181,7 +185,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
             Utils().getSpeedUnitSymbol(speedMeasure, this)
         )
 
-        cloudText.text = getString(R.string.percentage, weatherResponse.clouds.toString())
+        cloudText.text = getString(R.string.percentage, weatherResponse.clouds)
     }
 
     private fun updateDailyRecyclerView(dailyWeather: List<DailyWeatherEntity?>?) {
@@ -226,9 +230,9 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))
 
-        pressureText.text = "${weatherItem.pressure} ${getString(R.string.hpa)}"
-        humidityText.text = getString(R.string.percentage, weatherItem.humidity.toString())
-        cloudText.text = getString(R.string.percentage, weatherItem.clouds.toString())
+        pressureText.text = getString(R.string.pressrue_format, weatherItem.pressure, getString(R.string.hpa))
+        humidityText.text = getString(R.string.percentage, weatherItem.humidity)
+        cloudText.text = getString(R.string.percentage, weatherItem.clouds)
 
         val speedInMps = weatherItem.windSpeed
         val speedMeasure = viewModel.getWindMeasure()

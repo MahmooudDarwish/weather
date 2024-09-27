@@ -11,7 +11,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.location.LocationManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -50,8 +49,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination
 import com.example.weather.features.home.view.Home
 import com.example.weather.features.home.view.UpdateLocationWeather
-import com.example.weather.features.settings.view_model.SettingsViewModel
-import com.example.weather.features.settings.view_model.SettingsViewModelFactory
 import com.example.weather.utils.SharedDataManager
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
@@ -61,7 +58,6 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale

@@ -50,9 +50,10 @@
     <string name="humidity">الرطوبة</string>
     <string name="wind">الرياح</string>
     <string name="cloud">السحاب</string>
-    <string name="percentage">%1$s %%</string>
+    <string name="percentage">%1$d %%</string>
     <string name="temperature_format">%.0f%s</string>
     <string name="wind_speed_format">%.2f %s</string>
+
     <string name="hpa">هيكتوباسكال</string>
     <string name="temp_min_max_format">%1$d/%2$d%3$s</string>
 
@@ -92,7 +93,8 @@
     <string name="grant_alarm_permission">يرجى منح الإذن لجدولة التنبيهات الدقيقة</string>
     <string name="min_max_temp">الدرجه الصغري %1$s°/الدرجه العظمي %2$s°</string>
     <string name="error_fetching_weather_data">برجاء التاكد من الانترنت خاصتك</string>
-    <string name="pressrue_format">%1$s %2$s</string>
+    <string name="pressrue_format">%1$d %2$s</string>
+    <string name="place_not_found">لا يوجد هذا المكان</string>
 
 
 </resources>

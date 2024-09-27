@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -101,11 +100,9 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         val selectLocationButton: Button = findViewById(R.id.btnGetWeather)
         selectLocationButton.setOnClickListener {
             selectedMarker?.let {
-                val city = getAddressFromLocation(it.position.latitude, it.position.longitude)
                 val resultIntent = Intent().apply {
                     putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.latitude ?: 0.0)
                     putExtra(Keys.LONGITUDE_KEY, selectedMarker?.position?.longitude ?: 0.0)
-                    putExtra(Keys.CITY_KEY, city)
                 }
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
@@ -131,7 +128,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             }
         }.addOnFailureListener { exception ->
             Log.e("MapsActivity", "Place not found: ${exception.message}")
-            Toast.makeText(this, "Place not found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.place_not_found, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -176,6 +173,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
                     val longitude = it.longitude
                     val currentLocation = LatLng(latitude, longitude)
 
+                    // Move the camera to the current location and zoom in
                     map?.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
                     addMarker(currentLocation)
                     getAddressFromLocation(latitude, longitude)
@@ -197,7 +195,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
         return if (!addresses.isNullOrEmpty()) {
-            val city: String = addresses[0].locality ?: getString(R.string.unknown)
+            val city = addresses[0].locality ?:  addresses[0].countryName ?: getString(R.string.unknown)
             Toast.makeText(this, "${getString(R.string.city)}: $city", Toast.LENGTH_SHORT).show()
             city
         } else {
@@ -211,21 +209,17 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
+            map?.isMyLocationEnabled = true
+            getLocation()
+
         map?.setOnMapClickListener { latLng ->
             addMarker(latLng)
 
             val latitude = latLng.latitude
             val longitude = latLng.longitude
-            getAddressFromLocation(latitude, longitude)
-        }
+            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 15f))
 
-        if (ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            map?.isMyLocationEnabled = true
+            getAddressFromLocation(latitude, longitude)
         }
     }
 }
