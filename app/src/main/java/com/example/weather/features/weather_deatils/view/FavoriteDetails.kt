@@ -69,15 +69,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                 Language.ARABIC -> updateLocale("ar")
             }
         }
-
-        if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
-            setTheme(R.style.AppThemeDark)
-            Log.i("DEBUGG", "Applying dark theme")
-        } else if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO) {
-            setTheme(R.style.AppThemeDark)
-            Log.i("DEBUGG", "Applying light theme")
-        }
-
         recreate()
     }
 

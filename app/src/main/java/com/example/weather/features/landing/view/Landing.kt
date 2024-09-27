@@ -87,26 +87,13 @@ class LandingActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
-        Log.i("DEBUGG", "onConfigurationChanged Landing")
-        if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
-            lifecycleScope.launch {
+        lifecycleScope.launch {
 
-                val language = SharedDataManager.languageFlow.first() // Collect the latest value
-                Log.i("DEBUGG", "Latest language: $language")
-                when (language) {
-                    Language.ENGLISH -> updateLocale("en")
-                    Language.ARABIC -> updateLocale("ar")
-                }
-            }
-
-        } else if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO) {
-            lifecycleScope.launch {
-                val language = SharedDataManager.languageFlow.first() // Collect the latest value
-                Log.i("DEBUGG", "Latest language: $language")
-                when (language) {
-                    Language.ENGLISH -> updateLocale("en")
-                    Language.ARABIC -> updateLocale("ar")
-                }
+            val language = SharedDataManager.languageFlow.first() // Collect the latest value
+            Log.i("DEBUGG", "Latest language: $language")
+            when (language) {
+                Language.ENGLISH -> updateLocale("en")
+                Language.ARABIC -> updateLocale("ar")
             }
         }
     }

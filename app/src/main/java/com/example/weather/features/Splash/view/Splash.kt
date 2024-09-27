@@ -38,29 +38,17 @@ class Splash : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
-        Log.i("DEBUGG", "onConfigurationChanged")
-        if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
-            lifecycleScope.launch {
 
-                val language = SharedDataManager.languageFlow.first() // Collect the latest value
-                Log.i("DEBUGG", "Latest language: $language")
-                when (language) {
-                    Language.ENGLISH -> updateLocale("en")
-                    Language.ARABIC -> updateLocale("ar")
-                }
-            }
-
-        } else if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO) {
-            lifecycleScope.launch {
-                val language = SharedDataManager.languageFlow.first() // Collect the latest value
-                Log.i("DEBUGG", "Latest language: $language")
-                when (language) {
-                    Language.ENGLISH -> updateLocale("en")
-                    Language.ARABIC -> updateLocale("ar")
-                }
+        lifecycleScope.launch {
+            val language = SharedDataManager.languageFlow.first()
+            when (language) {
+                Language.ENGLISH -> updateLocale("en")
+                Language.ARABIC -> updateLocale("ar")
             }
         }
+        recreate()
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)

@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -15,8 +17,11 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.weather.R
+import com.example.weather.utils.SharedDataManager
 import com.example.weather.utils.constants.Keys
+import com.example.weather.utils.enums.Language
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -31,6 +36,8 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class Map : AppCompatActivity(), OnMapReadyCallback {
@@ -39,6 +46,31 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var selectedMarker: Marker? = null
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        lifecycleScope.launch {
+
+            val language = SharedDataManager.languageFlow.first() // Collect the latest value
+            Log.i("DEBUGG", "Latest language: $language")
+            when (language) {
+                Language.ENGLISH -> updateLocale("en")
+                Language.ARABIC -> updateLocale("ar")
+            }
+        }
+    }
+
+    private fun updateLocale(language:String) {
+        val locale = Locale(language)
+        Locale.setDefault(locale)
+        val resources: Resources = this.resources
+        val config: Configuration = resources.configuration
+        config.setLocale(locale)
+        applicationContext.createConfigurationContext(config)
+        applicationContext.resources.updateConfiguration(config, applicationContext.resources.displayMetrics)
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
