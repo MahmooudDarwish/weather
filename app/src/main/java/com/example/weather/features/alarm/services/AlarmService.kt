@@ -58,7 +58,7 @@ class AlarmService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        val id:Long = intent?.getLongExtra("alarmId", 0) ?: 0
+        val id:Long = intent?.getLongExtra(Keys.ALARM_ID_KEY, 0) ?: 0
 
         createAlertChannel()
 
@@ -124,11 +124,11 @@ class AlarmService : Service() {
         windowManager.addView(overlayView, layoutParams)
 
         binding = DataBindingUtil.bind(overlayView)!!
-        binding.alertTitle.text = intent?.getStringExtra("alarmTitle") ?: "Weather Alert!"
-        binding.alertDesc.text = intent?.getStringExtra("alarmDescription") ?: "Check the weather!"
-        binding.weatherAlertIcon.setImageResource(Utils().getWeatherIcon(intent?.getStringExtra("alarmIcon") ?: "01d"))
+        binding.alertTitle.text = intent?.getStringExtra(Keys.ALARM_TITLE_KEY) ?: "Weather Alert!"
+        binding.alertDesc.text = intent?.getStringExtra(Keys.ALARM_DESCRIPTION_KEY) ?: "Check the weather!"
+        binding.weatherAlertIcon.setImageResource(Utils().getWeatherIcon(intent?.getStringExtra(Keys.ALARM_ICON_KEY) ?: "01d"))
 
-        val id :Long = intent?.getLongExtra("alarmId", 0) ?: 0
+        val id :Long = intent?.getLongExtra(Keys.ALARM_ID_KEY, 0) ?: 0
 
         val dismissButton: Button = overlayView.findViewById(R.id.dismissButton)
         dismissButton.setOnClickListener {

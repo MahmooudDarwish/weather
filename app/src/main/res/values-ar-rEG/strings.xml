@@ -85,5 +85,13 @@
     <string name="in">في</string>
     <string name="dismiss">تجاهل</string>
     <string name="weather">الطقس</string>
+    <string name="invalid_date_range">نطاق التاريخ غير صالح</string>
+    <string name="grant_overlay_permission">يرجى منح إذن التراكب لعرض التنبيهات</string>
+    <string name="overlay_permission_granted">تم منح إذن التراكب</string>
+    <string name="overlay_permission_denied">تم رفض إذن التراكب</string>
+    <string name="grant_alarm_permission">يرجى منح الإذن لجدولة التنبيهات الدقيقة</string>
+    <string name="min_max_temp">الدرجه الصغري %1$s°/الدرجه العظمي %2$s°</string>
+    <string name="error_fetching_weather_data">Error fetching weather data</string>
+
 
 </resources>

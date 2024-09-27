@@ -43,9 +43,9 @@ class NotificationWorker(
         val context = applicationContext
 
         Log.d("NotificationWorker", "doWork() called")
-        val title: String = inputData.getString("alarmTitle") ?: "Weather Alert!"
-        val body: String = inputData.getString("alarmDescription") ?: "Check the weather!"
-        val id: Long = inputData.getLong("alarmId", 0)
+        val title: String = inputData.getString(Keys.ALARM_TITLE_KEY) ?: "Weather Alert!"
+        val body: String = inputData.getString(Keys.ALARM_DESCRIPTION_KEY) ?: "Check the weather!"
+        val id: Long = inputData.getLong(Keys.ALARM_ID_KEY, 0)
         val notificationStatus = repo.getNotificationStatus()
 
 

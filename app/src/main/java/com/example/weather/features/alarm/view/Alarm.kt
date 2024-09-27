@@ -43,6 +43,7 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
+import com.example.weather.utils.model.API.ApiResponse
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
@@ -108,11 +109,12 @@ class Alarm : Fragment(), OnDeleteClicked {
     }
 
     private fun setUpObservers() {
-        viewModel.alerts.observe(viewLifecycleOwner) {
-            updateAlerts(it)
-            observeNoAlerts(it.isNotEmpty())
+        lifecycleScope.launch {
+            viewModel.alerts.collect() {
+                updateAlerts(it)
+                observeNoAlerts(it.isNotEmpty())
+            }
         }
-
     }
 
     private fun observeNoAlerts(alertsExist: Boolean) {
@@ -274,11 +276,8 @@ class Alarm : Fragment(), OnDeleteClicked {
                 return@setOnClickListener
             }
             if (!Settings.canDrawOverlays(requireActivity())) {
-                Toast.makeText(
-                    requireContext(),
-                    "Please grant overlay permission to display alerts",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), getString(R.string.grant_overlay_permission), Toast.LENGTH_LONG).show()
+
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:${requireActivity().packageName}")
@@ -292,14 +291,6 @@ class Alarm : Fragment(), OnDeleteClicked {
             val timeTo = timeToTxt.text.toString()
             val selectedAlarmType = alarmTypeRadioGroup.checkedRadioButtonId
 
-
-            // Validate if date and time fields are not empty
-            if (dateFrom.isEmpty() || dateTo.isEmpty() || timeFrom.isEmpty() || timeTo.isEmpty()) {
-                Toast.makeText(
-                    requireContext(), "Please provide valid date and time.", Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
 
             Log.d("Alarm", "Selected Date Range: $dateFrom - $dateTo")
 
@@ -321,55 +312,61 @@ class Alarm : Fragment(), OnDeleteClicked {
 
                 // Fetch the weather data
                 viewModel.fetch30DayWeather()
+
                 lifecycleScope.launch {
-                    viewModel.weatherData.collect { weatherList ->
-                        val selectedWeatherData = weatherList.filter { weather ->
-                            val weatherDate = Date(weather.dt * 1000)
-                            weatherDate in startDate..endDate
-                        }
-
-
-                        val weatherEntry = selectedWeatherData.firstOrNull()
-                        weatherEntry?.let { weather ->
-
-                            val alarmEntity = AlarmEntity(
-                                title = weather.description.replaceFirstChar {
-                                    if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
-                                },
-                                description = "Min ${weather.minTemp}°/Max ${weather.maxTemp}°",
-                                icon = weather.icon,
-                                fromHour = timeFromTxt.text.toString().substring(0, 2).toInt(),
-                                fromMinute = timeFromTxt.text.toString().substring(3, 5).toInt(),
-                                toHour = timeToTxt.text.toString().substring(0, 2).toInt(),
-                                toMinute = timeToTxt.text.toString().substring(3, 5).toInt(),
-                                startDate = startDateTimeMillis!!,
-                                endDate = endDateTimeMillis!!,
-                                date = weather.dt * 1000,
-                                isAlarm = selectedAlarmType == R.id.alarmSoundRadioButton
-                            )
-                            Log.i(
-                                "Alarm",
-                                "AlarmEntity: ${selectedAlarmType == R.id.alarmSoundRadioButton}"
-                            )
-
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
-                                requestExactAlarmPermission(alarmEntity)
-                            } else {
-                                    viewModel.addAlert(alarmEntity)
-                                    if (alarmEntity.isAlarm) {
-                                        scheduleAlarm(alarmEntity)
-
+                    viewModel.weatherDataState.collect { state ->
+                        when (state) {
+                            is ApiResponse.Loading -> {
+                            }
+                            is ApiResponse.Success -> {
+                                val selectedWeatherData = state.data.filter { weather ->
+                                    val weatherDate = Date(weather.dt * 1000)
+                                    weatherDate in startDate..endDate
+                                }.first()
+                                selectedWeatherData.let { weather ->
+                                    val alarmEntity = AlarmEntity(
+                                        title = weather.description.replaceFirstChar {
+                                            if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
+                                        },
+                                        description = getString(R.string.min_max_temp,weather.minTemp.toString(), weather.maxTemp.toString()),
+                                        icon = weather.icon,
+                                        fromHour = timeFromTxt.text.toString().substring(0, 2).toInt(),
+                                        fromMinute = timeFromTxt.text.toString().substring(3, 5).toInt(),
+                                        toHour = timeToTxt.text.toString().substring(0, 2).toInt(),
+                                        toMinute = timeToTxt.text.toString().substring(3, 5).toInt(),
+                                        startDate = startDateTimeMillis!!,
+                                        endDate = endDateTimeMillis!!,
+                                        date = weather.dt * 1000,
+                                        isAlarm = selectedAlarmType == R.id.alarmSoundRadioButton
+                                    )
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
+                                        requestExactAlarmPermission(alarmEntity)
                                     } else {
-                                        scheduleNotification(alarmEntity)
-                                    }
-                                    alertDialog.dismiss()
+                                        viewModel.addAlert(alarmEntity)
+                                        if (alarmEntity.isAlarm) {
+                                            scheduleAlarm(alarmEntity)
 
+                                        } else {
+                                            scheduleNotification(alarmEntity)
+                                        }
+                                        alertDialog.dismiss()
+
+                                    }
                                 }
+                            }
+                            is ApiResponse.Error -> {
+                                Toast.makeText(requireActivity(), getString(state.message), Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }
+                lifecycleScope.launch {
+                    viewModel.weatherDataState.collect { weatherList ->
+
+                    }
+                }
             } else {
-                Toast.makeText(requireContext(), "Invalid date range", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.invalid_date_range), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -382,9 +379,9 @@ class Alarm : Fragment(), OnDeleteClicked {
                 triggerTimeMillis,
                 TimeUnit.MILLISECONDS
             ).setInputData(
-                Data.Builder().putString("alarmTitle", alarmEntity.title)
-                    .putString("alarmDescription", alarmEntity.description)
-                    .putLong("alarmId", alarmEntity.startDate)
+                Data.Builder().putString(Keys.ALARM_TITLE_KEY, alarmEntity.title)
+                    .putString(Keys.ALARM_DESCRIPTION_KEY, alarmEntity.description)
+                    .putLong(Keys.ALARM_ID_KEY, alarmEntity.startDate)
 
                     .build()
             ).addTag(alarmEntity.startDate.toString()).build()
@@ -404,11 +401,11 @@ class Alarm : Fragment(), OnDeleteClicked {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_OVERLAY_PERMISSION) {
             if (Settings.canDrawOverlays(requireActivity())) {
-                Toast.makeText(requireContext(), "Overlay permission granted", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), getString(R.string.overlay_permission_granted), Toast.LENGTH_SHORT).show()
+
             } else {
-                Toast.makeText(requireContext(), "Overlay permission denied", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), getString(R.string.overlay_permission_denied), Toast.LENGTH_SHORT).show()
+
             }
         }
     }
@@ -424,11 +421,7 @@ class Alarm : Fragment(), OnDeleteClicked {
     private fun requestExactAlarmPermission(alarmEntity: AlarmEntity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Log.d("Alarm", "Sdk version is greater than 31")
-            Toast.makeText(
-                requireActivity(),
-                "Please grant permission to schedule exact alarms",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(requireActivity(), getString(R.string.grant_alarm_permission), Toast.LENGTH_LONG).show()
             val intent = Intent(
                 Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
                 Uri.parse("package:${requireActivity().packageName}")
@@ -454,10 +447,10 @@ class Alarm : Fragment(), OnDeleteClicked {
 
     private fun scheduleExactAlarm(alarmEntity: AlarmEntity) {
         val intent = Intent(requireActivity(), AlarmReceiver::class.java).apply {
-            putExtra("alarmTitle", alarmEntity.title)
-            putExtra("alarmDescription", alarmEntity.description)
-            putExtra("alarmIcon", alarmEntity.icon)
-            putExtra("alarmId", alarmEntity.startDate)
+            putExtra(Keys.ALARM_TITLE_KEY, alarmEntity.title)
+            putExtra(Keys.ALARM_DESCRIPTION_KEY, alarmEntity.description)
+            putExtra(Keys.ALARM_ICON_KEY, alarmEntity.icon)
+            putExtra(Keys.ALARM_ID_KEY, alarmEntity.startDate)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -529,11 +522,7 @@ class Alarm : Fragment(), OnDeleteClicked {
 
     private fun cancelExactAlarm(alarmEntity: AlarmEntity) {
         // Cancel the alarm
-        val intent = Intent(requireActivity(), AlarmReceiver::class.java).apply {
-            putExtra("alarmTitle", alarmEntity.title)
-            putExtra("alarmDescription", alarmEntity.description)
-            putExtra("alarmIcon", alarmEntity.icon)
-        }
+        val intent = Intent(requireActivity(), AlarmReceiver::class.java)
 
         val pendingIntent = PendingIntent.getBroadcast(
             requireActivity(),

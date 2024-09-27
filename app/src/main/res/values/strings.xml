@@ -87,7 +87,13 @@
     <string name="in">In</string>
     <string name="dismiss">Dismiss</string>
     <string name="weather">Weather</string>
-
+    <string name="error_fetching_weather_data">Error fetching weather data</string>
+    <string name="min_max_temp">Min %1$s°/Max %2$s°</string>
+    <string name="invalid_date_range">Invalid date range</string>
+    <string name="grant_overlay_permission">Please grant overlay permission to display alerts</string>
+    <string name="overlay_permission_granted">Overlay permission granted</string>
+    <string name="overlay_permission_denied">Overlay permission denied</string>
+    <string name="grant_alarm_permission">Please grant permission to schedule exact alarms</string>
 
 
 </resources>

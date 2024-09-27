@@ -3,7 +3,6 @@ package com.example.weather.utils.constants
 
 object Keys {
 
-    //Shared Preferences Keys
     const val SHARED_PREFERENCES_NAME = "WeatherAppPrefs"
 
     const val LANGUAGE_KEY = "lang"
@@ -15,6 +14,12 @@ object Keys {
     const val LONGITUDE_KEY = "longitude"
     const val LATITUDE_KEY = "latitude"
     const val CITY_KEY =  "city"
+    const val ALARM_TITLE_KEY = "alarmTitle"
+    const val ALARM_DESCRIPTION_KEY = "alarmDescription"
+    const val ALARM_ICON_KEY = "weatherIcon"
+    const val ALARM_ID_KEY = "alarmId"
+
+
 
 
     //API Keys
