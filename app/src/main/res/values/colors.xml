@@ -8,7 +8,7 @@
     <color name="text_icon">#FFFFFF</color>
     <color name="primary_text">#FF212121</color>
     <color name="accent">#FFffc107</color>
-    <color name="secondary_text">#FF757575</color>
+    <color name="secondary_text">#FF000000</color>
     <color name="divider">#FFBDBDBD</color>
     <color name="item">#333333</color>
 

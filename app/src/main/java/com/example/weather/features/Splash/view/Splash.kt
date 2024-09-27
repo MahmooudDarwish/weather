@@ -9,6 +9,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +19,7 @@ import com.example.weather.R
 import com.example.weather.features.landing.view.LandingActivity
 import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
+import com.example.weather.utils.SharedDataManager
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.local.room.AppDatabase
@@ -25,6 +27,7 @@ import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSo
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -32,9 +35,36 @@ class Splash : AppCompatActivity() {
 
     private lateinit var lottieAnimationView: LottieAnimationView
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        Log.i("DEBUGG", "onConfigurationChanged")
+        if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+            lifecycleScope.launch {
+
+                val language = SharedDataManager.languageFlow.first() // Collect the latest value
+                Log.i("DEBUGG", "Latest language: $language")
+                when (language) {
+                    Language.ENGLISH -> updateLocale("en")
+                    Language.ARABIC -> updateLocale("ar")
+                }
+            }
+
+        } else if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO) {
+            lifecycleScope.launch {
+                val language = SharedDataManager.languageFlow.first() // Collect the latest value
+                Log.i("DEBUGG", "Latest language: $language")
+                when (language) {
+                    Language.ENGLISH -> updateLocale("en")
+                    Language.ARABIC -> updateLocale("ar")
+                }
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+
 
         setUpLottieAnimation()
 

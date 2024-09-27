@@ -33,6 +33,7 @@ import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -55,6 +56,30 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
     private lateinit var cloudText: TextView
     private lateinit var languageJob: Job
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        Log.i("DEBUGG", "onConfigurationChanged")
+
+        lifecycleScope.launch {
+            val language = SharedDataManager.languageFlow.first() // Collect the latest value
+            Log.i("DEBUGG", "Latest language: $language")
+            when (language) {
+                Language.ENGLISH -> updateLocale("en")
+                Language.ARABIC -> updateLocale("ar")
+            }
+        }
+
+        if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+            setTheme(R.style.AppThemeDark)
+            Log.i("DEBUGG", "Applying dark theme")
+        } else if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO) {
+            setTheme(R.style.AppThemeDark)
+            Log.i("DEBUGG", "Applying light theme")
+        }
+
+        recreate()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -197,15 +222,15 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                 epochTime = weatherItem.dt
             ) == getString(R.string.today)
         ) {
-            temperatureText.text =
-                "${convertedMaxTemp.toInt()} ${Utils().getUnitSymbol(selectedUnit)}"
+            temperatureText.text = getString(R.string.temperature_format, convertedMaxTemp, Utils().getUnitSymbol(selectedUnit))
         } else {
-            temperatureText.text =
-                "${convertedMaxTemp.toInt()}/${convertedMinTemp.toInt()}${
-                    Utils().getUnitSymbol(
-                        selectedUnit
-                    )
-                }"
+
+            val formattedTemp = getString(R.string.temp_min_max_format,
+                convertedMaxTemp.toInt(),
+                convertedMinTemp.toInt(),
+                Utils().getUnitSymbol(selectedUnit))
+
+            temperatureText.text = formattedTemp
         }
 
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))

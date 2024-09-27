@@ -52,6 +52,7 @@ import com.example.weather.features.home.view.Home
 import com.example.weather.features.home.view.UpdateLocationWeather
 import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
+import com.example.weather.utils.SharedDataManager
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.google.android.gms.location.Granularity
@@ -61,6 +62,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -82,7 +84,42 @@ class LandingActivity : AppCompatActivity() {
     private var isOpenLocation = false
     private lateinit var toolbarTitle: TextView
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
 
+        Log.i("DEBUGG", "onConfigurationChanged Landing")
+        if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+            lifecycleScope.launch {
+
+                val language = SharedDataManager.languageFlow.first() // Collect the latest value
+                Log.i("DEBUGG", "Latest language: $language")
+                when (language) {
+                    Language.ENGLISH -> updateLocale("en")
+                    Language.ARABIC -> updateLocale("ar")
+                }
+            }
+
+        } else if (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO) {
+            lifecycleScope.launch {
+                val language = SharedDataManager.languageFlow.first() // Collect the latest value
+                Log.i("DEBUGG", "Latest language: $language")
+                when (language) {
+                    Language.ENGLISH -> updateLocale("en")
+                    Language.ARABIC -> updateLocale("ar")
+                }
+            }
+        }
+    }
+
+    private fun updateLocale(language:String) {
+        val locale = Locale(language)
+        Locale.setDefault(locale)
+        val resources: Resources = this.resources
+        val config: Configuration = resources.configuration
+        config.setLocale(locale)
+        applicationContext.createConfigurationContext(config)
+        applicationContext.resources.updateConfiguration(config, applicationContext.resources.displayMetrics)
+    }
 
     private val requestLocationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()

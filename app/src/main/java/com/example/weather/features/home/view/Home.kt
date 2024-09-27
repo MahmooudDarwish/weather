@@ -202,15 +202,16 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                 epochTime = weatherItem.dt
             ) == getString(R.string.today)
         ) {
-            temperatureText.text =
-                "${convertedMaxTemp.toInt()} ${Utils().getUnitSymbol(selectedUnit)}"
+            temperatureText.text = getString(R.string.temperature_format, convertedMaxTemp, Utils().getUnitSymbol(selectedUnit))
         } else {
-            temperatureText.text =
-                "${convertedMaxTemp.toInt()}/${convertedMinTemp.toInt()}${
-                    Utils().getUnitSymbol(
-                        selectedUnit
-                    )
-                }"
+
+            val formattedTemp = getString(R.string.temp_min_max_format,
+                convertedMaxTemp.toInt(),
+                convertedMinTemp.toInt(),
+                Utils().getUnitSymbol(selectedUnit))
+
+            temperatureText.text = formattedTemp
+
         }
 
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
