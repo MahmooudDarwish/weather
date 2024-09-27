@@ -48,7 +48,6 @@ class HomeViewModel(
                     }
             } catch (e: Exception) {
                 _currentWeatherState.value = ApiResponse.Error(R.string.error_fetching_weather_data)
-                Log.e("HomeViewModel", "Error fetching current weather", e)
             }
         }
     }
@@ -64,7 +63,6 @@ class HomeViewModel(
                     }
             } catch (e: Exception) {
                 _hourlyWeatherState.value = ApiResponse.Error(R.string.error_fetching_weather_data)
-                Log.e("HomeViewModel", "Error fetching hourly weather", e)
             }
         }
     }
@@ -79,7 +77,6 @@ class HomeViewModel(
                     }
             } catch (e: Exception) {
                 _dailyWeatherState.value = ApiResponse.Error(R.string.error_fetching_weather_data)
-                Log.e("HomeViewModel", "Error fetching daily weather", e)
             }
         }
     }

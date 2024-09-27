@@ -106,12 +106,10 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
 
         viewModel = ViewModelProvider(this, homeFactory).get(HomeViewModel::class.java)
-
-        setUpCollectors()
     }
 
     private fun setUpCollectors() {
-        lifecycleScope.launch(Dispatchers.IO){
+        lifecycleScope.launch{
             viewModel.currentWeatherState.collect { apiResponse ->
                 when (apiResponse) {
                     is ApiResponse.Loading -> {
@@ -133,14 +131,14 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             }
         }
 
-        lifecycleScope.launch(Dispatchers.IO){
+        lifecycleScope.launch{
             viewModel.hourlyWeatherState.collect { apiResponse ->
                 when (apiResponse) {
                     is ApiResponse.Loading -> {
+
                         hourlyProgressBar.visibility = View.VISIBLE
 
                     }
-
                     is ApiResponse.Success -> {
                         hourlyProgressBar.visibility = View.GONE
                         updateHourlyRecyclerViewList(apiResponse.data?.list)
@@ -156,7 +154,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                 }
             }
         }
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             viewModel.dailyWeatherState.collect { apiResponse ->
                 when (apiResponse) {
                     is ApiResponse.Loading -> {
@@ -199,6 +197,8 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         Log.i("HomeFragment", "onViewCreated called")
         initUi(view)
         setUpListeners()
+        setUpCollectors()
+
         todayDate.text = Utils().getCurrentDate()
 
     }
@@ -228,6 +228,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         windSpeedText = view.findViewById(R.id.windText)
         humidityText = view.findViewById(R.id.humidityText)
         pressureText = view.findViewById(R.id.pressureText)
+
         hourlyProgressBar = view.findViewById(R.id.hourlyWeatherProgressBar)
         dailyProgressBar = view.findViewById(R.id.dailyWeatherProgressBar)
         measurementsProgressBar = view.findViewById(R.id.measurementsProgressBar)
@@ -296,7 +297,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
 
         pressureText.text =
-            getString(R.string.pressue_format, weatherItem.pressure.toString(), getString(R.string.hpa))
+            getString(R.string.pressrue_format, weatherItem.pressure.toString(), getString(R.string.hpa))
         humidityText.text = getString(R.string.percentage, weatherItem.humidity.toString())
         cloudText.text = getString(R.string.percentage, weatherItem.clouds.toString())
 
@@ -374,7 +375,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
         pressureText.text = getString(
-            R.string.pressure_format,
+            R.string.pressrue_format,
             weatherResponse.main.pressure.toString(),
             getString(R.string.hpa)
         )

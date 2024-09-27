@@ -380,9 +380,9 @@ class LandingActivity : AppCompatActivity() {
         ) {
             val locationRequest = LocationRequest.Builder(
                 Priority.PRIORITY_HIGH_ACCURACY,
-                10000
+                600000
             ).apply {
-                setMinUpdateIntervalMillis(5000)
+                setMinUpdateIntervalMillis(600000)
                 setGranularity(Granularity.GRANULARITY_FINE)
             }.build()
 
