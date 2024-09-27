@@ -1,17 +1,21 @@
 package com.example.weather.features.home.view_model
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.weather.R
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
+import com.example.weather.utils.model.API.ApiResponse
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.API.HourlyWeatherResponse
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.model.API.WeatherResponse
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 
 import kotlinx.coroutines.launch
 
@@ -19,48 +23,70 @@ class HomeViewModel(
     private val weatherRepository: WeatherRepositoryImpl
 ) : ViewModel() {
 
-    private val _currentWeather = MutableLiveData<WeatherResponse?>()
-    val currentWeather: MutableLiveData<WeatherResponse?>
-        get() = _currentWeather
+    // StateFlows for weather data with ApiResponse
+    private val _currentWeatherState = MutableStateFlow<ApiResponse<WeatherResponse?>>(ApiResponse.Loading)
+    val currentWeatherState: StateFlow<ApiResponse<WeatherResponse?>>
+        get() = _currentWeatherState
+
+    private val _hourlyWeatherState = MutableStateFlow<ApiResponse<HourlyWeatherResponse?>>(ApiResponse.Loading)
+    val hourlyWeatherState: StateFlow<ApiResponse<HourlyWeatherResponse?>>
+        get() = _hourlyWeatherState
+
+    private val _dailyWeatherState = MutableStateFlow<ApiResponse<DailyWeatherResponse?>>(ApiResponse.Loading)
+    val dailyWeatherState: StateFlow<ApiResponse<DailyWeatherResponse?>>
+        get() = _dailyWeatherState
 
 
-    private val _hourlyWeatherData = MutableLiveData<HourlyWeatherResponse?>()
-    val hourlyWeatherData: MutableLiveData<HourlyWeatherResponse?>
-        get() = _hourlyWeatherData
-
-
-    private val _dailyWeatherData = MutableLiveData<DailyWeatherResponse?>()
-    val dailyWeatherData: MutableLiveData<DailyWeatherResponse?>
-        get() = _dailyWeatherData
-
+    fun getWeather(latitude: Double, longitude: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _currentWeatherState.value = ApiResponse.Loading
+            try {
+                weatherRepository.fetchWeatherData(longitude, latitude)
+                    .map { response -> ApiResponse.Success(response) }
+                    .collect { apiResponse ->
+                        _currentWeatherState.value = apiResponse
+                    }
+            } catch (e: Exception) {
+                _currentWeatherState.value = ApiResponse.Error(R.string.error_fetching_weather_data)
+                Log.e("HomeViewModel", "Error fetching current weather", e)
+            }
+        }
+    }
 
     fun fetchHourlyWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
-            weatherRepository.fetchHourlyWeatherData(longitude, latitude).collect { response ->
-                _hourlyWeatherData.postValue(response)
+            _hourlyWeatherState.value = ApiResponse.Loading
+            try {
+                weatherRepository.fetchHourlyWeatherData(longitude, latitude)
+                    .map { response -> ApiResponse.Success(response) }
+                    .collect { apiResponse ->
+                        _hourlyWeatherState.value = apiResponse
+                    }
+            } catch (e: Exception) {
+                _hourlyWeatherState.value = ApiResponse.Error(R.string.error_fetching_weather_data)
+                Log.e("HomeViewModel", "Error fetching hourly weather", e)
             }
         }
     }
     fun fetchDailyWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
-            weatherRepository.get5DayForecast(longitude, latitude).collect { response ->
-                Log.d("HomeViewModel", "[forest Response: $response")
-                _dailyWeatherData.postValue(response)
+            _dailyWeatherState.value = ApiResponse.Loading
+            try {
+                weatherRepository.get5DayForecast(longitude, latitude)
+                    .map { response -> ApiResponse.Success(response) }
+                    .collect { apiResponse ->
+                        _dailyWeatherState.value = apiResponse
+                    }
+            } catch (e: Exception) {
+                _dailyWeatherState.value = ApiResponse.Error(R.string.error_fetching_weather_data)
+                Log.e("HomeViewModel", "Error fetching daily weather", e)
             }
         }
     }
 
-    fun getWeather(latitude: Double, longitude: Double) {
-        viewModelScope.launch(Dispatchers.IO) {
-            weatherRepository.fetchWeatherData(longitude, latitude).collect { response ->
-                Log.d("HomeViewModel", "Response: $response")
-                _currentWeather.postValue(response)
-            }
-        }
-    }
+
 
     fun getWeatherMeasure(): Temperature {
-        Log.d("HomeViewModel", "getLocationStatus called ${weatherRepository.getLocationStatus()}")
         return weatherRepository.getTemperatureUnit()
     }
 
@@ -69,7 +95,6 @@ class HomeViewModel(
     }
 
     fun getLocationStatus(): LocationStatus {
-        Log.d("HomeViewModel", "getLocationStatus called ${weatherRepository.getLocationStatus()}")
         return weatherRepository.getLocationStatus()
     }
 

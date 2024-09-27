@@ -94,6 +94,7 @@
     <string name="overlay_permission_granted">Overlay permission granted</string>
     <string name="overlay_permission_denied">Overlay permission denied</string>
     <string name="grant_alarm_permission">Please grant permission to schedule exact alarms</string>
+    <string name="pressue_format">%1$s %2$s</string>
 
 
 </resources>

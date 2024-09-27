@@ -10,10 +10,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.GridLayout
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
@@ -26,12 +30,15 @@ import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
+import com.example.weather.utils.model.API.ApiResponse
 import com.example.weather.utils.model.API.DailyForecastItem
 import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 import java.util.Locale
 //UpdateLocationWeather
@@ -48,6 +55,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     private lateinit var recyclerViewDailyWeather: RecyclerView
     private lateinit var dailyWeatherAdapter: DailyWeatherAdapter
     private lateinit var hourlyWeatherAdapter: HourlyWeatherAdapter
+    private lateinit var hourlyProgressBar: ProgressBar
+    private lateinit var dailyProgressBar: ProgressBar
+    private lateinit var measurementsProgressBar: ProgressBar
+    private lateinit var currentWeatherProgressBar: ProgressBar
+    private lateinit var measurementsGridLayout: GridLayout
 
     private lateinit var pressureText: TextView
     private lateinit var humidityText: TextView
@@ -92,20 +104,83 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             )
         )
 
+
         viewModel = ViewModelProvider(this, homeFactory).get(HomeViewModel::class.java)
 
-        viewModel.currentWeather.observe(this) { weatherResponse ->
-            updateUI(weatherResponse)
-        }
-        viewModel.hourlyWeatherData.observe(this) { hourlyWeather ->
-            if (hourlyWeather != null) {
-                updateHourlyRecyclerViewList(hourlyWeather.list)
+        setUpCollectors()
+    }
+
+    private fun setUpCollectors() {
+        lifecycleScope.launch(Dispatchers.IO){
+            viewModel.currentWeatherState.collect { apiResponse ->
+                when (apiResponse) {
+                    is ApiResponse.Loading -> {
+                        currentWeatherProgressBar.visibility = View.VISIBLE
+                        measurementsProgressBar.visibility = View.VISIBLE
+                        measurementsGridLayout.visibility = View.GONE
+
+                    }
+                    is ApiResponse.Success -> {
+                        currentWeatherProgressBar.visibility = View.GONE
+                        measurementsProgressBar.visibility = View.GONE
+                        measurementsGridLayout.visibility = View.VISIBLE
+                        updateUI(apiResponse.data)
+                    }
+                    is ApiResponse.Error -> {
+                        Toast.makeText(requireContext(), getString(apiResponse.message), Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
 
-        viewModel.dailyWeatherData.observe(this) { dailyWeather ->
-            updateDailyRecyclerView(dailyWeather)
+        lifecycleScope.launch(Dispatchers.IO){
+            viewModel.hourlyWeatherState.collect { apiResponse ->
+                when (apiResponse) {
+                    is ApiResponse.Loading -> {
+                        hourlyProgressBar.visibility = View.VISIBLE
+
+                    }
+
+                    is ApiResponse.Success -> {
+                        hourlyProgressBar.visibility = View.GONE
+                        updateHourlyRecyclerViewList(apiResponse.data?.list)
+                    }
+
+                    is ApiResponse.Error -> {
+                        Toast.makeText(
+                            requireContext(),
+                            getString(apiResponse.message),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
         }
+        lifecycleScope.launch(Dispatchers.IO) {
+            viewModel.dailyWeatherState.collect { apiResponse ->
+                when (apiResponse) {
+                    is ApiResponse.Loading -> {
+                        dailyProgressBar.visibility = View.VISIBLE
+
+                    }
+
+                    is ApiResponse.Success -> {
+                        dailyProgressBar.visibility = View.GONE
+                        updateDailyRecyclerView(apiResponse.data)
+                    }
+
+                    is ApiResponse.Error -> {
+                        Toast.makeText(
+                            requireContext(),
+                            getString(apiResponse.message),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+
+
     }
 
     override fun onCreateView(
@@ -153,7 +228,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         windSpeedText = view.findViewById(R.id.windText)
         humidityText = view.findViewById(R.id.humidityText)
         pressureText = view.findViewById(R.id.pressureText)
-
+        hourlyProgressBar = view.findViewById(R.id.hourlyWeatherProgressBar)
+        dailyProgressBar = view.findViewById(R.id.dailyWeatherProgressBar)
+        measurementsProgressBar = view.findViewById(R.id.measurementsProgressBar)
+        currentWeatherProgressBar = view.findViewById(R.id.currentWeatherProgressBar)
+        measurementsGridLayout = view.findViewById(R.id.measurementsGrid)
 
         recyclerViewHourlyWeather = view.findViewById(R.id.recyclerViewHourlyWeather)
         recyclerViewHourlyWeather.layoutManager =
@@ -216,7 +295,8 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
 
-        pressureText.text = "${weatherItem.pressure} ${getString(R.string.hpa)}"
+        pressureText.text =
+            getString(R.string.pressue_format, weatherItem.pressure.toString(), getString(R.string.hpa))
         humidityText.text = getString(R.string.percentage, weatherItem.humidity.toString())
         cloudText.text = getString(R.string.percentage, weatherItem.clouds.toString())
 
@@ -229,26 +309,40 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
         )
 
-        val filteredHourlyWeather = filterHourlyWeatherByDay(weatherItem.dt)
-        updateHourlyRecyclerViewList(filteredHourlyWeather)
+         filterHourlyWeatherByDay(weatherItem.dt)
 
     }
 
-    private fun filterHourlyWeatherByDay(dayEpoch: Long): List<ForecastItem>? {
-        return viewModel.hourlyWeatherData.value?.let { hourlyWeather ->
-            if (Utils().getDayNameFromEpoch(
-                    context = requireActivity(),
-                    epochTime = dayEpoch
-                ) == getString(R.string.today)
-            ) {
-                hourlyWeather.list.take(24)
-            } else {
-                hourlyWeather.list.filter {
-                    Utils().isSameDay(it.dt, dayEpoch)
+    private fun filterHourlyWeatherByDay(dayEpoch: Long) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.hourlyWeatherState.collect { apiResponse ->
+                when (apiResponse) {
+                    is ApiResponse.Loading -> {
+                    }
+                    is ApiResponse.Success -> {
+                        val hourlyWeather = apiResponse.data
+                        val filteredList = hourlyWeather?.let { hourly ->
+                            if (Utils().getDayNameFromEpoch(
+                                    context = requireActivity(),
+                                    epochTime = dayEpoch
+                                ) == getString(R.string.today)
+                            ) {
+                                hourly.list.take(24)
+                            } else {
+                                hourly.list.filter {
+                                    Utils().isSameDay(it.dt, dayEpoch)
+                                }
+                            }
+                        }
+                        updateHourlyRecyclerViewList(filteredList)
+                    }
+                    is ApiResponse.Error -> {
+                    }
                 }
             }
         }
     }
+
 
     private fun updateHourlyRecyclerViewList(filteredList: List<ForecastItem>?) {
         if (filteredList != null) {
@@ -279,7 +373,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
         weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
-        pressureText.text = "${weatherResponse.main.pressure} ${getString(R.string.hpa)}"
+        pressureText.text = getString(
+            R.string.pressure_format,
+            weatherResponse.main.pressure.toString(),
+            getString(R.string.hpa)
+        )
         humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity.toString())
         val speedInMps = weatherResponse.wind.speed
         val speedMeasure = viewModel.getWindMeasure()
