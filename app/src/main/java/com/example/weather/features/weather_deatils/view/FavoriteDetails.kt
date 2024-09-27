@@ -8,16 +8,17 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
-import com.example.weather.features.settings.view_model.SettingsViewModel
-import com.example.weather.features.settings.view_model.SettingsViewModelFactory
 import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModel
 import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModelFactory
 import com.example.weather.utils.SharedDataManager
@@ -39,7 +40,7 @@ import java.util.Locale
 
 class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
-    lateinit var viewModel: WeatherDetailsViewModel
+    private lateinit var viewModel: WeatherDetailsViewModel
 
     private lateinit var countryName: TextView
     private lateinit var todayDate: TextView
@@ -55,6 +56,9 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
     private lateinit var windSpeedText: TextView
     private lateinit var cloudText: TextView
     private lateinit var languageJob: Job
+    private lateinit var contentLayout: ConstraintLayout
+    private lateinit var contentProgressBar: ProgressBar
+
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -105,39 +109,57 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
 
         initUI()
-        viewModel.favoriteWeatherData.observe(this) { weatherResponse ->
-            if (weatherResponse != null) {
-                Log.d("FavoriteDetails", "Received weather data: $weatherResponse")
-                updateUI(weatherResponse)
-            }
-        }
-        viewModel.hourlyWeatherData.observe(this) { hourlyWeather ->
-            if (hourlyWeather != null) {
-                Log.d("FavoriteDetails", "Received hourly weather data: $hourlyWeather")
-                updateHourlyRecyclerViewList(hourlyWeather)
-            }
-        }
-        viewModel.dailyWeatherData.observe(this) { dailyWeather ->
-            Log.d("FavoriteDetails", "Received daily weather data: $dailyWeather")
-            updateDailyRecyclerView(dailyWeather)
-        }
+
+        setUpCollectors()
 
         if (isInternetAvailable()) {
-            viewModel.getWeatherAndRefreshRoom(
+            viewModel.updateWeatherAndRefreshRoom(
                 latitude,
                 longitude,
                 getAddressFromLocation(latitude, longitude)
-
             )
-            viewModel.fetchDailyWeather(latitude, longitude)
-            viewModel.fetchHourlyWeather(latitude, longitude)
-            viewModel.fetchFavoriteWeather(latitude, longitude)
         } else {
             viewModel.fetchFavoriteWeather(latitude, longitude)
         }
 
 
     }
+
+    private fun setUpCollectors() {
+        lifecycleScope.launch {
+            viewModel.loadingState.collect { isLoading ->
+                if (isLoading) {
+                    contentLayout.visibility = View.GONE
+                    contentProgressBar.visibility = View.VISIBLE
+
+                } else {
+                    contentLayout.visibility = View.VISIBLE
+                    contentProgressBar.visibility = View.GONE
+                }
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.favoriteWeatherData.collect { weatherResponse ->
+                if (weatherResponse != null) {
+                    Log.i("DEBUGG", "FavoriteDetails: $weatherResponse")
+                    updateUI(weatherResponse)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.hourlyWeatherData.collect { hourlyWeather ->
+                updateHourlyRecyclerViewList(hourlyWeather)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.dailyWeatherData.collect { dailyWeather ->
+                updateDailyRecyclerView(dailyWeather)
+            }
+        }
+    }
+
 
     private fun updateLocale(language:String) {
         val locale = Locale(language)
@@ -248,8 +270,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
     }
 
-    private fun filterHourlyWeatherByDay(dayEpoch: Long): List<HourlyWeatherEntity?>? {
-        return viewModel.hourlyWeatherData.value?.let { hourlyWeather ->
+    private fun filterHourlyWeatherByDay(dayEpoch: Long): List<HourlyWeatherEntity?> {
+        return viewModel.hourlyWeatherData.value.let { hourlyWeather ->
             if (Utils().getDayNameFromEpoch(
                     context = this,
                     epochTime = dayEpoch
@@ -274,6 +296,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         windSpeedText = findViewById(R.id.favoriteWindText)
         humidityText = findViewById(R.id.favoriteHumidityText)
         pressureText = findViewById(R.id.favoritePressureText)
+        contentLayout = findViewById(R.id.contentLayout)
+        contentProgressBar = findViewById(R.id.detailsProgressBar)
 
 
         recyclerViewHourlyWeather = findViewById(R.id.favoriteRecyclerViewHourlyWeather)

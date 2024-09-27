@@ -29,7 +29,6 @@ import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class Favorites : Fragment(), IFavoriteItem {
@@ -73,7 +72,6 @@ class Favorites : Fragment(), IFavoriteItem {
         )
 
         viewModel = ViewModelProvider(this, favoriteFactory).get(FavoritesViewModel::class.java)
-
         viewModel.fetchAllFavoriteWeather()
 
     }
@@ -144,7 +142,7 @@ class Favorites : Fragment(), IFavoriteItem {
     }
 
     private fun saveFavoriteLocation(location: Pair<Double, Double>, city: String) {
-        viewModel.getWeatherAndSaveToDatabase(location.first, location.second, city)
+        viewModel.updateWeatherAndRefreshRoom(location.first, location.second, city)
     }
 
     override fun onDeleteItem(weatherEntity: WeatherEntity) {

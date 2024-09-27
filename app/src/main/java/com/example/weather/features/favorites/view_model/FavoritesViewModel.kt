@@ -1,7 +1,6 @@
 package com.example.weather.features.favorites.view_model
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weather.utils.model.API.toDailyWeatherEntities
@@ -23,13 +22,14 @@ class FavoritesViewModel(
     val favorites: StateFlow<List<WeatherEntity?>>
         get() = _favorites
 
-    fun getWeatherAndSaveToDatabase(latitude: Double, longitude: Double, city: String) {
+    fun updateWeatherAndRefreshRoom(latitude: Double, longitude: Double, city: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 // Collect and save current weather data
                 weatherRepository.fetchWeatherData(longitude, latitude)
                     .map { response -> response?.toWeatherEntity(city) }
                     .collect { currentWeatherEntity ->
+                        Log.d("FavoritesViewModel", "Current Weather Entity: $currentWeatherEntity")
                         currentWeatherEntity?.let {
                             weatherRepository.insertFavoriteWeather(it)
                         }
@@ -39,6 +39,7 @@ class FavoritesViewModel(
                 weatherRepository.get5DayForecast(longitude, latitude)
                     .map { response -> response?.toDailyWeatherEntities() ?: emptyList() }
                     .collect { dailyWeatherEntities ->
+                        Log.d("FavoritesViewModel", "Daily Weather Entities: $dailyWeatherEntities")
                         weatherRepository.insertFavoriteDailyWeather(dailyWeatherEntities)
                     }
 
@@ -58,8 +59,12 @@ class FavoritesViewModel(
 
     fun fetchAllFavoriteWeather() {
         viewModelScope.launch(Dispatchers.IO) {
-            weatherRepository.getAllFavoriteWeather().collect { response ->
-                _favorites.value = response
+            try {
+                weatherRepository.getAllFavoriteWeather().collect { response ->
+                    _favorites.value = response
+                }
+            } catch (e: Exception) {
+                Log.e("FavoritesViewModel", "Error fetching weather data from room", e)
             }
         }
     }
@@ -68,8 +73,6 @@ class FavoritesViewModel(
     fun deleteFavorite(weatherEntity: WeatherEntity) {
         viewModelScope.launch {
             weatherRepository.deleteFavoriteWeather(weatherEntity.longitude, weatherEntity.latitude)
-            fetchAllFavoriteWeather()
-
         }
     }
 }

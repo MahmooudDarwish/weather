@@ -103,6 +103,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
                 val resultIntent = Intent().apply {
                     putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.latitude ?: 0.0)
                     putExtra(Keys.LONGITUDE_KEY, selectedMarker?.position?.longitude ?: 0.0)
+                    putExtra(Keys.CITY_KEY, getAddressFromLocation(selectedMarker?.position?.latitude ?: 0.0, selectedMarker?.position?.longitude ?: 0.0))
                 }
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()

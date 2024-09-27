@@ -357,7 +357,6 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             countryName.text =
                 getAddressFromLocation(weatherResponse.coord.lat, weatherResponse.coord.lon)
         } else {
-
             countryName.text = weatherResponse.name
         }
 
