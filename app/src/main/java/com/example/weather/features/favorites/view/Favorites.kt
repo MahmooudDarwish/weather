@@ -9,14 +9,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.weather.R
+import com.example.weather.databinding.FragmentFavoritesBinding
 import com.example.weather.features.favorites.view_model.FavoritesViewModel
 import com.example.weather.features.favorites.view_model.FavoritesViewModelFactory
 import com.example.weather.features.map.view.Map
@@ -28,16 +25,13 @@ import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManag
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 
 class Favorites : Fragment(), IFavoriteItem {
 
+    private lateinit var binding: FragmentFavoritesBinding
+
     private lateinit var viewModel: FavoritesViewModel
-    private lateinit var favoritesIcon: ImageView
-    private lateinit var addFavoritesFAB: FloatingActionButton
-    private lateinit var noFavoritesTextView: TextView
-    private lateinit var favoritesRecyclerView: RecyclerView
     private lateinit var favoritesAdapter: FavoritesAdapter
 
     private val mapActivityResultLauncher = registerForActivityResult(
@@ -79,37 +73,35 @@ class Favorites : Fragment(), IFavoriteItem {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_favorites, container, false)
+    ): View {
+        binding = FragmentFavoritesBinding.inflate(inflater, container, false)
+        return binding.root
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
 
-        initUi(view)
+        initUi()
         setUpListeners()
         observeFavorites()
 
     }
 
     private fun setUpListeners() {
-        addFavoritesFAB.setOnClickListener {
+        binding.addFavoriteLocationFAB.setOnClickListener() {
             navigateToMaps()
         }
     }
 
-    private fun initUi(view: View) {
-        favoritesIcon = view.findViewById(R.id.favoriteIcon)
-        noFavoritesTextView = view.findViewById(R.id.noFavoritesText)
-        addFavoritesFAB = view.findViewById(R.id.addFavoriteLocationFAB)
-        favoritesRecyclerView = view.findViewById(R.id.favoritesRecyclerView)
-        favoritesRecyclerView.layoutManager =
+    private fun initUi() {
+        binding.favoritesRecyclerView.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
 
 
         favoritesAdapter = FavoritesAdapter(mutableListOf(), this)
-        favoritesRecyclerView.adapter = favoritesAdapter
+        binding.favoritesRecyclerView.adapter = favoritesAdapter
 
 
     }
@@ -126,12 +118,12 @@ class Favorites : Fragment(), IFavoriteItem {
     private fun observeNoFavorites(favoriteExist: Boolean) {
         if (favoriteExist) {
             Log.d("Favorites", "Favorites exist")
-            noFavoritesTextView.visibility = View.GONE
-            favoritesIcon.visibility = View.GONE
+            binding.noFavoritesText.visibility = View.GONE
+            binding.favoriteIcon.visibility = View.GONE
         } else {
             Log.d("Favorites", "Favorites not exist")
-            noFavoritesTextView.visibility = View.VISIBLE
-            favoritesIcon.visibility = View.VISIBLE
+            binding.noFavoritesText.visibility = View.VISIBLE
+            binding.favoriteIcon.visibility = View.VISIBLE
 
         }
 

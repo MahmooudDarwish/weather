@@ -11,13 +11,12 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import android.widget.AutoCompleteTextView
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.weather.R
+import com.example.weather.databinding.ActivityMapBinding
 import com.example.weather.utils.SharedDataManager
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.Language
@@ -41,6 +40,7 @@ import java.util.Locale
 
 class Map : AppCompatActivity(), OnMapReadyCallback {
 
+    private lateinit var binding: ActivityMapBinding
     private var map: GoogleMap? = null
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -50,7 +50,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         super.onConfigurationChanged(newConfig)
 
         lifecycleScope.launch {
-
             val language = SharedDataManager.languageFlow.first() // Collect the latest value
             Log.i("DEBUGG", "Latest language: $language")
             when (language) {
@@ -73,7 +72,8 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_map)
+        binding = ActivityMapBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Initialize Places API
         if (!Places.isInitialized()) {
@@ -84,21 +84,19 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         requestLocationPermission()
 
         // Autocomplete feature
-        val searchEditText = findViewById<AutoCompleteTextView>(R.id.et_search_location)
         val autocompleteAdapter = PlacesAutoCompleteAdapter(this, Places.createClient(this))
-        searchEditText.setAdapter(autocompleteAdapter)
+        binding.etSearchLocation.setAdapter(autocompleteAdapter)
 
-        searchEditText.setOnItemClickListener { _, _, position, _ ->
+        binding.etSearchLocation.setOnItemClickListener { _, _, position, _ ->
             val selectedPlace = autocompleteAdapter.getItem(position)
-            selectedPlace?.let {
+            selectedPlace.let {
                 searchLocationByPlace(it)
             }
         }
 
 
 
-        val selectLocationButton: Button = findViewById(R.id.btnGetWeather)
-        selectLocationButton.setOnClickListener {
+        binding.btnGetWeather.setOnClickListener {
             selectedMarker?.let {
                 val resultIntent = Intent().apply {
                     putExtra(Keys.LATITUDE_KEY, selectedMarker?.position?.latitude ?: 0.0)
@@ -209,9 +207,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-
-            map?.isMyLocationEnabled = true
-            getLocation()
+        getLocation()
 
         map?.setOnMapClickListener { latLng ->
             addMarker(latLng)

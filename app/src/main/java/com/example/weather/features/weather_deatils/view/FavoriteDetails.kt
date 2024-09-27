@@ -9,16 +9,12 @@ import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
+import com.example.weather.databinding.ActivityFavoriteDetailsBinding
 import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModel
 import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModelFactory
 import com.example.weather.utils.SharedDataManager
@@ -33,7 +29,6 @@ import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -41,23 +36,11 @@ import java.util.Locale
 class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
     private lateinit var viewModel: WeatherDetailsViewModel
+    private lateinit var binding: ActivityFavoriteDetailsBinding
 
-    private lateinit var countryName: TextView
-    private lateinit var todayDate: TextView
-    private lateinit var weatherIcon: ImageView
-    private lateinit var temperatureText: TextView
-    private lateinit var weatherDescriptionText: TextView
-    private lateinit var recyclerViewHourlyWeather: RecyclerView
-    private lateinit var recyclerViewDailyWeather: RecyclerView
     private lateinit var dailyWeatherAdapter: FavoriteDailyWeatherAdapter
     private lateinit var hourlyWeatherAdapter: FavoriteHourlyWeatherAdapter
-    private lateinit var pressureText: TextView
-    private lateinit var humidityText: TextView
-    private lateinit var windSpeedText: TextView
-    private lateinit var cloudText: TextView
-    private lateinit var languageJob: Job
-    private lateinit var contentLayout: ConstraintLayout
-    private lateinit var contentProgressBar: ProgressBar
+
 
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -78,7 +61,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_favorite_details)
+        binding = ActivityFavoriteDetailsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val latitude = intent.getDoubleExtra(Keys.LATITUDE_KEY, 0.0)
         val longitude = intent.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0)
@@ -94,7 +78,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
             )
         )
-        languageJob = lifecycleScope.launch {
+        lifecycleScope.launch {
             SharedDataManager.languageFlow.collect { language ->
                 Log.i("DEBGUGG", "languageDetails: $language")
                 when (language) {
@@ -129,12 +113,12 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         lifecycleScope.launch {
             viewModel.loadingState.collect { isLoading ->
                 if (isLoading) {
-                    contentLayout.visibility = View.GONE
-                    contentProgressBar.visibility = View.VISIBLE
+                    binding.contentLayout.visibility = View.GONE
+                    binding.detailsProgressBar.visibility = View.VISIBLE
 
                 } else {
-                    contentLayout.visibility = View.VISIBLE
-                    contentProgressBar.visibility = View.GONE
+                    binding.contentLayout.visibility = View.VISIBLE
+                    binding.detailsProgressBar.visibility = View.GONE
                 }
             }
         }
@@ -173,41 +157,41 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
     private fun updateUI(weatherResponse: WeatherEntity) {
         if (weatherResponse.name.isEmpty()) {
-            countryName.text =
+            binding.favoriteCountryName.text =
                 getAddressFromLocation(weatherResponse.latitude, weatherResponse.longitude)
         } else {
-            countryName.text = weatherResponse.name
+            binding.favoriteCountryName.text = weatherResponse.name
         }
 
         val temperatureInCelsius = weatherResponse.temp.toInt()
         val selectedUnit = viewModel.getWeatherMeasure()
         val convertedTemperature = Utils().getWeatherMeasure(temperatureInCelsius, selectedUnit)
 
-        temperatureText.text = getString(
+        binding.favoriteTemperatureText.text = getString(
             R.string.temperature_format, convertedTemperature, Utils().getUnitSymbol(selectedUnit)
         )
 
-        weatherDescriptionText.text = weatherResponse.description.replaceFirstChar {
+        binding.favoriteWeatherDescriptionText.text = weatherResponse.description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
-        weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.icon))
-        pressureText.text = getString(
+        binding.favoriteWeatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.icon))
+        binding.favoritePressureText.text = getString(
             R.string.pressrue_format,
             weatherResponse.pressure,
             getString(R.string.hpa)
         )
-        humidityText.text = getString(R.string.percentage, weatherResponse.humidity)
+        binding.favoriteHumidityText.text = getString(R.string.percentage, weatherResponse.humidity)
         val speedInMps = weatherResponse.windSpeed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
 
-        windSpeedText.text = getString(
+        binding.favoriteWindText.text = getString(
             R.string.wind_speed_format,
             speed,
             Utils().getSpeedUnitSymbol(speedMeasure, this)
         )
 
-        cloudText.text = getString(R.string.percentage, weatherResponse.clouds)
+        binding.favoriteCloudText.text = getString(R.string.percentage, weatherResponse.clouds)
     }
 
     private fun updateDailyRecyclerView(dailyWeather: List<DailyWeatherEntity?>?) {
@@ -224,7 +208,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
     private fun updateDailyUI(weatherItem: DailyWeatherEntity) {
 
-        weatherDescriptionText.text = weatherItem.description.replaceFirstChar {
+        binding.favoriteWeatherDescriptionText.text = weatherItem.description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
 
@@ -239,7 +223,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                 epochTime = weatherItem.dt
             ) == getString(R.string.today)
         ) {
-            temperatureText.text = getString(R.string.temperature_format, convertedMaxTemp, Utils().getUnitSymbol(selectedUnit))
+            binding.favoriteTemperatureText.text = getString(R.string.temperature_format, convertedMaxTemp, Utils().getUnitSymbol(selectedUnit))
         } else {
 
             val formattedTemp = getString(R.string.temp_min_max_format,
@@ -247,19 +231,19 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                 convertedMinTemp.toInt(),
                 Utils().getUnitSymbol(selectedUnit))
 
-            temperatureText.text = formattedTemp
+            binding.favoriteTemperatureText.text = formattedTemp
         }
 
-        weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))
+        binding.favoriteWeatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))
 
-        pressureText.text = getString(R.string.pressrue_format, weatherItem.pressure, getString(R.string.hpa))
-        humidityText.text = getString(R.string.percentage, weatherItem.humidity)
-        cloudText.text = getString(R.string.percentage, weatherItem.clouds)
+        binding.favoritePressureText.text = getString(R.string.pressrue_format, weatherItem.pressure, getString(R.string.hpa))
+        binding.favoriteHumidityText.text = getString(R.string.percentage, weatherItem.humidity)
+        binding.favoriteCloudText.text = getString(R.string.percentage, weatherItem.clouds)
 
         val speedInMps = weatherItem.windSpeed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
-        windSpeedText.text = getString(
+        binding.favoriteWindText.text = getString(
             R.string.wind_speed_format,
             speed,
             Utils().getSpeedUnitSymbol(speedMeasure, this))
@@ -287,35 +271,17 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
     }
 
     private fun initUI() {
-        countryName = findViewById(R.id.favoriteCountryName)
-        todayDate = findViewById(R.id.favoriteTodayDate)
-        weatherIcon = findViewById(R.id.favoriteWeatherIcon)
-        temperatureText = findViewById(R.id.favoriteTemperatureText)
-        weatherDescriptionText = findViewById(R.id.favoriteWeatherDescriptionText)
-        cloudText = findViewById(R.id.favoriteCloudText)
-        windSpeedText = findViewById(R.id.favoriteWindText)
-        humidityText = findViewById(R.id.favoriteHumidityText)
-        pressureText = findViewById(R.id.favoritePressureText)
-        contentLayout = findViewById(R.id.contentLayout)
-        contentProgressBar = findViewById(R.id.detailsProgressBar)
-
-
-        recyclerViewHourlyWeather = findViewById(R.id.favoriteRecyclerViewHourlyWeather)
-        recyclerViewHourlyWeather.layoutManager =
+        binding.favoriteRecyclerViewHourlyWeather.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         hourlyWeatherAdapter =
             FavoriteHourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure(), this)
-        recyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
+        binding.favoriteRecyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
 
-
-        recyclerViewDailyWeather = findViewById(R.id.favoriteRecyclerViewDailyWeather)
-        recyclerViewDailyWeather.layoutManager =
+        binding.favoriteRecyclerViewDailyWeather.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         dailyWeatherAdapter =
             FavoriteDailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), this)
-        recyclerViewDailyWeather.adapter = dailyWeatherAdapter
-
-
+        binding.favoriteRecyclerViewDailyWeather.adapter = dailyWeatherAdapter
     }
 
     private fun isInternetAvailable(): Boolean {

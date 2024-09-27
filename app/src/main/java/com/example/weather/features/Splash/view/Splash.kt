@@ -7,15 +7,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.airbnb.lottie.LottieAnimationView
-import com.example.weather.R
+import com.example.weather.databinding.ActivitySplashBinding
 import com.example.weather.features.landing.view.LandingActivity
 import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
@@ -33,7 +28,8 @@ import java.util.Locale
 
 class Splash : AppCompatActivity() {
 
-    private lateinit var lottieAnimationView: LottieAnimationView
+    private lateinit var binding: ActivitySplashBinding
+
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -51,7 +47,8 @@ class Splash : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
 
         setUpLottieAnimation()
@@ -86,9 +83,8 @@ class Splash : AppCompatActivity() {
     }
 
     private fun setUpLottieAnimation() {
-        lottieAnimationView = findViewById(R.id.lottieAnimationView)
-        lottieAnimationView.playAnimation()
-        lottieAnimationView.speed = 1.5f
+        binding.lottieAnimationView.playAnimation()
+        binding.lottieAnimationView.speed = 1.5f
     }
 
 

@@ -15,15 +15,10 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.Switch
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -42,11 +37,12 @@ import com.example.weather.utils.constants.Keys
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.os.Looper
-import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination
+import com.example.weather.databinding.ActivityLandingBinding
+import com.example.weather.databinding.LandingDialogBinding
 import com.example.weather.features.home.view.Home
 import com.example.weather.features.home.view.UpdateLocationWeather
 import com.example.weather.utils.SharedDataManager
@@ -65,20 +61,18 @@ import java.util.Locale
 
 class LandingActivity : AppCompatActivity() {
 
+
+
     lateinit var viewModel: LandingViewModel
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var rbGps: RadioButton
-    private lateinit var rbMap: RadioButton
-    private lateinit var switchNotifications: Switch
-    private lateinit var btnOk: Button
+    private lateinit var landingBinding: ActivityLandingBinding
+    private lateinit var landingDialogBinding: LandingDialogBinding
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var gpsStatusReceiver: BroadcastReceiver
-    private lateinit var toolbar: Toolbar
     private lateinit var toggle: ActionBarDrawerToggle
     private var snackbar: Snackbar? = null
     private var isGpsStatusReceiverRegistered = false
     private var isOpenLocation = false
-    private lateinit var toolbarTitle: TextView
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -218,8 +212,8 @@ class LandingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_landing)
-
+        landingBinding = ActivityLandingBinding.inflate(layoutInflater)
+        setContentView(landingBinding.root)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -235,41 +229,27 @@ class LandingActivity : AppCompatActivity() {
                     AppDatabase.getDatabase(this).alarmDao()
                 ),
                 sharedPreferences = SharedPreferencesManager(this.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
-
             )
-
-
         )
-
-
-
         viewModel = ViewModelProvider(this, landingFactory).get(LandingViewModel::class.java)
         if (!viewModel.isFirstLaunch()) {
             showInitialSetupDialog()
         }
     }
-
-
-
     private fun setupToolbar() {
-        toolbar = findViewById(R.id.toolbar)
-        toolbar.title = ""
-        toolbarTitle = findViewById(R.id.toolbar_title)
-        setSupportActionBar(toolbar)
+        landingBinding.toolbar.title = ""
+        setSupportActionBar(landingBinding.toolbar)
     }
 
     private fun setupDrawer() {
-        drawerLayout = findViewById(R.id.drawer_layout)
-
-        // Setup ActionBarDrawerToggle for navigation drawer
         toggle = ActionBarDrawerToggle(
             this,
-            drawerLayout,
-            toolbar,
+            landingBinding.drawerLayout,
+            landingBinding.toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
-        drawerLayout.addDrawerListener(toggle)
+        landingBinding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
     }
 
@@ -288,7 +268,7 @@ class LandingActivity : AppCompatActivity() {
 
     private fun updateToolbarTitle(destination: NavDestination) {
 
-        toolbarTitle.text = when (destination.id) {
+        landingBinding.toolbarTitle.text = when (destination.id) {
             R.id.nav_home -> getString(R.string.home)
             R.id.nav_favorites -> getString(R.string.favorites)
             R.id.nav_settings -> getString(R.string.settings)
@@ -300,45 +280,33 @@ class LandingActivity : AppCompatActivity() {
     }
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
-        return NavigationUI.navigateUp(navController, drawerLayout) || super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(navController, landingBinding.drawerLayout) || super.onSupportNavigateUp()
     }
 
 
     private fun showInitialSetupDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.landing_dialog, null)
-
-        val dialog = AlertDialog.Builder(this).setView(dialogView).setCancelable(false).create()
-
-        initDialogUI(dialogView)
+        landingDialogBinding = LandingDialogBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(this).setView(landingDialogBinding.root).setCancelable(false).create()
         setUpDialogListeners(dialog)
-
         dialog.show()
     }
 
-    private fun initDialogUI(dialogView: View) {
-        rbGps = dialogView.findViewById(R.id.rbDialogGps)
-        rbMap = dialogView.findViewById(R.id.rbDialogMAP)
-        switchNotifications = dialogView.findViewById(R.id.switchNotificationsSwitch)
-        btnOk = dialogView.findViewById(R.id.btnOk)
-
-    }
-
     private fun setUpDialogListeners(dialog: AlertDialog) {
-        btnOk.setOnClickListener {
+        landingDialogBinding.btnOk.setOnClickListener {
             when {
-                rbGps.isChecked -> {
+                landingDialogBinding.rbDialogGps.isChecked -> {
                     viewModel.saveLocationStatus(LocationStatus.GPS)
                     requestLocationPermission()
                 }
 
-                rbMap.isChecked -> {
+                landingDialogBinding.rbDialogMAP.isChecked -> {
                     viewModel.saveLocationStatus(LocationStatus.MAP)
                     navigateToMaps()
                 }
             }
             when {
-                switchNotifications.isChecked -> viewModel.saveNotificationStatus(true)
-                switchNotifications.isChecked.not() -> viewModel.saveNotificationStatus(false)
+                landingDialogBinding.switchNotificationsSwitch.isChecked -> viewModel.saveNotificationStatus(true)
+                landingDialogBinding.switchNotificationsSwitch.isChecked.not() -> viewModel.saveNotificationStatus(false)
             }
             viewModel.setFirstLaunchCompleted()
             dialog.dismiss()

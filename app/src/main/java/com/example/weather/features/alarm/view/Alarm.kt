@@ -16,7 +16,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -26,11 +25,11 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.weather.R
+import com.example.weather.databinding.FragmentAlarmBinding
 import com.example.weather.features.alarm.model.DialogComponents
 import com.example.weather.features.alarm.services.AlarmReceiver
 import com.example.weather.features.alarm.services.NotificationWorker
@@ -47,7 +46,6 @@ import com.example.weather.utils.model.API.ApiResponse
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -57,14 +55,13 @@ import java.util.concurrent.TimeUnit
 
 class Alarm : Fragment(), OnDeleteClicked {
 
+    private lateinit var binding: FragmentAlarmBinding
+
+
     private lateinit var viewModel: AlarmViewModel
-    private lateinit var alertIcon: ImageView
-    private lateinit var addAlertFAB: FloatingActionButton
-    private lateinit var noAlertsTextView: TextView
-    private lateinit var alertsRecyclerView: RecyclerView
     private lateinit var alarmAdapter: AlarmAdapter
 
-    val REQUEST_OVERLAY_PERMISSION = 1234
+    private val REQUEST_OVERLAY_PERMISSION = 1234
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,14 +93,14 @@ class Alarm : Fragment(), OnDeleteClicked {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_alarm, container, false)
-    }
+    ): View {
+        binding = FragmentAlarmBinding.inflate(inflater, container, false)
+        return binding.root    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initUi(view)
+        initUi()
         setUpListeners()
         setUpObservers()
     }
@@ -119,18 +116,18 @@ class Alarm : Fragment(), OnDeleteClicked {
 
     private fun observeNoAlerts(alertsExist: Boolean) {
         if (alertsExist) {
-            noAlertsTextView.visibility = View.GONE
-            alertIcon.visibility = View.GONE
+            binding.noAlertsText.visibility = View.GONE
+            binding.alarmIcon.visibility = View.GONE
         } else {
-            noAlertsTextView.visibility = View.VISIBLE
-            alertIcon.visibility = View.VISIBLE
+            binding.noAlertsText.visibility = View.VISIBLE
+            binding.alarmIcon.visibility = View.VISIBLE
 
         }
 
     }
 
     private fun setUpListeners() {
-        addAlertFAB.setOnClickListener {
+        binding.addAlertFAB.setOnClickListener {
             openAddAlertDialog()
         }
     }
@@ -493,17 +490,11 @@ class Alarm : Fragment(), OnDeleteClicked {
         dateToTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(futureTime)
     }
 
-    private fun initUi(view: View) {
-        alertIcon = view.findViewById(R.id.alarmIcon)
-        noAlertsTextView = view.findViewById(R.id.noAlertsText)
-        addAlertFAB = view.findViewById(R.id.addAlertFAB)
-        alertsRecyclerView = view.findViewById(R.id.alertsRecyclerView)
-        alertsRecyclerView.layoutManager =
+    private fun initUi() {
+        binding.alertsRecyclerView.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
-
-
         alarmAdapter = AlarmAdapter(mutableListOf(), this, requireActivity())
-        alertsRecyclerView.adapter = alarmAdapter
+        binding.alertsRecyclerView.adapter = alarmAdapter
 
     }
 

@@ -10,17 +10,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
+import com.example.weather.databinding.FragmentHomeBinding
 import com.example.weather.features.home.view_model.HomeViewModel
 import com.example.weather.features.home.view_model.HomeViewModelFactory
 import com.example.weather.features.map.view.Map
@@ -37,7 +33,6 @@ import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 import java.util.Locale
@@ -45,27 +40,10 @@ import java.util.Locale
 class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     lateinit var viewModel: HomeViewModel
 
-    private lateinit var countryName: TextView
-    private lateinit var todayDate: TextView
-    private lateinit var weatherIcon: ImageView
-    private lateinit var temperatureText: TextView
-    private lateinit var weatherDescriptionText: TextView
-    private lateinit var locationIcon: ImageView
-    private lateinit var recyclerViewHourlyWeather: RecyclerView
-    private lateinit var recyclerViewDailyWeather: RecyclerView
-    private lateinit var dailyWeatherAdapter: DailyWeatherAdapter
+    private lateinit var binding: FragmentHomeBinding
+
     private lateinit var hourlyWeatherAdapter: HourlyWeatherAdapter
-    private lateinit var hourlyProgressBar: ProgressBar
-    private lateinit var dailyProgressBar: ProgressBar
-    private lateinit var measurementsProgressBar: ProgressBar
-    private lateinit var currentWeatherProgressBar: ProgressBar
-    private lateinit var measurementsGridLayout: GridLayout
-
-    private lateinit var pressureText: TextView
-    private lateinit var humidityText: TextView
-    private lateinit var windSpeedText: TextView
-    private lateinit var cloudText: TextView
-
+    private lateinit var dailyWeatherAdapter: DailyWeatherAdapter
 
     private val mapActivityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -113,15 +91,15 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             viewModel.currentWeatherState.collect { apiResponse ->
                 when (apiResponse) {
                     is ApiResponse.Loading -> {
-                        currentWeatherProgressBar.visibility = View.VISIBLE
-                        measurementsProgressBar.visibility = View.VISIBLE
-                        measurementsGridLayout.visibility = View.GONE
+                        binding.currentWeatherProgressBar.visibility = View.VISIBLE
+                        binding.measurementsProgressBar.visibility = View.VISIBLE
+                        binding.measurementsGrid.visibility = View.GONE
 
                     }
                     is ApiResponse.Success -> {
-                        currentWeatherProgressBar.visibility = View.GONE
-                        measurementsProgressBar.visibility = View.GONE
-                        measurementsGridLayout.visibility = View.VISIBLE
+                        binding.currentWeatherProgressBar.visibility = View.GONE
+                        binding.measurementsProgressBar.visibility = View.GONE
+                        binding.measurementsGrid.visibility = View.VISIBLE
                         updateUI(apiResponse.data)
                     }
                     is ApiResponse.Error -> {
@@ -136,11 +114,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                 when (apiResponse) {
                     is ApiResponse.Loading -> {
 
-                        hourlyProgressBar.visibility = View.VISIBLE
+                        binding.hourlyWeatherProgressBar.visibility = View.VISIBLE
 
                     }
                     is ApiResponse.Success -> {
-                        hourlyProgressBar.visibility = View.GONE
+                        binding.hourlyWeatherProgressBar.visibility = View.GONE
                         updateHourlyRecyclerViewList(apiResponse.data?.list)
                     }
 
@@ -158,12 +136,12 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             viewModel.dailyWeatherState.collect { apiResponse ->
                 when (apiResponse) {
                     is ApiResponse.Loading -> {
-                        dailyProgressBar.visibility = View.VISIBLE
+                        binding.dailyWeatherProgressBar.visibility = View.VISIBLE
 
                     }
 
                     is ApiResponse.Success -> {
-                        dailyProgressBar.visibility = View.GONE
+                        binding.dailyWeatherProgressBar.visibility = View.GONE
                         updateDailyRecyclerView(apiResponse.data)
                     }
 
@@ -183,9 +161,9 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_home, container, false)
-        return view
+    ): View {
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -195,11 +173,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
         updateLocation(currentLocation)
         Log.i("HomeFragment", "onViewCreated called")
-        initUi(view)
+        initUi()
         setUpListeners()
         setUpCollectors()
 
-        todayDate.text = Utils().getCurrentDate()
+        binding.todayDate.text = Utils().getCurrentDate()
 
     }
 
@@ -217,44 +195,23 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
     }
 
-    private fun initUi(view: View) {
-        countryName = view.findViewById(R.id.countryName)
-        todayDate = view.findViewById(R.id.todayDate)
-        weatherIcon = view.findViewById(R.id.weatherIcon)
-        temperatureText = view.findViewById(R.id.temperatureText)
-        weatherDescriptionText = view.findViewById(R.id.weatherDescriptionText)
-        locationIcon = view.findViewById(R.id.locationIcon)
-        cloudText = view.findViewById(R.id.cloudText)
-        windSpeedText = view.findViewById(R.id.windText)
-        humidityText = view.findViewById(R.id.humidityText)
-        pressureText = view.findViewById(R.id.pressureText)
 
-        hourlyProgressBar = view.findViewById(R.id.hourlyWeatherProgressBar)
-        dailyProgressBar = view.findViewById(R.id.dailyWeatherProgressBar)
-        measurementsProgressBar = view.findViewById(R.id.measurementsProgressBar)
-        currentWeatherProgressBar = view.findViewById(R.id.currentWeatherProgressBar)
-        measurementsGridLayout = view.findViewById(R.id.measurementsGrid)
 
-        recyclerViewHourlyWeather = view.findViewById(R.id.recyclerViewHourlyWeather)
-        recyclerViewHourlyWeather.layoutManager =
-            LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
+    private fun initUi() {
+        binding.recyclerViewHourlyWeather.layoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
         hourlyWeatherAdapter = HourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure(), requireActivity())
-        recyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
-
-
-        recyclerViewDailyWeather = view.findViewById(R.id.recyclerViewDailyWeather)
-        recyclerViewDailyWeather.layoutManager =
+        binding.recyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
+        binding.recyclerViewDailyWeather.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
         dailyWeatherAdapter =
             DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), requireActivity())
-        recyclerViewDailyWeather.adapter = dailyWeatherAdapter
-
+        binding.recyclerViewDailyWeather.adapter = dailyWeatherAdapter
         checkLocationStatus()
 
     }
 
     private fun setUpListeners() {
-        locationIcon.setOnClickListener {
+        binding.locationIcon.setOnClickListener {
             navigateToMaps()
         }
     }
@@ -267,7 +224,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
     private fun updateDetailedWeatherUI(weatherItem: DailyForecastItem) {
 
-        weatherDescriptionText.text = weatherItem.weather[0].description.replaceFirstChar {
+        binding.weatherDescriptionText.text = weatherItem.weather[0].description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
 
@@ -282,7 +239,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                 epochTime = weatherItem.dt
             ) == getString(R.string.today)
         ) {
-            temperatureText.text = getString(R.string.temperature_format, convertedMaxTemp, Utils().getUnitSymbol(selectedUnit))
+            binding.temperatureText.text = getString(R.string.temperature_format, convertedMaxTemp, Utils().getUnitSymbol(selectedUnit))
         } else {
 
             val formattedTemp = getString(R.string.temp_min_max_format,
@@ -290,20 +247,20 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                 convertedMinTemp.toInt(),
                 Utils().getUnitSymbol(selectedUnit))
 
-            temperatureText.text = formattedTemp
+            binding.temperatureText.text = formattedTemp
 
         }
 
-        weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
+        binding.weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
 
-        pressureText.text =
+        binding.pressureText.text =
             getString(R.string.pressrue_format, weatherItem.pressure, getString(R.string.hpa))
-        humidityText.text = getString(R.string.percentage, weatherItem.humidity)
-        cloudText.text = getString(R.string.percentage, weatherItem.clouds)
+        binding.humidityText.text = getString(R.string.percentage, weatherItem.humidity)
+        binding.cloudText.text = getString(R.string.percentage, weatherItem.clouds)
         val speedInMps = weatherItem.speed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
-        windSpeedText.text = getString(
+        binding.windText.text = getString(
             R.string.wind_speed_format,
             speed,
             Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
@@ -354,49 +311,49 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
     private fun updateUI(weatherResponse: WeatherResponse?) {
         if (weatherResponse?.name!!.isEmpty()) {
-            countryName.text =
+            binding.countryName.text =
                 getAddressFromLocation(weatherResponse.coord.lat, weatherResponse.coord.lon)
         } else {
-            countryName.text = weatherResponse.name
+            binding.countryName.text = weatherResponse.name
         }
 
         val temperatureInCelsius = weatherResponse.main.temp.toInt()
         val selectedUnit = viewModel.getWeatherMeasure()
         val convertedTemperature = Utils().getWeatherMeasure(temperatureInCelsius, selectedUnit)
 
-        temperatureText.text = getString(
+        binding.temperatureText.text = getString(
             R.string.temperature_format, convertedTemperature, Utils().getUnitSymbol(selectedUnit)
         )
 
-        weatherDescriptionText.text = weatherResponse.weather[0].description.replaceFirstChar {
+        binding.weatherDescriptionText.text = weatherResponse.weather[0].description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
-        weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
-        pressureText.text = getString(
+        binding.weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
+        binding.pressureText.text = getString(
             R.string.pressrue_format,
             weatherResponse.main.pressure,
             getString(R.string.hpa)
         )
-        humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity)
+        binding.humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity)
         val speedInMps = weatherResponse.wind.speed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
 
-        windSpeedText.text = getString(
+        binding.windText.text = getString(
             R.string.wind_speed_format,
             speed,
             Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
         )
 
-        cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all)
+        binding.cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all)
 
     }
 
     private fun checkLocationStatus() {
         if (viewModel.getLocationStatus() == LocationStatus.MAP) {
-            locationIcon.visibility = View.VISIBLE
+            binding.locationIcon.visibility = View.VISIBLE
         } else {
-            locationIcon.visibility = View.GONE
+            binding.locationIcon.visibility = View.GONE
         }
     }
 
