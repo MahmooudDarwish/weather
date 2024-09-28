@@ -31,9 +31,6 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompletePrediction
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -83,17 +80,19 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         requestLocationPermission()
 
-        // Autocomplete feature
-        val autocompleteAdapter = PlacesAutoCompleteAdapter(this, Places.createClient(this))
-        binding.etSearchLocation.setAdapter(autocompleteAdapter)
 
-        binding.etSearchLocation.setOnItemClickListener { _, _, position, _ ->
-            val selectedPlace = autocompleteAdapter.getItem(position)
-            selectedPlace.let {
-                searchLocationByPlace(it)
+        binding.etSearchLocation.apply {
+            val geocoder = Geocoder(this@Map, Locale.getDefault())
+            val adapter = GeocoderAutoCompleteAdapter(this@Map, geocoder)
+            setAdapter(adapter)
+
+            setOnItemClickListener { _, _, position, _ ->
+                val selectedLocation = adapter.getItem(position)
+                selectedLocation?.let {
+                    searchLocationByGeocoder(it)
+                }
             }
         }
-
 
 
         binding.btnGetWeather.setOnClickListener {
@@ -113,23 +112,22 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
+    private fun searchLocationByGeocoder(locationName: String) {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        val addresses = geocoder.getFromLocationName(locationName, 1)
 
-    private fun searchLocationByPlace(placePrediction: AutocompletePrediction) {
-        val placeId = placePrediction.placeId
-        val placeFields = listOf(Place.Field.LAT_LNG)
-
-        val request = FetchPlaceRequest.builder(placeId, placeFields).build()
-        Places.createClient(this).fetchPlace(request).addOnSuccessListener { response ->
-            val place = response.place
-            place.latLng?.let { latLng ->
-                map?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-                addMarker(latLng)
-            }
-        }.addOnFailureListener { exception ->
-            Log.e("MapsActivity", "Place not found: ${exception.message}")
+        if (addresses!!.isNotEmpty()) {
+            val address = addresses[0]
+            val latLng = LatLng(address.latitude, address.longitude)
+            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+            addMarker(latLng)
+            Toast.makeText(this, "Location found: ${address.locality ?: address.countryName}", Toast.LENGTH_SHORT).show()
+        } else {
             Toast.makeText(this, R.string.place_not_found, Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
 
     private fun requestLocationPermission() {
@@ -178,7 +176,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
                     getAddressFromLocation(latitude, longitude)
                 } ?: run {
                     Log.e("MapsActivity", "Location is null")
-                    Toast.makeText(this, getString(R.string.unable_to_get_location), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -199,7 +196,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             Log.i("DEBUGG", "getAddressFromLocation: $city")
             city
         } else {
-            Toast.makeText(this, getString(R.string.unknown), Toast.LENGTH_SHORT).show()
             Log.e("MapsActivity", "No city found for coordinates: $latitude, $longitude")
             getString(R.string.unknown)
         }

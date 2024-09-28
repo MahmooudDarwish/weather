@@ -12,7 +12,11 @@ import com.example.weather.utils.model.Local.AlarmEntity
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AlarmAdapter(private var alarms: List<AlarmEntity?>, private val onDeleteClicked: OnDeleteClicked, private val context: Context) : RecyclerView.Adapter<AlarmAdapter.AlarmViewHolder>() {
+class AlarmAdapter(
+    private var alarms: List<AlarmEntity?>,
+    private val onDeleteClicked: OnDeleteClicked,
+    private val context: Context
+) : RecyclerView.Adapter<AlarmAdapter.AlarmViewHolder>() {
 
     class AlarmViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val alertTimeTextView: TextView = view.findViewById(R.id.alertTime)
@@ -30,7 +34,8 @@ class AlarmAdapter(private var alarms: List<AlarmEntity?>, private val onDeleteC
     override fun onBindViewHolder(holder: AlarmViewHolder, position: Int) {
         val alarm = alarms[position]
 
-        val fromTime = String.format(Locale.getDefault(), "%02d:%02d", alarm!!.fromHour, alarm.fromMinute)
+        val fromTime =
+            String.format(Locale.getDefault(), "%02d:%02d", alarm!!.fromHour, alarm.fromMinute)
         val toTime = String.format(Locale.getDefault(), "%02d:%02d", alarm.toHour, alarm.toMinute)
 
         if (alarm.isAlarm) {

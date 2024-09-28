@@ -21,7 +21,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <AutoCompleteTextView
-        android:visibility="gone"
         android:id="@+id/et_search_location"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
