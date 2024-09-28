@@ -8,8 +8,7 @@
     android:layout_margin="8dp"
     card_view:cardCornerRadius="20dp"
     card_view:cardElevation="6dp"
-    card_view:cardBackgroundColor="#333333"
-    >
+    card_view:cardBackgroundColor="#333333">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -21,9 +20,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
             android:orientation="vertical"
             card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintEnd_toStartOf="@+id/weatherDayIcon"
+            card_view:layout_constraintEnd_toStartOf="@+id/alarmType"
             card_view:layout_constraintStart_toStartOf="parent"
             card_view:layout_constraintTop_toTopOf="parent">
 
@@ -33,10 +33,10 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textSize="16sp"
                 android:textColor="@android:color/white"
+                android:textSize="16sp"
                 card_view:layout_constraintBottom_toBottomOf="parent"
-                card_view:layout_constraintEnd_toStartOf="@+id/weatherDayIcon"
+                card_view:layout_constraintEnd_toStartOf="@+id/weatherDayIcon1"
                 card_view:layout_constraintHorizontal_bias="0.665"
                 card_view:layout_constraintStart_toStartOf="parent"
                 card_view:layout_constraintTop_toTopOf="parent"
@@ -48,31 +48,35 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textSize="16sp"
                 android:textColor="@android:color/white"
+                android:textSize="16sp"
                 card_view:layout_constraintBottom_toBottomOf="parent"
-                card_view:layout_constraintEnd_toStartOf="@+id/weatherDayIcon"
+                card_view:layout_constraintEnd_toStartOf="@+id/weatherDayIcon1"
                 card_view:layout_constraintStart_toStartOf="parent"
                 card_view:layout_constraintTop_toTopOf="parent"
                 card_view:layout_constraintVertical_bias="0.5" />
 
-
         </LinearLayout>
 
+        <!-- First ImageView -->
         <ImageView
-            android:id="@+id/weatherDayIcon"
+            android:id="@+id/deleteAlarm"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="20dp"
+            android:layout_marginEnd="8dp"
+
             android:src="@drawable/ic_delete"
-            card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintEnd_toEndOf="parent"
-            card_view:layout_constraintStart_toEndOf="@+id/alertInfo"
             card_view:layout_constraintTop_toTopOf="parent" />
 
-
-
+        <!-- Second ImageView -->
+        <ImageView
+            android:id="@+id/alarmType"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="30dp"
+            card_view:layout_constraintEnd_toStartOf="@+id/deleteAlarm"
+            card_view:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -9,6 +9,7 @@ import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.model.API.toDailyWeatherEntities
 import com.example.weather.utils.model.API.toHourlyWeatherEntities
 import com.example.weather.utils.model.API.toWeatherEntity
+import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -29,22 +30,19 @@ class WeatherDetailsViewModel(
     private val weatherRepository: WeatherRepositoryImpl
 ) : ViewModel() {
 
-    private val _hourlyWeatherData = MutableStateFlow<List<HourlyWeatherEntity?>>(emptyList())
-    val hourlyWeatherData: StateFlow<List<HourlyWeatherEntity?>>
-        get() = _hourlyWeatherData
-
-    private val _dailyWeatherData =
-        MutableStateFlow<List<DailyWeatherEntity?>>(emptyList())
-    val dailyWeatherData: StateFlow<List<DailyWeatherEntity?>>
-        get() = _dailyWeatherData
-
-
-    private val _favoriteWeatherData =
-        MutableStateFlow<WeatherEntity?>(null)
-    val favoriteWeatherData: StateFlow<WeatherEntity?>
+    private val _favoriteWeatherData = MutableStateFlow<DataState<WeatherEntity>>(DataState.Loading)
+    val favoriteWeatherData: StateFlow<DataState<WeatherEntity>>
         get() = _favoriteWeatherData
 
+    private val _hourlyWeatherState = MutableStateFlow<DataState<List<HourlyWeatherEntity?>>>(
+        DataState.Loading)
+    val hourlyWeatherState: StateFlow<DataState<List<HourlyWeatherEntity?>>>
+        get() = _hourlyWeatherState
 
+    private val _dailyWeatherState = MutableStateFlow<DataState<List<DailyWeatherEntity?>>>(
+        DataState.Loading)
+    val dailyWeatherState: StateFlow<DataState<List<DailyWeatherEntity?>>>
+        get() = _dailyWeatherState
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         val errorMessage = when (exception) {
@@ -53,90 +51,73 @@ class WeatherDetailsViewModel(
             is TimeoutException -> R.string.timeout_error
             else -> R.string.unexpected_error
         }
-        _errorState.value = errorMessage
-        Log.e("WeatherDetailsViewModel", "Caught an exception: $exception")
+        // Emit an error state
+        _favoriteWeatherData.value = DataState.Error(errorMessage)
+        Log.e("HomeViewModel", "Caught an exception: $exception")
     }
 
-    private val _loadingState = MutableStateFlow(false)
-    val loadingState: StateFlow<Boolean>
-        get() = _loadingState
-
-    private val _errorState = MutableStateFlow(0)
-    val errorState: StateFlow<Int>
-        get() = _errorState
-
-    private val supervisorJob = SupervisorJob()
-
-    private val viewModelScope = CoroutineScope(Dispatchers.IO + supervisorJob + exceptionHandler)
+    private val viewModelScope = CoroutineScope(Dispatchers.IO + SupervisorJob() + exceptionHandler)
 
     fun updateWeatherAndRefreshRoom(latitude: Double, longitude: Double, city: String) {
-        _loadingState.value = true
-
-        Log.d("WeatherDetailsViewModel", "Updating weather and refreshing Room data")
+        _favoriteWeatherData.value = DataState.Loading
         viewModelScope.launch {
             try {
-                // Collect and save current weather data
+                // Fetch and save current weather data
                 weatherRepository.fetchWeatherData(longitude, latitude)
-                    .map { response -> response?.toWeatherEntity(city, lon = longitude.toString(),lat = latitude.toString() , isFavorite = true) }
+                    .map { response -> response?.toWeatherEntity(city, lon = longitude.toString(), lat = latitude.toString(), true) }
                     .collect { currentWeatherEntity ->
                         currentWeatherEntity?.let {
                             weatherRepository.insertWeather(it)
+                            _favoriteWeatherData.value = DataState.Success(it)
                         }
                     }
 
-                // Fetch and save daily weather
+                // Fetch daily and hourly weather data
                 weatherRepository.get5DayForecast(longitude, latitude)
-                    .map { response -> response?.toDailyWeatherEntities(longitude.toString(), latitude.toString(), true) ?: emptyList() }
+                    .map { response -> response?.toDailyWeatherEntities(lon = longitude.toString(), lat = latitude.toString(), true) ?: emptyList() }
                     .collect { dailyWeatherEntities ->
                         weatherRepository.insertDailyWeather(dailyWeatherEntities)
+                        _dailyWeatherState.value = DataState.Success(dailyWeatherEntities)
                     }
 
-                // Fetch and save hourly weather
                 weatherRepository.fetchHourlyWeatherData(longitude, latitude)
-                    .map { response -> response?.toHourlyWeatherEntities(lon = longitude.toString(), lat = latitude.toString() , isFavorite = true) ?: emptyList() }
+                    .map { response -> response?.toHourlyWeatherEntities(lon = longitude.toString(), lat = latitude.toString(), true) ?: emptyList() }
                     .collect { hourlyWeatherEntities ->
                         weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
+                        _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
                     }
 
-                fetchFavoriteWeather(latitude, longitude)
+                fetchWeatherFromRoom(longitude, latitude)
             } catch (e: Exception) {
-                _errorState.value = R.string.error_fetching_favorite_weather_data
-                Log.e("WeatherDetailsViewModel", "Error fetching or saving weather data", e)
-            } finally {
-                _loadingState.value = false
-
+                _favoriteWeatherData.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
             }
         }
     }
 
-    private fun fetchFavoriteWeather(latitude: Double, longitude: Double) {
+    private fun fetchWeatherFromRoom(latitude: Double, longitude: Double) {
         viewModelScope.launch {
-            Log.d("lllllllllll", "Fetching favorite weather data")
             try {
                 launch {
-                    weatherRepository.getHourlyWeather(longitude, latitude)
-                        .collect { response ->
-                            _hourlyWeatherData.value = response
-                        }
+                    weatherRepository.getHourlyWeather(latitude, longitude).collect { response ->
+                        _hourlyWeatherState.value = DataState.Success(response)
+                    }
                 }
                 launch {
-                    weatherRepository.getDailyWeather(longitude, latitude)
-                        .collect { response ->
-                            _dailyWeatherData.value = response
-                        }
+                    weatherRepository.getDailyWeather(latitude, longitude).collect { response ->
+                        _dailyWeatherState.value = DataState.Success(response)
+                    }
                 }
                 launch {
-                    weatherRepository.getWeather(longitude, latitude)
-                        .collect { response ->
-                            _favoriteWeatherData.value = response
-                        }
+                    weatherRepository.getWeather(latitude, longitude).collect { response ->
+                        _favoriteWeatherData.value = DataState.Success(response)
+                    }
                 }
             } catch (e: Exception) {
-                _errorState.value = R.string.error_fetching_favorite_weather_data
-                Log.e("WeatherDetailsViewModel", "Error fetching favorite weather data", e)
+                _favoriteWeatherData.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
             }
         }
     }
+
 
 
     fun getWeatherMeasure(): Temperature {
@@ -146,8 +127,5 @@ class WeatherDetailsViewModel(
     fun getWindMeasure(): WindSpeed {
         return weatherRepository.getWindSpeedUnit()
     }
-    override fun onCleared() {
-        super.onCleared()
-        supervisorJob.cancel()
-    }
+
 }

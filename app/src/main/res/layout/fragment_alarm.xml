@@ -12,7 +12,7 @@
         android:layout_height="150dp"
         android:layout_gravity="center"
         android:layout_weight="1"
-        android:src="@drawable/ic_alert"
+        android:src="@drawable/ic_notification"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

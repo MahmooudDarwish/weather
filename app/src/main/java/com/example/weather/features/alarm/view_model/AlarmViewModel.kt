@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weather.R
-import com.example.weather.utils.model.API.ApiResponse
+import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.API.toDailyWeatherEntities
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
@@ -23,8 +23,8 @@ class AlarmViewModel(
     val alerts: StateFlow<List<AlarmEntity?>>
         get() = _alerts
 
-    private val _weatherDataState = MutableStateFlow<ApiResponse<List<DailyWeatherEntity>>>(ApiResponse.Loading)
-    val weatherDataState: StateFlow<ApiResponse<List<DailyWeatherEntity>>>
+    private val _weatherDataState = MutableStateFlow<DataState<List<DailyWeatherEntity>>>(DataState.Loading)
+    val weatherDataState: StateFlow<DataState<List<DailyWeatherEntity>>>
         get() = _weatherDataState
 
     fun getAlerts() {
@@ -43,7 +43,7 @@ class AlarmViewModel(
             val location: Pair<Double, Double>? = getCurrentLocation()
 
             viewModelScope.launch(Dispatchers.IO) {
-                _weatherDataState.value = ApiResponse.Loading
+                _weatherDataState.value = DataState.Loading
 
                 try {
                     val weatherFlow = weatherRepository
@@ -54,11 +54,11 @@ class AlarmViewModel(
 
                     weatherFlow.collect { dailyWeatherEntities ->
                         Log.d("AlarmViewModel", "Weather data fetched: 11111")
-                        _weatherDataState.value = ApiResponse.Success(dailyWeatherEntities)
+                        _weatherDataState.value = DataState.Success(dailyWeatherEntities)
                     }
 
                 } catch (e: Exception) {
-                    _weatherDataState.value = ApiResponse.Error(R.string.error_fetching_weather_data)
+                    _weatherDataState.value = DataState.Error(R.string.error_fetching_weather_data)
                     Log.e("AlarmViewModel", "Error fetching 30-day weather data", e)
                 }
             }

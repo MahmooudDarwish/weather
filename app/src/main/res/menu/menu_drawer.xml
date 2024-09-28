@@ -13,7 +13,7 @@
         android:title="@string/favorites" />
     <item
         android:id="@+id/nav_alerts"
-        android:icon="@drawable/ic_alert"
+        android:icon="@drawable/ic_notification"
          android:title="@string/alerts" />
     <item
         android:id="@+id/nav_settings"

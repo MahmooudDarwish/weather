@@ -28,12 +28,8 @@ import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSo
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.managers.GPSChecker
 import com.example.weather.utils.managers.InternetChecker
-import com.example.weather.utils.model.API.ApiResponse
-import com.example.weather.utils.model.API.DailyForecastItem
-import com.example.weather.utils.model.ForecastItem
-import com.example.weather.utils.model.API.DailyWeatherResponse
+import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
-import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -129,44 +125,53 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
         }
         lifecycleScope.launch {
-            viewModel.errorState.collect { errorMessage ->
-                if (errorMessage != 0) {
-                    showToast(getString(errorMessage))
+            viewModel.weatherState.collect { state ->
+                when (state) {
+                    is DataState.Loading -> {
+                        binding.homeContent.visibility = View.GONE
+                        binding.contentProgressBar.visibility = View.VISIBLE
+                    }
+                    is DataState.Success -> {
+                        binding.homeContent.visibility = View.VISIBLE
+                        binding.contentProgressBar.visibility = View.GONE
+                        updateUI(state.data)  // Update UI with weather data
+                    }
+                    is DataState.Error -> {
+                        binding.homeContent.visibility = View.VISIBLE
+                        binding.contentProgressBar.visibility = View.GONE
+                        showToast(getString(state.message))
+                    }
                 }
             }
         }
 
         lifecycleScope.launch {
-            viewModel.loadingState.collect { isLoading ->
-                if (isLoading) {
-
-                    binding.homeContent.visibility = View.GONE
-                    binding.contentProgressBar.visibility = View.VISIBLE
-
-                } else {
-                    binding.homeContent.visibility = View.VISIBLE
-                    binding.contentProgressBar.visibility = View.GONE
-                }
-            }
-        }
-        lifecycleScope.launch {
-            viewModel.currentWeatherData.collect { weatherResponse ->
-                if (weatherResponse != null) {
-                    Log.i("DEBUGG", "FavoriteDetails: $weatherResponse")
-                    updateUI(weatherResponse)
+            viewModel.hourlyWeatherState.collect { state ->
+                when (state) {
+                    is DataState.Loading -> {
+                    }
+                    is DataState.Success -> {
+                        updateHourlyRecyclerViewList(state.data)
+                    }
+                    is DataState.Error -> {
+                        showToast(getString(state.message))
+                    }
                 }
             }
         }
 
         lifecycleScope.launch {
-            viewModel.hourlyWeatherData.collect { hourlyWeather ->
-                updateHourlyRecyclerViewList(hourlyWeather)
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.dailyWeatherData.collect { dailyWeather ->
-                updateDailyRecyclerView(dailyWeather)
+            viewModel.dailyWeatherState.collect { state ->
+                when (state) {
+                    is DataState.Loading -> {
+                    }
+                    is DataState.Success -> {
+                        updateDailyRecyclerView(state.data)
+                    }
+                    is DataState.Error -> {
+                        showToast(getString(state.message))
+                    }
+                }
             }
         }
     }
@@ -308,19 +313,21 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     }
 
 
-    private fun filterHourlyWeatherByDay(dayEpoch: Long) {
-        viewModel.hourlyWeatherData.value.let { hourlyWeather ->
 
+    private fun filterHourlyWeatherByDay(dayEpoch: Long) {
+        viewModel.hourlyWeatherState.value.let { hourlyWeather ->
+
+            val list = (hourlyWeather as DataState.Success).data
             if (Utils().getDayNameFromEpoch(
                     context = requireActivity(),
                     epochTime = dayEpoch
                 ) == getString(R.string.today)
             ) {
-                val filteredList = hourlyWeather.take(24)
+                val filteredList = list.take(24)
                 updateHourlyRecyclerViewList(filteredList)
 
             } else {
-                val filteredList = hourlyWeather.filter {
+                val filteredList = list.filter {
                     Utils().isSameDay(it!!.dt, dayEpoch)
                 }
                 updateHourlyRecyclerViewList(filteredList)

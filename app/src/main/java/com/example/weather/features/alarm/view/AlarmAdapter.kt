@@ -17,7 +17,8 @@ class AlarmAdapter(private var alarms: List<AlarmEntity?>, private val onDeleteC
     class AlarmViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val alertTimeTextView: TextView = view.findViewById(R.id.alertTime)
         val alertDateTextView: TextView = view.findViewById(R.id.alertDate)
-        val weatherIconImageView: ImageView = view.findViewById(R.id.weatherDayIcon)
+        val weatherIconImageView: ImageView = view.findViewById(R.id.deleteAlarm)
+        val alarmTypeIconTextView: ImageView = view.findViewById(R.id.alarmType)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmViewHolder {
@@ -34,8 +35,11 @@ class AlarmAdapter(private var alarms: List<AlarmEntity?>, private val onDeleteC
 
         if (alarm.isAlarm) {
             holder.alertTimeTextView.text = context.getString(R.string.from_to, fromTime, toTime)
+            holder.alarmTypeIconTextView.setImageResource(R.drawable.ic_alarm)
         } else {
             holder.alertTimeTextView.text = context.getString(R.string.at, fromTime)
+            holder.alarmTypeIconTextView.setImageResource(R.drawable.ic_notification)
+
         }
 
         val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())

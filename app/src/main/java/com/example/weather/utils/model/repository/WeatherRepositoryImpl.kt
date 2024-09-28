@@ -116,7 +116,7 @@ class WeatherRepositoryImpl private constructor(
 
     ///ROOM DATABASE
 
-    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity?> {
+    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
         return localDataSource.getWeather(lon = lon,lat = lat)
     }
 

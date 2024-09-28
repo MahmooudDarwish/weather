@@ -13,10 +13,8 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
-import com.example.weather.features.home.view.OnDayClickListener
 import com.example.weather.utils.Utils
 import com.example.weather.utils.enums.Temperature
-import com.example.weather.utils.model.API.DailyForecastItem
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import java.util.Locale
 
@@ -33,7 +31,7 @@ class FavoriteDailyWeatherAdapter(
     class DayViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val weatherDay: TextView = view.findViewById(R.id.weatherDay)
         val tempMinMax: TextView = view.findViewById(R.id.tempMinMax)
-        val icon: ImageView = view.findViewById(R.id.weatherDayIcon)
+        val icon: ImageView = view.findViewById(R.id.deleteAlarm)
         val tempDesc: TextView = view.findViewById(R.id.weatherDayDesc)
         val card: CardView = view.findViewById(R.id.weatherDayCard)
     }

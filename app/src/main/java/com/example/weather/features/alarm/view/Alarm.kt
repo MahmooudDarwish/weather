@@ -38,11 +38,12 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
-import com.example.weather.utils.model.API.ApiResponse
+import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import kotlinx.coroutines.launch
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -97,6 +98,10 @@ class Alarm : Fragment(), OnDeleteClicked {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        popUpBinding = AddAlertDialogBinding.inflate(LayoutInflater.from(requireContext()))
+        alertDialog = AlertDialog.Builder(requireContext())
+            .setView(popUpBinding.root)
+            .create()
         binding = FragmentAlarmBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -123,17 +128,20 @@ class Alarm : Fragment(), OnDeleteClicked {
         lifecycleScope.launch {
             viewModel.weatherDataState.collect { state ->
                 when (state) {
-                    is ApiResponse.Loading -> {
+                    is DataState.Loading -> {
                     }
 
-                    is ApiResponse.Success -> {
-                        val date = parseDatesAndTimes()
-                        val selectedWeatherData = state.data.first { weather ->
+                    is DataState.Success -> {
+                        val dateResult = parseDatesAndTimes() ?: return@collect
+
+                        // Now proceed with the logic since dateResult is valid
+                        val selectedWeatherData = state.data.firstOrNull { weather ->
                             val weatherDate = Date(weather.dt * 1000)
-                            weatherDate in date.startDate..date.endDate
+                            weatherDate in dateResult.startDate..dateResult.endDate
                         }
 
-                        selectedWeatherData.let { weather ->
+
+                        selectedWeatherData?.let { weather ->
                             val alarmEntity = AlarmEntity(
                                 title = weather.description.replaceFirstChar {
                                     if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
@@ -152,8 +160,8 @@ class Alarm : Fragment(), OnDeleteClicked {
                                     .toInt(),
                                 toMinute = popUpBinding.timeToTxt.text.toString().substring(3, 5)
                                     .toInt(),
-                                startDate = date.startDateTimeMillis,
-                                endDate = date.endDateTimeMillis,
+                                startDate = dateResult.startDateTimeMillis,
+                                endDate = dateResult.endDateTimeMillis,
                                 date = weather.dt * 1000,
                                 isAlarm = popUpBinding.alarmTypeRadioGroup.checkedRadioButtonId == R.id.alarmSoundRadioButton
                             )
@@ -173,7 +181,7 @@ class Alarm : Fragment(), OnDeleteClicked {
                         }
                     }
 
-                    is ApiResponse.Error -> {
+                    is DataState.Error -> {
                         Log.e("Alarmhol", "Error fetching weather data: ${state.message}")
                         Toast.makeText(
                             requireActivity(),
@@ -183,21 +191,38 @@ class Alarm : Fragment(), OnDeleteClicked {
                     }
                 }
             }
-            Log.d("Alarmhol", "Finished collecting weatherDataState")
         }
 
 
     }
 
-    private fun parseDatesAndTimes(): DateTimeResult {
+    private fun parseDatesAndTimes(): DateTimeResult? {
         val dateFrom = popUpBinding.dateFromTxt.text.toString()
         val dateTo = popUpBinding.dateToTxt.text.toString()
         val timeFrom = popUpBinding.timeFromTxt.text.toString()
         val timeTo = popUpBinding.timeToTxt.text.toString()
 
+        if (dateFrom.isBlank() || dateTo.isBlank() || timeFrom.isBlank() || timeTo.isBlank()) {
+            Log.e("Alarm", "Date or Time fields cannot be empty")
+            return null
+        }
+
         val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val dateFromParsed = format.parse(dateFrom)
-        val dateToParsed = format.parse(dateTo)
+
+        val dateFromParsed: Date?
+        val dateToParsed: Date?
+        try {
+            dateFromParsed = format.parse(dateFrom)
+            dateToParsed = format.parse(dateTo)
+        } catch (e: ParseException) {
+            Log.e("Alarm", "Unparseable date: ${e.message}")
+            return null
+        }
+
+        if (dateFromParsed == null || dateToParsed == null) {
+            Log.e("Alarm", "Date parsing failed")
+            return null
+        }
 
         val startDate = dateFromParsed
         val endDate = Calendar.getInstance().apply {
@@ -209,11 +234,16 @@ class Alarm : Fragment(), OnDeleteClicked {
         val startDateTimeMillis = Utils().convertToDateTimeInMillis(dateFrom, timeFrom)
         val endDateTimeMillis = Utils().convertToDateTimeInMillis(dateTo, timeTo)
 
+        if (startDateTimeMillis == null || endDateTimeMillis == null) {
+            Log.e("Alarm", "Failed to convert date and time to milliseconds")
+            return null
+        }
+
         return DateTimeResult(
             startDate = startDate,
             endDate = endDate,
-            startDateTimeMillis = startDateTimeMillis!!,
-            endDateTimeMillis = endDateTimeMillis!!
+            startDateTimeMillis = startDateTimeMillis,
+            endDateTimeMillis = endDateTimeMillis
         )
     }
 
@@ -238,12 +268,6 @@ class Alarm : Fragment(), OnDeleteClicked {
 
 
     private fun openAddAlertDialog() {
-        popUpBinding = AddAlertDialogBinding.inflate(LayoutInflater.from(requireContext()))
-
-        alertDialog = AlertDialog.Builder(requireContext())
-            .setView(popUpBinding.root)
-            .create()
-
         val calendar = Calendar.getInstance()
         val currentTime = calendar.time
 

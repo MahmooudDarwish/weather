@@ -23,7 +23,7 @@ interface WeatherRepository {
      fun get30DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?>
 
      /// Database
-     fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
+     fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity>
      fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
      fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
      fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>

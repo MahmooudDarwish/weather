@@ -26,6 +26,7 @@ import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.managers.InternetChecker
+import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -161,45 +162,62 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                 }
             }
         }
+
+
         lifecycleScope.launch {
-            viewModel.errorState.collect { errorMessage ->
-                if (errorMessage != 0) {
-                    showToast(getString(errorMessage))
+            viewModel.favoriteWeatherData.collect { state ->
+                when (state) {
+                    is DataState.Loading -> {
+                        binding.contentLayout.visibility = View.GONE
+                        binding.detailsProgressBar.visibility = View.VISIBLE
+                    }
+
+                    is DataState.Success -> {
+                        binding.contentLayout.visibility = View.VISIBLE
+                        binding.detailsProgressBar.visibility = View.GONE
+                        updateUI(state.data)  // Update UI with weather data
+                    }
+
+                    is DataState.Error -> {
+                        binding.contentLayout.visibility = View.VISIBLE
+                        binding.detailsProgressBar.visibility = View.GONE
+                        showToast(getString(state.message))
+                    }
                 }
             }
         }
 
         lifecycleScope.launch {
-            viewModel.loadingState.collect { isLoading ->
-                if (isLoading) {
+            viewModel.hourlyWeatherState.collect { state ->
+                when (state) {
+                    is DataState.Loading -> {
+                    }
 
-                    binding.contentLayout.visibility = View.GONE
-                    binding.detailsProgressBar.visibility = View.VISIBLE
+                    is DataState.Success -> {
+                        updateHourlyRecyclerViewList(state.data)
+                    }
 
-                } else {
-                    binding.contentLayout.visibility = View.VISIBLE
-                    binding.detailsProgressBar.visibility = View.GONE
-                }
-            }
-        }
-        lifecycleScope.launch {
-            viewModel.favoriteWeatherData.collect { weatherResponse ->
-                if (weatherResponse != null) {
-                    Log.i("DEBUGG", "FavoriteDetails: $weatherResponse")
-                    updateUI(weatherResponse)
+                    is DataState.Error -> {
+                        showToast(getString(state.message))
+                    }
                 }
             }
         }
 
         lifecycleScope.launch {
-            viewModel.hourlyWeatherData.collect { hourlyWeather ->
-                updateHourlyRecyclerViewList(hourlyWeather)
-            }
-        }
+            viewModel.dailyWeatherState.collect { state ->
+                when (state) {
+                    is DataState.Loading -> {
+                    }
 
-        lifecycleScope.launch {
-            viewModel.dailyWeatherData.collect { dailyWeather ->
-                updateDailyRecyclerView(dailyWeather)
+                    is DataState.Success -> {
+                        updateDailyRecyclerView(state.data)
+                    }
+
+                    is DataState.Error -> {
+                        showToast(getString(state.message))
+                    }
+                }
             }
         }
     }
@@ -317,23 +335,29 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         )
 
 
-        val filteredHourlyWeather = filterHourlyWeatherByDay(weatherItem.dt)
-        updateHourlyRecyclerViewList(filteredHourlyWeather)
+        filterHourlyWeatherByDay(weatherItem.dt)
 
     }
 
-    private fun filterHourlyWeatherByDay(dayEpoch: Long): List<HourlyWeatherEntity?> {
-        return viewModel.hourlyWeatherData.value.let { hourlyWeather ->
+
+    private fun filterHourlyWeatherByDay(dayEpoch: Long) {
+        viewModel.hourlyWeatherState.value.let { hourlyWeather ->
+
+            val list = (hourlyWeather as DataState.Success).data
             if (Utils().getDayNameFromEpoch(
                     context = this,
                     epochTime = dayEpoch
                 ) == getString(R.string.today)
             ) {
-                hourlyWeather.take(24)
+                val filteredList = list.take(24)
+                updateHourlyRecyclerViewList(filteredList)
+
             } else {
-                hourlyWeather.filter {
+                val filteredList = list.filter {
                     Utils().isSameDay(it!!.dt, dayEpoch)
                 }
+                updateHourlyRecyclerViewList(filteredList)
+
             }
 
         }
