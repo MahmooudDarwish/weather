@@ -18,6 +18,7 @@ object Keys {
     const val ALARM_DESCRIPTION_KEY = "alarmDescription"
     const val ALARM_ICON_KEY = "weatherIcon"
     const val ALARM_ID_KEY = "alarmId"
+    const val ALARM_DISMISS_KEY = "alarmDismissTime"
 
 
 

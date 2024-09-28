@@ -40,6 +40,7 @@ import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSo
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
 import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.AlarmEntity
+import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import kotlinx.coroutines.launch
@@ -59,6 +60,11 @@ class Alarm : Fragment(), OnDeleteClicked {
     private lateinit var viewModel: AlarmViewModel
     private lateinit var alarmAdapter: AlarmAdapter
     private lateinit var alertDialog: AlertDialog
+    private lateinit var fromDateTimePicker: Calendar
+    private lateinit var toDateTimePicker: Calendar
+    private lateinit var fromDateDatePicker: Calendar
+    private lateinit var toDateDatePicker: Calendar
+
 
     private val REQUEST_OVERLAY_PERMISSION = 1234
 
@@ -133,12 +139,14 @@ class Alarm : Fragment(), OnDeleteClicked {
 
                     is DataState.Success -> {
                         val dateResult = parseDatesAndTimes() ?: return@collect
-
-                        // Now proceed with the logic since dateResult is valid
-                        val selectedWeatherData = state.data.firstOrNull { weather ->
+                        Log.d("Alarsdsdsm", "dateResult: $dateResult")
+                        var selectedWeatherData  : DailyWeatherEntity? = null
+                         selectedWeatherData = state.data.firstOrNull { weather ->
                             val weatherDate = Date(weather.dt * 1000)
                             weatherDate in dateResult.startDate..dateResult.endDate
                         }
+
+                            Log.d("Alarsdsdsm", "selectedWeatherData: $selectedWeatherData")
 
 
                         selectedWeatherData?.let { weather ->
@@ -271,6 +279,11 @@ class Alarm : Fragment(), OnDeleteClicked {
         val calendar = Calendar.getInstance()
         val currentTime = calendar.time
 
+        fromDateDatePicker = calendar.clone() as Calendar
+        toDateDatePicker = calendar.clone() as Calendar
+        fromDateTimePicker = calendar.clone() as Calendar
+        toDateTimePicker = calendar.clone() as Calendar
+
         popUpBinding.timeFromTxt.text =
             SimpleDateFormat("HH:mm", Locale.getDefault()).format(currentTime)
         popUpBinding.dateFromTxt.text =
@@ -328,25 +341,27 @@ class Alarm : Fragment(), OnDeleteClicked {
         }
 
         popUpBinding.dateFrom.setOnClickListener {
-            openDatePickerDialog { selectedDate ->
-                openTimePickerDialog(selectedDate) { selectedTime ->
+            openFromDatePickerDialog { selectedDate ->
+                openFromTimePickerDialog { selectedTime ->
+
                     popUpBinding.timeFromTxt.text =
                         SimpleDateFormat("HH:mm", Locale.getDefault()).format(selectedTime.time)
-                    popUpBinding.dateFromTxt.text = SimpleDateFormat(
-                        "yyyy-MM-dd", Locale.getDefault()
-                    ).format(selectedDate.time)
+                    popUpBinding.dateFromTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate.time)
+
+                    popUpBinding.timeToTxt.text =
+                        SimpleDateFormat("HH:mm", Locale.getDefault()).format(selectedTime.time)
+                    popUpBinding.dateToTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate.time)
+
                 }
             }
         }
 
         popUpBinding.dateTo.setOnClickListener {
-            openDatePickerDialog { selectedDate ->
-                openTimePickerDialog(selectedDate) { selectedTime ->
+            openToDatePickerDialog { selectedDate ->
+                openToTimePickerDialog { selectedTime ->
                     popUpBinding.timeToTxt.text =
                         SimpleDateFormat("HH:mm", Locale.getDefault()).format(selectedTime.time)
-                    popUpBinding.dateToTxt.text = SimpleDateFormat(
-                        "yyyy-MM-dd", Locale.getDefault()
-                    ).format(selectedDate.time)
+                    popUpBinding.dateToTxt.text = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate.time)
                 }
             }
         }
@@ -411,7 +426,7 @@ class Alarm : Fragment(), OnDeleteClicked {
     }
 
     private fun requestExactAlarmPermission(alarmEntity: AlarmEntity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
             Log.d("Alarm", "Sdk version is greater than 31")
             Toast.makeText(
                 requireActivity(),
@@ -447,11 +462,12 @@ class Alarm : Fragment(), OnDeleteClicked {
             .putString(Keys.ALARM_DESCRIPTION_KEY, alarmEntity.description)
             .putString(Keys.ALARM_ICON_KEY, alarmEntity.icon)
             .putLong(Keys.ALARM_ID_KEY, alarmEntity.startDate)
+            .putLong(Keys.ALARM_DISMISS_KEY, alarmEntity.endDate)
             .build()
 
         val workRequest = OneTimeWorkRequestBuilder<AlarmWorker>()
             .setInputData(data)
-            .setInitialDelay((alarmEntity.startDate - System.currentTimeMillis()), TimeUnit.MILLISECONDS) // Delay until alarm time
+            .setInitialDelay((alarmEntity.startDate - System.currentTimeMillis()), TimeUnit.MILLISECONDS)
             .addTag(alarmEntity.startDate.toString())
             .build()
 
@@ -471,17 +487,16 @@ class Alarm : Fragment(), OnDeleteClicked {
     override fun deleteClicked(alarm: AlarmEntity) {
         viewModel.deleteAlert(alarm.startDate)
         Log.d("Alarm", "Alarm deleted: $alarm")
-
             cancelNotificationOrAlarm(alarm)
-
-
-
     }
-    private fun openDatePickerDialog(onDateSet: (Calendar) -> Unit) {
+
+    private fun openFromDatePickerDialog(onDateSet: (Calendar) -> Unit) {
         val calendar = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog.newInstance(
             { _, year, month, dayOfMonth ->
                 calendar.set(year, month, dayOfMonth)
+                fromDateDatePicker = calendar.clone() as Calendar
+                fromDateTimePicker = calendar.clone() as Calendar
                 onDateSet(calendar)
             },
             calendar.get(Calendar.YEAR),
@@ -495,27 +510,45 @@ class Alarm : Fragment(), OnDeleteClicked {
                 add(Calendar.DAY_OF_MONTH, 30)
             }
         }
-        datePickerDialog.show(parentFragmentManager, "DatePickerDialog")
+        datePickerDialog.show(parentFragmentManager, "FromDatePickerDialog")
     }
 
-    private fun openTimePickerDialog(selectedDate: Calendar, onTimeSet: (Calendar) -> Unit) {
-        val currentTime = Calendar.getInstance()
 
-        val isToday =
-            selectedDate.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR) && selectedDate.get(
-                Calendar.MONTH
-            ) == currentTime.get(Calendar.MONTH) && selectedDate.get(Calendar.DAY_OF_MONTH) == currentTime.get(
-                Calendar.DAY_OF_MONTH
-            )
+    private fun openToDatePickerDialog(onDateSet: (Calendar) -> Unit) {
+        val calendar = Calendar.getInstance()
+        val datePickerDialog = DatePickerDialog.newInstance(
+            { _, year, month, dayOfMonth ->
+                calendar.set(year, month, dayOfMonth)
+                toDateDatePicker = calendar.clone() as Calendar
+                onDateSet(calendar)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            minDate = fromDateDatePicker.clone() as Calendar
+            maxDate = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_MONTH, 30)
+            }
+        }
+        datePickerDialog.show(parentFragmentManager, "ToDatePickerDialog")
+    }
+
+
+    private fun openFromTimePickerDialog(onTimeSet: (Calendar) -> Unit) {
+        val currentTime = Calendar.getInstance()
+        val isToday = fromDateTimePicker.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR) &&
+                fromDateTimePicker.get(Calendar.MONTH) == currentTime.get(Calendar.MONTH) &&
+                fromDateTimePicker.get(Calendar.DAY_OF_MONTH) == currentTime.get(Calendar.DAY_OF_MONTH)
 
         val minHour = if (isToday) currentTime.get(Calendar.HOUR_OF_DAY) else 0
         val minMinute = if (isToday) currentTime.get(Calendar.MINUTE) else 0
 
         val timePickerDialog = TimePickerDialog.newInstance(
             { _, hourOfDay, minute, _ ->
-                selectedDate.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                selectedDate.set(Calendar.MINUTE, minute)
-                onTimeSet(selectedDate)
+                fromDateTimePicker.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                fromDateTimePicker.set(Calendar.MINUTE, minute)
+                onTimeSet(fromDateTimePicker)
             }, minHour, minMinute, true
         ).apply {
             if (isToday) {
@@ -523,9 +556,37 @@ class Alarm : Fragment(), OnDeleteClicked {
             }
         }
 
-        timePickerDialog.show(parentFragmentManager, "TimePickerDialog")
+        timePickerDialog.show(parentFragmentManager, "FromTimePickerDialog")
     }
 
+    private fun openToTimePickerDialog(onTimeSet: (Calendar) -> Unit) {
+        val currentTime = Calendar.getInstance()
+        val isFromDateToday = fromDateTimePicker.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR) &&
+                fromDateTimePicker.get(Calendar.MONTH) == currentTime.get(Calendar.MONTH) &&
+                fromDateTimePicker.get(Calendar.DAY_OF_MONTH) == currentTime.get(Calendar.DAY_OF_MONTH)
 
+        val minHour: Int
+        val minMinute: Int
+
+        if (fromDateTimePicker.after(toDateTimePicker)) {
+            minHour = fromDateTimePicker.get(Calendar.HOUR_OF_DAY)
+            minMinute = fromDateTimePicker.get(Calendar.MINUTE)
+        } else {
+            minHour = if (isFromDateToday) fromDateTimePicker.get(Calendar.HOUR_OF_DAY) else 0
+            minMinute = if (isFromDateToday) fromDateTimePicker.get(Calendar.MINUTE) else 0
+        }
+
+        val timePickerDialog = TimePickerDialog.newInstance(
+            { _, hourOfDay, minute, _ ->
+                toDateTimePicker.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                toDateTimePicker.set(Calendar.MINUTE, minute)
+                onTimeSet(toDateTimePicker)
+            }, minHour, minMinute, true
+        ).apply {
+            setMinTime(minHour, minMinute, 0)
+        }
+
+        timePickerDialog.show(parentFragmentManager, "ToTimePickerDialog")
+    }
 }
 

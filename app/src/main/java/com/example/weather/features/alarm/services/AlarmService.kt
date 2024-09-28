@@ -9,6 +9,7 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.media.MediaPlayer
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import android.view.Gravity
@@ -59,6 +60,7 @@ class AlarmService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         val id:Long = intent?.getLongExtra(Keys.ALARM_ID_KEY, 0) ?: 0
+        val dismissTime: Long = intent?.getLongExtra(Keys.ALARM_DISMISS_KEY, 0) ?: 0
 
         createAlertChannel()
 
@@ -74,6 +76,22 @@ class AlarmService : Service() {
 
             stopSelf()
             return START_NOT_STICKY
+        }
+
+        Log.d("AlarmService", "onStartCommand: $dismissTime")
+        Log.d("AlarmService", "onStartCommand: ${System.currentTimeMillis()}")
+        if (dismissTime > System.currentTimeMillis()) {
+
+            val handler = Handler(mainLooper)
+            val delayMillis = dismissTime - System.currentTimeMillis()
+            Log.d("AlarmService", "onStartCommand: $delayMillis")
+
+            handler.postDelayed({
+                CoroutineScope(Dispatchers.IO).launch {
+                    repo.deleteAlarm(id)
+                }
+                stopSelf()
+            }, delayMillis)
         }
 
         showAlarmOverlay(intent)
