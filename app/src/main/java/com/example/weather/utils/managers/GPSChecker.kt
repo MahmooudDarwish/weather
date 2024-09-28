@@ -41,10 +41,9 @@ class GPSChecker(private val context: Context) {
         }
     }
 
-    private fun isLocationEnabled(): Boolean {
+    fun isLocationEnabled(): Boolean {
         val gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
-        return gpsEnabled || networkEnabled
+        return gpsEnabled
     }
 }

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/swipeRefreshLayout"
+    android:background="@drawable/background_linear_gradient"
+    tools:context=".features.weather_deatils.view.FavoriteDetails">
+
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
@@ -7,13 +17,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_linear_gradient"
-    tools:context=".features.home.view.Home">
+    tools:context=".features.weather_deatils.view.FavoriteDetails">
 
     <FrameLayout
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
+        <LinearLayout
+            android:id="@+id/no_internet_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/holo_red_dark"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/no_internet_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_internet_connection"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                />
+        </LinearLayout>
 
         <ProgressBar
             android:id="@+id/detailsProgressBar"
@@ -313,5 +342,6 @@
     </FrameLayout>
 
 </androidx.core.widget.NestedScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 

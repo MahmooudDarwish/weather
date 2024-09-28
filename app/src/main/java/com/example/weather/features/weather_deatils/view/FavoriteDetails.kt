@@ -25,6 +25,7 @@ import com.example.weather.utils.enums.Language
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
+import com.example.weather.utils.managers.InternetChecker
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -41,6 +42,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
     private lateinit var dailyWeatherAdapter: FavoriteDailyWeatherAdapter
     private lateinit var hourlyWeatherAdapter: FavoriteHourlyWeatherAdapter
+    private lateinit var internetChecker: InternetChecker
+
 
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -57,6 +60,10 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
             }
         }
         recreate()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        internetChecker.stopMonitoring()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,18 +103,30 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
         viewModel =
             ViewModelProvider(this, weatherDetailsFactory).get(WeatherDetailsViewModel::class.java)
+        internetChecker = InternetChecker(this)
+        internetChecker.startMonitoring()
 
 
         initUI()
 
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            if (internetChecker.isInternetAvailable()){
+                getWeatherDetails(longitude = longitude, latitude = latitude)
+            }else{
+                showToast(getString(R.string.no_internet_connection))
+            }
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
         setUpCollectors()
+        getWeatherDetails(longitude = longitude, latitude = latitude)
+    }
 
-            viewModel.updateWeatherAndRefreshRoom(
-                latitude,
-                longitude,
-                getAddressFromLocation(latitude = latitude, longitude = longitude)
-            )
-
+    private fun getWeatherDetails(longitude: Double, latitude: Double){
+        viewModel.updateWeatherAndRefreshRoom(
+            latitude,
+            longitude,
+            getAddressFromLocation(latitude = latitude, longitude = longitude)
+        )
     }
 
     fun getAddressFromLocation(latitude: Double, longitude: Double): String {
@@ -116,7 +135,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
         return if (!addresses.isNullOrEmpty()) {
-            val city = addresses[0].locality ?:  addresses[0].countryName ?: getString(R.string.unknown)
+            val city =
+                addresses[0].locality ?: addresses[0].countryName ?: getString(R.string.unknown)
             Log.i("DEBUGG", "City: $city")
             city
         } else {
@@ -132,8 +152,18 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
     private fun setUpCollectors() {
         lifecycleScope.launch {
+            internetChecker.networkStateFlow.collect { isConnected ->
+                Log.i("LandingActivity", "Network state changed: $isConnected")
+                if (isConnected) {
+                    binding.noInternetContainer.visibility = View.GONE
+                } else {
+                    binding.noInternetContainer.visibility = View.VISIBLE
+                }
+            }
+        }
+        lifecycleScope.launch {
             viewModel.errorState.collect { errorMessage ->
-                if (errorMessage != 0){
+                if (errorMessage != 0) {
                     showToast(getString(errorMessage))
                 }
             }
@@ -321,10 +351,9 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         dailyWeatherAdapter =
             FavoriteDailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), this)
         binding.favoriteRecyclerViewDailyWeather.adapter = dailyWeatherAdapter
+
+
     }
-
-
-
 
 
     override fun onDayClicked(day: DailyWeatherEntity) {

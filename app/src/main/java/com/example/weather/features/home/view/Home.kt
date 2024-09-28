@@ -26,6 +26,8 @@ import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
+import com.example.weather.utils.managers.GPSChecker
+import com.example.weather.utils.managers.InternetChecker
 import com.example.weather.utils.model.API.ApiResponse
 import com.example.weather.utils.model.API.DailyForecastItem
 import com.example.weather.utils.model.ForecastItem
@@ -39,6 +41,7 @@ import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import kotlinx.coroutines.launch
 
 import java.util.Locale
+
 class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     lateinit var viewModel: HomeViewModel
 
@@ -46,6 +49,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
     private lateinit var hourlyWeatherAdapter: HourlyWeatherAdapter
     private lateinit var dailyWeatherAdapter: DailyWeatherAdapter
+
+    private var lastKnownLocation: Pair<Double, Double>? = null
+
+    private lateinit var internetChecker: InternetChecker
+    private lateinit var gpsChecker: GPSChecker
 
     private val mapActivityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -60,6 +68,12 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        internetChecker.stopMonitoring()
+        gpsChecker.stopMonitoring()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -70,11 +84,25 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                     AppDatabase.getDatabase(requireActivity()).weatherDao(),
                     AppDatabase.getDatabase(requireActivity()).alarmDao()
                 ),
-                sharedPreferences = SharedPreferencesManager(requireActivity().getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
+                sharedPreferences = SharedPreferencesManager(
+                    requireActivity().getSharedPreferences(
+                        Keys.SHARED_PREFERENCES_NAME,
+                        Context.MODE_PRIVATE
+                    )
+                )
 
             ),
         )
         viewModel = ViewModelProvider(this, homeFactory).get(HomeViewModel::class.java)
+
+        internetChecker = InternetChecker(requireActivity())
+        gpsChecker = GPSChecker(requireActivity())
+
+
+        internetChecker.startMonitoring()
+        gpsChecker.startMonitoring()
+
+
     }
 
     private fun showToast(msg: String) {
@@ -83,9 +111,18 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
     private fun setUpCollectors() {
         lifecycleScope.launch {
+            internetChecker.networkStateFlow.collect { isConnected ->
+                if (isConnected) {
+                    updateLocation(lastKnownLocation)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
             viewModel.currentLocationFlow.collect { location ->
                 Log.i("DEBUGGGGGGG", "WeatherDetailsViewModel $location")
                 if (location != null) {
+                    lastKnownLocation = location
                     updateLocation(location)
                 }
             }
@@ -93,7 +130,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
         lifecycleScope.launch {
             viewModel.errorState.collect { errorMessage ->
-                if (errorMessage != 0){
+                if (errorMessage != 0) {
                     showToast(getString(errorMessage))
                 }
             }
@@ -158,7 +195,8 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
         return if (!addresses.isNullOrEmpty()) {
-            val city = addresses[0].locality ?: addresses[0].countryName ?:getString(R.string.unknown)
+            val city =
+                addresses[0].locality ?: addresses[0].countryName ?: getString(R.string.unknown)
             Log.d("MapsActivity", "City: $city")
             city
         } else {
@@ -168,10 +206,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     }
 
 
-
     private fun initUi() {
-        binding.recyclerViewHourlyWeather.layoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
-        hourlyWeatherAdapter = HourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure(), requireActivity())
+        binding.recyclerViewHourlyWeather.layoutManager =
+            LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
+        hourlyWeatherAdapter =
+            HourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure(), requireActivity())
         binding.recyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
         binding.recyclerViewDailyWeather.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
@@ -179,6 +218,28 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), requireActivity())
         binding.recyclerViewDailyWeather.adapter = dailyWeatherAdapter
         checkLocationStatus()
+
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            if (!internetChecker.isInternetAvailable()) {
+                showToast(getString(R.string.no_internet_connection))
+            } else {
+                if (viewModel.getLocationStatus() == LocationStatus.GPS) {
+                    if(gpsChecker.isLocationEnabled()){
+                        updateLocation(lastKnownLocation)
+                    }else{
+                        showToast(getString(R.string.gps_disabled_message))
+                    }
+                } else {
+                        updateLocation(lastKnownLocation)
+
+                }
+            }
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
+
+        updateLocation(lastKnownLocation)
+
 
     }
 
@@ -188,8 +249,8 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
     }
 
-    private fun updateDailyRecyclerView(dailyList : List<DailyWeatherEntity?>) {
-            dailyWeatherAdapter.updateData(dailyList)
+    private fun updateDailyRecyclerView(dailyList: List<DailyWeatherEntity?>) {
+        dailyWeatherAdapter.updateData(dailyList)
     }
 
     private fun updateDetailedWeatherUI(weatherItem: DailyWeatherEntity) {
@@ -209,13 +270,19 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                 epochTime = weatherItem.dt
             ) == getString(R.string.today)
         ) {
-            binding.temperatureText.text = getString(R.string.temperature_format, convertedMaxTemp, Utils().getUnitSymbol(selectedUnit))
+            binding.temperatureText.text = getString(
+                R.string.temperature_format,
+                convertedMaxTemp,
+                Utils().getUnitSymbol(selectedUnit)
+            )
         } else {
 
-            val formattedTemp = getString(R.string.temp_min_max_format,
+            val formattedTemp = getString(
+                R.string.temp_min_max_format,
                 convertedMaxTemp.toInt(),
                 convertedMinTemp.toInt(),
-                Utils().getUnitSymbol(selectedUnit))
+                Utils().getUnitSymbol(selectedUnit)
+            )
 
             binding.temperatureText.text = formattedTemp
 
@@ -236,35 +303,35 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
         )
 
-         filterHourlyWeatherByDay(weatherItem.dt)
+        filterHourlyWeatherByDay(weatherItem.dt)
 
     }
 
 
     private fun filterHourlyWeatherByDay(dayEpoch: Long) {
-         viewModel.hourlyWeatherData.value.let { hourlyWeather ->
+        viewModel.hourlyWeatherData.value.let { hourlyWeather ->
 
             if (Utils().getDayNameFromEpoch(
                     context = requireActivity(),
                     epochTime = dayEpoch
                 ) == getString(R.string.today)
             ) {
-                val filteredList  = hourlyWeather.take(24)
+                val filteredList = hourlyWeather.take(24)
                 updateHourlyRecyclerViewList(filteredList)
 
             } else {
-                val filteredList =  hourlyWeather.filter {
+                val filteredList = hourlyWeather.filter {
                     Utils().isSameDay(it!!.dt, dayEpoch)
                 }
                 updateHourlyRecyclerViewList(filteredList)
 
             }
 
-         }
+        }
     }
 
     private fun updateHourlyRecyclerViewList(filteredList: List<HourlyWeatherEntity?>) {
-            hourlyWeatherAdapter.updateHourlyWeatherList(filteredList)
+        hourlyWeatherAdapter.updateHourlyWeatherList(filteredList)
     }
 
     private fun updateUI(weatherResponse: WeatherEntity?) {
@@ -328,7 +395,11 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
         val latitude = currentLocation.first
         val longitude = currentLocation.second
-        viewModel.updateWeatherAndRefreshRoom(longitude = longitude, latitude = latitude,city = getAddressFromLocation(latitude, longitude))
+        viewModel.updateWeatherAndRefreshRoom(
+            longitude = longitude,
+            latitude = latitude,
+            city = getAddressFromLocation(latitude, longitude)
+        )
         Log.i("HomeFragment", " hommmme shared ${longitude}, ")
 
     }

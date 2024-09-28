@@ -65,10 +65,8 @@ class LandingActivity : AppCompatActivity() {
     private lateinit var landingDialogBinding: LandingDialogBinding
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var gpsStatusReceiver: BroadcastReceiver
     private lateinit var toggle: ActionBarDrawerToggle
     private var snackbar: Snackbar? = null
-    private var isGpsStatusReceiverRegistered = false
     private var isOpenLocation = false
 
     private lateinit var internetChecker: InternetChecker
@@ -162,6 +160,7 @@ class LandingActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         internetChecker.stopMonitoring()
+        gpsChecker.stopMonitoring()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -178,11 +177,9 @@ class LandingActivity : AppCompatActivity() {
         gpsChecker = GPSChecker(this)
 
 
-        // Start monitoring network changes
        internetChecker.startMonitoring()
         gpsChecker.startMonitoring()
 
-        // Observe network changes using SharedFlow
         lifecycleScope.launch {
             internetChecker.networkStateFlow.collect { isConnected ->
                 Log.i("LandingActivity", "Network state changed: $isConnected")
