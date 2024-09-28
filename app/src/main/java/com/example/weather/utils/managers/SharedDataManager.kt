@@ -1,4 +1,4 @@
-package com.example.weather.utils
+package com.example.weather.utils.managers
 
 import com.example.weather.utils.enums.Language
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -11,5 +11,13 @@ object SharedDataManager {
 
     suspend fun emitLanguage(language: Language) {
         _languageFlow.emit(language)
+    }
+
+
+    private val _currentLocationFlow = MutableSharedFlow<Pair<Double, Double>?>(replay = 1)
+    val currentLocationFlow: SharedFlow<Pair<Double,Double>?> = _currentLocationFlow
+
+    suspend fun emitLocation(location: Pair<Double,Double>?) {
+        _currentLocationFlow.emit(location)
     }
 }

@@ -1,14 +1,11 @@
 package com.example.weather.features.weather_deatils.view_model
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.example.weather.R
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
-import com.example.weather.utils.model.API.ApiResponse
 
-import com.example.weather.utils.model.API.WeatherResponse
 import com.example.weather.utils.model.API.toDailyWeatherEntities
 import com.example.weather.utils.model.API.toHourlyWeatherEntities
 import com.example.weather.utils.model.API.toWeatherEntity
@@ -24,6 +21,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
+import java.util.concurrent.TimeoutException
 
 class WeatherDetailsViewModel(
     private val weatherRepository: WeatherRepositoryImpl
@@ -47,12 +47,23 @@ class WeatherDetailsViewModel(
 
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
+        val errorMessage = when (exception) {
+            is IOException -> R.string.network_error
+            is HttpException -> R.string.server_error
+            is TimeoutException -> R.string.timeout_error
+            else -> R.string.unexpected_error
+        }
+        _errorState.value = errorMessage
         Log.e("WeatherDetailsViewModel", "Caught an exception: $exception")
     }
 
     private val _loadingState = MutableStateFlow(false)
     val loadingState: StateFlow<Boolean>
         get() = _loadingState
+
+    private val _errorState = MutableStateFlow(0)
+    val errorState: StateFlow<Int>
+        get() = _errorState
 
     private val supervisorJob = SupervisorJob()
 
@@ -61,35 +72,35 @@ class WeatherDetailsViewModel(
     fun updateWeatherAndRefreshRoom(latitude: Double, longitude: Double, city: String) {
         _loadingState.value = true
 
+        Log.d("WeatherDetailsViewModel", "Updating weather and refreshing Room data")
         viewModelScope.launch {
             try {
                 // Collect and save current weather data
                 weatherRepository.fetchWeatherData(longitude, latitude)
-                    .map { response -> response?.toWeatherEntity(city) }
+                    .map { response -> response?.toWeatherEntity(city, lon = longitude.toString(),lat = latitude.toString() , isFavorite = true) }
                     .collect { currentWeatherEntity ->
-                        Log.d("WeatherDetailsViewModel", "Current Weather Entity: $currentWeatherEntity")
                         currentWeatherEntity?.let {
-                            weatherRepository.insertFavoriteWeather(it)
+                            weatherRepository.insertWeather(it)
                         }
                     }
 
                 // Fetch and save daily weather
                 weatherRepository.get5DayForecast(longitude, latitude)
-                    .map { response -> response?.toDailyWeatherEntities() ?: emptyList() }
+                    .map { response -> response?.toDailyWeatherEntities(longitude.toString(), latitude.toString(), true) ?: emptyList() }
                     .collect { dailyWeatherEntities ->
-                        Log.d("WeatherDetailsViewModel", "Daily Weather Entities: $dailyWeatherEntities")
-                        weatherRepository.insertFavoriteDailyWeather(dailyWeatherEntities)
+                        weatherRepository.insertDailyWeather(dailyWeatherEntities)
                     }
 
                 // Fetch and save hourly weather
                 weatherRepository.fetchHourlyWeatherData(longitude, latitude)
-                    .map { response -> response?.toHourlyWeatherEntities() ?: emptyList() }
+                    .map { response -> response?.toHourlyWeatherEntities(lon = longitude.toString(), lat = latitude.toString() , isFavorite = true) ?: emptyList() }
                     .collect { hourlyWeatherEntities ->
-                        weatherRepository.insertFavoriteHourlyWeather(hourlyWeatherEntities)
+                        weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
                     }
 
                 fetchFavoriteWeather(latitude, longitude)
             } catch (e: Exception) {
+                _errorState.value = R.string.error_fetching_favorite_weather_data
                 Log.e("WeatherDetailsViewModel", "Error fetching or saving weather data", e)
             } finally {
                 _loadingState.value = false
@@ -98,28 +109,30 @@ class WeatherDetailsViewModel(
         }
     }
 
-    fun fetchFavoriteWeather(latitude: Double, longitude: Double) {
+    private fun fetchFavoriteWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch {
+            Log.d("lllllllllll", "Fetching favorite weather data")
             try {
                 launch {
-                    weatherRepository.getFavoriteHourlyWeather(longitude, latitude)
+                    weatherRepository.getHourlyWeather(longitude, latitude)
                         .collect { response ->
                             _hourlyWeatherData.value = response
                         }
                 }
                 launch {
-                    weatherRepository.getFavoriteDailyWeather(longitude, latitude)
+                    weatherRepository.getDailyWeather(longitude, latitude)
                         .collect { response ->
                             _dailyWeatherData.value = response
                         }
                 }
                 launch {
-                    weatherRepository.getFavoriteWeather(longitude, latitude)
+                    weatherRepository.getWeather(longitude, latitude)
                         .collect { response ->
                             _favoriteWeatherData.value = response
                         }
                 }
             } catch (e: Exception) {
+                _errorState.value = R.string.error_fetching_favorite_weather_data
                 Log.e("WeatherDetailsViewModel", "Error fetching favorite weather data", e)
             }
         }

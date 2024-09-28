@@ -15,7 +15,8 @@ data class WeatherEntity(
     val windSpeed: Double,
     val clouds: Int,
     val dt: Int,  // Timestamp
-    val name: String // Location name
+    val name: String, // Location name
+    val isFavorite: Boolean
 )
 
 

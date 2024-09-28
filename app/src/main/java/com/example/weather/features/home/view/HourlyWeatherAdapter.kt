@@ -12,9 +12,10 @@ import com.example.weather.R
 import com.example.weather.utils.Utils
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.model.ForecastItem
+import com.example.weather.utils.model.Local.HourlyWeatherEntity
 
 class HourlyWeatherAdapter(
-    private var weatherList: List<ForecastItem>,
+    private var weatherList: List<HourlyWeatherEntity?>,
     private val temperatureUnit: Temperature,
     private val context: Context
 
@@ -33,20 +34,19 @@ class HourlyWeatherAdapter(
         return WeatherViewHolder(view)
     }
 
-    fun updateHourlyWeatherList(filteredList : List<ForecastItem>){
+    fun updateHourlyWeatherList(filteredList : List<HourlyWeatherEntity?>){
         weatherList = filteredList
         notifyDataSetChanged()
     }
-
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
-        val weatherItem = weatherList[position]
-        val convertedTemp = Utils().getWeatherMeasure(weatherItem.main.temp.toInt(), temperatureUnit)
+        val weatherItem = weatherList[position] ?: return
+        val convertedTemp = Utils().getWeatherMeasure(weatherItem.temp.toInt(), temperatureUnit)
 
         holder.time.text = weatherItem.dt_txt.substring(11, 16)
         holder.temp.text = context.getString(R.string.temperature_format, convertedTemp,Utils().getUnitSymbol(temperatureUnit ))
 
 
-        holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
+        holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))
 
     }
 

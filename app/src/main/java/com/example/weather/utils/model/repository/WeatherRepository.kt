@@ -23,15 +23,15 @@ interface WeatherRepository {
      fun get30DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?>
 
      /// Database
-     fun getFavoriteWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
-     fun getFavoriteDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
-     fun getFavoriteHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
+     fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
+     fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
+     fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
      fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>
 
      // Methods for inserting weather data
-     suspend fun insertFavoriteWeather(weather: WeatherEntity)
-     suspend fun insertFavoriteDailyWeather(dailyWeather: List<DailyWeatherEntity>)
-     suspend fun insertFavoriteHourlyWeather(hourlyWeather: List<HourlyWeatherEntity>)
+     suspend fun insertWeather(weather: WeatherEntity)
+     suspend fun insertDailyWeather(dailyWeather: List<DailyWeatherEntity>)
+     suspend fun insertHourlyWeather(hourlyWeather: List<HourlyWeatherEntity>)
 
      // Methods for deleting weather data
      suspend fun deleteFavoriteWeather(lon: Double, lat: Double)

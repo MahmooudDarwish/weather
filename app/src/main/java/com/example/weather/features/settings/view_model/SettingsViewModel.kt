@@ -2,7 +2,7 @@ package com.example.weather.features.settings.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weather.utils.SharedDataManager
+import com.example.weather.utils.managers.SharedDataManager
 import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
@@ -77,6 +77,8 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
 
     fun saveCurrentLocation(latitude: Double, longitude: Double) {
         viewModelScope.launch {
+            val location = Pair(latitude, longitude)
+            SharedDataManager.emitLocation(location)
             repository.saveCurrentLocation(latitude, longitude)
         }
     }

@@ -27,27 +27,27 @@ class FavoritesViewModel(
             try {
                 // Collect and save current weather data
                 weatherRepository.fetchWeatherData(longitude, latitude)
-                    .map { response -> response?.toWeatherEntity(city) }
+                    .map { response -> response?.toWeatherEntity(city,lat = latitude.toString(), lon = longitude.toString(), isFavorite = true) }
                     .collect { currentWeatherEntity ->
                         Log.d("FavoritesViewModel", "Current Weather Entity: $currentWeatherEntity")
                         currentWeatherEntity?.let {
-                            weatherRepository.insertFavoriteWeather(it)
+                            weatherRepository.insertWeather(it)
                         }
                     }
 
                 // Fetch and save daily weather
                 weatherRepository.get5DayForecast(longitude, latitude)
-                    .map { response -> response?.toDailyWeatherEntities() ?: emptyList() }
+                    .map { response -> response?.toDailyWeatherEntities(lon = longitude.toString(),lat = latitude.toString(), true) ?: emptyList() }
                     .collect { dailyWeatherEntities ->
                         Log.d("FavoritesViewModel", "Daily Weather Entities: $dailyWeatherEntities")
-                        weatherRepository.insertFavoriteDailyWeather(dailyWeatherEntities)
+                        weatherRepository.insertDailyWeather(dailyWeatherEntities)
                     }
 
                 // Fetch and save hourly weather
                 weatherRepository.fetchHourlyWeatherData(longitude, latitude)
-                    .map { response -> response?.toHourlyWeatherEntities() ?: emptyList() }
+                    .map { response -> response?.toHourlyWeatherEntities(lon = longitude.toString(),lat = latitude.toString(), true) ?: emptyList() }
                     .collect { hourlyWeatherEntities ->
-                        weatherRepository.insertFavoriteHourlyWeather(hourlyWeatherEntities)
+                        weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
                     }
 
                 fetchAllFavoriteWeather()
@@ -61,6 +61,7 @@ class FavoritesViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 weatherRepository.getAllFavoriteWeather().collect { response ->
+                    Log.d("FavoritesViewModel", "Fetched favorites: $response")
                     _favorites.value = response
                 }
             } catch (e: Exception) {

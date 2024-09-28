@@ -96,7 +96,12 @@
     <string name="grant_alarm_permission">Please grant permission to schedule exact alarms</string>
     <string name="pressrue_format">%1$d %2$s</string>
     <string name="place_not_found">Place not found</string>
-
+    <string name="no_internet_connection">No internet connection</string>"
+    <string name="network_error">Network error. Please check your connection.</string>
+    <string name="server_error">Server error. Please try again later.</string>
+    <string name="timeout_error">Request timed out. Please try again.</string>
+    <string name="unexpected_error">An unexpected error occurred.</string>
+    <string name="error_fetching_favorite_weather_data">Error fetching favorite weather data</string>
 
 
 </resources>

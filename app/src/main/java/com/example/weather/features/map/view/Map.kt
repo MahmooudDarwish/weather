@@ -17,7 +17,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.weather.R
 import com.example.weather.databinding.ActivityMapBinding
-import com.example.weather.utils.SharedDataManager
+import com.example.weather.utils.managers.SharedDataManager
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.Language
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -190,12 +190,13 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun getAddressFromLocation(latitude: Double, longitude: Double): String {
+        Log.i("DEBUGG", "getAddressFromLocation: $latitude, $longitude")
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
         return if (!addresses.isNullOrEmpty()) {
             val city = addresses[0].locality ?:  addresses[0].countryName ?: getString(R.string.unknown)
-            Toast.makeText(this, "${getString(R.string.city)}: $city", Toast.LENGTH_SHORT).show()
+            Log.i("DEBUGG", "getAddressFromLocation: $city")
             city
         } else {
             Toast.makeText(this, getString(R.string.unknown), Toast.LENGTH_SHORT).show()

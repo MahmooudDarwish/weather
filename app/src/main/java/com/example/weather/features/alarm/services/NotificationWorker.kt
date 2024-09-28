@@ -51,7 +51,6 @@ class NotificationWorker(
 
         if (!notificationStatus) {
             Log.d("NotificationWorker", "Notification is disabled, skipping notification.")
-
             repo.deleteAlarm(id)
 
             return Result.success()
@@ -72,9 +71,12 @@ class NotificationWorker(
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,
                 Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
+            Log.d("NotificationWorker", "POST_NOTIFICATIONS permission granted, showing notification.")
             notificationManager.notify(1, notification)
+        } else {
+            Log.d("NotificationWorker", "POST_NOTIFICATIONS permission not granted, cannot show notification.")
         }
 
         repo.deleteAlarm(id)

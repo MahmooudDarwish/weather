@@ -15,5 +15,7 @@ data class HourlyWeatherEntity(
     val description: String,
     val icon: String,
     val clouds: Int,
-    val dt_txt: String
+    val dt_txt: String,
+    val isFavorite: Boolean
+
 )

@@ -13,13 +13,13 @@ data class HourlyWeatherResponse(
 )
 
 
-fun HourlyWeatherResponse.toHourlyWeatherEntities(): List<HourlyWeatherEntity> {
+fun HourlyWeatherResponse.toHourlyWeatherEntities(lon: String, lat: String, isFavorite: Boolean): List<HourlyWeatherEntity> {
     return list.map { forecastItem ->
-        forecastItem.toHourlyWeatherEntity(city.coord.lon, city.coord.lat)
+        forecastItem.toHourlyWeatherEntity(lon.toDouble(), lat.toDouble(), isFavorite)
     }
 }
 
-private fun ForecastItem.toHourlyWeatherEntity(longitude: Double, latitude: Double): HourlyWeatherEntity {
+private fun ForecastItem.toHourlyWeatherEntity(longitude: Double, latitude: Double, isFavorite: Boolean): HourlyWeatherEntity {
     return HourlyWeatherEntity(
         longitude = longitude,
         latitude = latitude,
@@ -31,7 +31,8 @@ private fun ForecastItem.toHourlyWeatherEntity(longitude: Double, latitude: Doub
         description = weather.firstOrNull()?.description ?: "",
         icon = weather.firstOrNull()?.icon ?: "",
         clouds = clouds.all,
-        dt_txt = dt_txt
+        dt_txt = dt_txt,
+        isFavorite = isFavorite
     )
 }
 

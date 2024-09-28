@@ -9,9 +9,8 @@ import com.example.weather.utils.model.Local.WeatherEntity
 import kotlinx.coroutines.flow.Flow
 
 class WeatherLocalDataSourceImpl(private val weatherDao: WeatherDao, private val alarmDao: AlarmDao) : WeatherLocalDataSource {
-
-    override fun getCurrentWeather(lon: Double, lat: Double): Flow<WeatherEntity?> {
-        return weatherDao.getFavoriteWeather(lon, lat)
+    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity?> {
+        return weatherDao.getWeather(lon, lat)
     }
 
     override fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {

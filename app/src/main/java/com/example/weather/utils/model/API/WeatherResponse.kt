@@ -1,5 +1,6 @@
 package com.example.weather.utils.model.API
 
+import android.util.Log
 import com.example.weather.utils.model.Clouds
 import com.example.weather.utils.model.Coordinates
 import com.example.weather.utils.model.Local.WeatherEntity
@@ -20,14 +21,22 @@ data class WeatherResponse(
 )
 
 
-fun WeatherResponse.toWeatherEntity(city: String): WeatherEntity {
+fun WeatherResponse.toWeatherEntity(
+    city: String,
+    lon: String,
+    lat: String,
+    isFavorite: Boolean
+): WeatherEntity {
+    Log.d("WeatherResponse", "toWeatherEntity: ${lon.toDouble()}, ${lat.toDouble()}")
+
     var cityName = name
-    if(cityName.isEmpty()){
+    if (cityName.isEmpty()) {
         cityName = city
     }
+
     return WeatherEntity(
-        longitude = coord.lon,
-        latitude = coord.lat,
+        longitude = lon.toDouble(),
+        latitude = lat.toDouble(),
         description = weather.firstOrNull()?.description ?: "",
         icon = weather.firstOrNull()?.icon ?: "",
         temp = main.temp,
@@ -36,6 +45,10 @@ fun WeatherResponse.toWeatherEntity(city: String): WeatherEntity {
         windSpeed = wind.speed,
         clouds = clouds.all,
         dt = dt,
-        name = cityName
+        name = cityName,
+        isFavorite = isFavorite
     )
 }
+
+
+

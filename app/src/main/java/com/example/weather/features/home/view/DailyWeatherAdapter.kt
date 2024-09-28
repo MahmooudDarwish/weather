@@ -16,11 +16,12 @@ import com.example.weather.R
 import com.example.weather.utils.Utils
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.model.API.DailyForecastItem
+import com.example.weather.utils.model.Local.DailyWeatherEntity
 import java.util.Locale
 
 
 class DailyWeatherAdapter(
-    private var weatherList: List<DailyForecastItem>,
+    private var weatherList: List<DailyWeatherEntity?>,
     private val onDayClickListener: OnDayClickListener,
     private val temperatureUnit: Temperature,
     private val context: Context
@@ -36,7 +37,7 @@ class DailyWeatherAdapter(
         val card: CardView = view.findViewById(R.id.weatherDayCard)
     }
 
-    fun updateData(newList: List<DailyForecastItem>) {
+    fun updateData(newList: List<DailyWeatherEntity?>) {
         Log.d("DailyWeatherAdapter", "Updating data: $newList")
         weatherList = newList
         notifyDataSetChanged()
@@ -49,16 +50,16 @@ class DailyWeatherAdapter(
     }
 
     override fun onBindViewHolder(holder: DayViewHolder, position: Int) {
-        val weatherItem = weatherList[position]
+        val weatherItem = weatherList[position] ?: return
 
         holder.weatherDay.text = Utils().getDayNameFromEpoch(context = context, epochTime =  weatherItem.dt)
-        holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
-        holder.tempDesc.text = weatherItem.weather[0].description.replaceFirstChar {
+        holder.icon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))
+        holder.tempDesc.text = weatherItem.description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
 
-        val maxTempInCelsius = weatherItem.temp.max.toInt()
-        val minTempInCelsius = weatherItem.temp.min.toInt()
+        val maxTempInCelsius = weatherItem.maxTemp.toInt()
+        val minTempInCelsius = weatherItem.minTemp.toInt()
         val convertedMaxTemp = Utils().getWeatherMeasure(maxTempInCelsius, temperatureUnit)
         val convertedMinTemp = Utils().getWeatherMeasure(minTempInCelsius, temperatureUnit)
         val unitSymbol = Utils().getUnitSymbol(temperatureUnit)

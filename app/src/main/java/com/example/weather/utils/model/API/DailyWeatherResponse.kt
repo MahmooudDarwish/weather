@@ -29,11 +29,11 @@ data class Temperature(
 
 
 
-fun DailyWeatherResponse.toDailyWeatherEntities(): List<DailyWeatherEntity> {
+fun DailyWeatherResponse.toDailyWeatherEntities( lon:String ,  lat:String,isFavourite: Boolean = false): List<DailyWeatherEntity> {
     return list.map { item ->
         DailyWeatherEntity(
-            longitude = city.coord.lon,
-            latitude = city.coord.lat,
+            longitude = lon.toDouble(),
+            latitude = lat.toDouble(),
             dt = item.dt,
             minTemp = item.temp.min,
             maxTemp = item.temp.max,
@@ -42,7 +42,8 @@ fun DailyWeatherResponse.toDailyWeatherEntities(): List<DailyWeatherEntity> {
             humidity = item.humidity,
             description = item.weather.firstOrNull()?.description ?: "",
             icon = item.weather.firstOrNull()?.icon ?: "",
-            clouds = item.clouds
+            clouds = item.clouds,
+            isFavorite = isFavourite
         )
     }
 }

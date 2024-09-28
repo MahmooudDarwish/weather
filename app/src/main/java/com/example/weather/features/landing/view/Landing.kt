@@ -43,11 +43,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination
 import com.example.weather.databinding.ActivityLandingBinding
 import com.example.weather.databinding.LandingDialogBinding
-import com.example.weather.features.home.view.Home
-import com.example.weather.features.home.view.UpdateLocationWeather
-import com.example.weather.utils.SharedDataManager
+import com.example.weather.utils.managers.InternetChecker
+import com.example.weather.utils.managers.SharedDataManager
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
+import com.example.weather.utils.managers.GPSChecker
 import com.google.android.gms.location.Granularity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -60,9 +60,6 @@ import java.util.Locale
 
 
 class LandingActivity : AppCompatActivity() {
-
-
-
     lateinit var viewModel: LandingViewModel
     private lateinit var landingBinding: ActivityLandingBinding
     private lateinit var landingDialogBinding: LandingDialogBinding
@@ -74,12 +71,15 @@ class LandingActivity : AppCompatActivity() {
     private var isGpsStatusReceiverRegistered = false
     private var isOpenLocation = false
 
+    private lateinit var internetChecker: InternetChecker
+    private lateinit var gpsChecker: GPSChecker
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
         lifecycleScope.launch {
 
-            val language = SharedDataManager.languageFlow.first() // Collect the latest value
+            val language = SharedDataManager.languageFlow.first()
             Log.i("DEBUGG", "Latest language: $language")
             when (language) {
                 Language.ENGLISH -> updateLocale("en")
@@ -113,9 +113,8 @@ class LandingActivity : AppCompatActivity() {
             val data = result.data
             val latitude = data?.getDoubleExtra(Keys.LATITUDE_KEY, 0.0) ?: 0.0
             val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
-            Log.d("LandingActivity", "Latitude: $latitude, Longitude: $longitude")
+            Log.d("current", "Latitude: $latitude, Longitude: $longitude")
             viewModel.saveCurrentLocation(latitude, longitude)
-            updateHomeLocation(latitude, longitude)
         } else {
             showInitialSetupDialog()
         }
@@ -125,56 +124,6 @@ class LandingActivity : AppCompatActivity() {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
-
-    private fun registerGpsStatusReceiver() {
-        gpsStatusReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
-                    if (isGpsEnabled()) {
-                        // Hide the Snackbar when GPS is enabled
-                        hideGPSDisabledSnackBar()
-                    } else if (!isGpsEnabled() && viewModel.getLocationStatus() == LocationStatus.GPS) {
-                        // Show the Snackbar when GPS is disabled
-                        showGPSDisabledSnackBar()
-                    }
-                }
-            }
-        }
-
-        val intentFilter = IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
-        registerReceiver(gpsStatusReceiver, intentFilter)
-        isGpsStatusReceiverRegistered = true
-    }
-
-
-    private fun updateHomeLocation(latitude: Double, longitude: Double) {
-        val homeFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
-        val home =
-            homeFragment?.childFragmentManager?.fragments?.find { it is Home } as? UpdateLocationWeather
-        home?.updateLocation(Pair(latitude, longitude))
-    }
-
-
-    override fun onStart() {
-        super.onStart()
-        registerGpsStatusReceiver()
-    }
-
-
-    override fun onStop() {
-        super.onStop()
-        unregisterGpsStatusReceiver()
-    }
-
-
-    private fun unregisterGpsStatusReceiver() {
-        if (isGpsStatusReceiverRegistered) {
-            unregisterReceiver(gpsStatusReceiver)
-            isGpsStatusReceiverRegistered = false
-        }
-    }
-
 
     override fun onResume() {
         Log.i("onResume", "onResume called")
@@ -210,6 +159,11 @@ class LandingActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        internetChecker.stopMonitoring()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         landingBinding = ActivityLandingBinding.inflate(layoutInflater)
@@ -220,6 +174,35 @@ class LandingActivity : AppCompatActivity() {
         setupToolbar()
         setupDrawer()
         setupNavigation()
+        internetChecker = InternetChecker(this)
+        gpsChecker = GPSChecker(this)
+
+
+        // Start monitoring network changes
+       internetChecker.startMonitoring()
+        gpsChecker.startMonitoring()
+
+        // Observe network changes using SharedFlow
+        lifecycleScope.launch {
+            internetChecker.networkStateFlow.collect { isConnected ->
+                Log.i("LandingActivity", "Network state changed: $isConnected")
+                if (isConnected) {
+                    landingBinding.noInternetContainer.visibility = View.GONE
+                } else {
+                    landingBinding.noInternetContainer.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            gpsChecker.gpsStateFlow.collect { isGpsEnabled ->
+                if (isGpsEnabled) {
+                    hideGPSDisabledSnackBar()
+                } else {
+                    showGPSDisabledSnackBar()
+                }
+            }
+        }
 
         val landingFactory = LandingFactory(
             WeatherRepositoryImpl.getInstance(
@@ -236,6 +219,11 @@ class LandingActivity : AppCompatActivity() {
             showInitialSetupDialog()
         }
     }
+
+    private fun showSnackBarNoInternet() {
+        Snackbar.make(this, landingBinding.root, "No internet connection", Snackbar.LENGTH_LONG).show()
+    }
+
     private fun setupToolbar() {
         landingBinding.toolbar.title = ""
         setSupportActionBar(landingBinding.toolbar)
@@ -356,11 +344,10 @@ class LandingActivity : AppCompatActivity() {
 
                         val location = it.lastLocation
                         if (location != null) {
-                            Log.i("LandingActivity", "long: ${location.longitude}, lat: ${location.longitude}")
+                            Log.i("LandingActivity", "long: ${location.longitude}, lat: ${location.latitude}")
                             val latitude = location.latitude
                             val longitude = location.longitude
                             viewModel.saveCurrentLocation(latitude, longitude)
-                            updateHomeLocation(latitude, longitude)
                         }
                     }
                 }
@@ -386,11 +373,16 @@ class LandingActivity : AppCompatActivity() {
             .setAction(R.string.turn_on_gps) {
                 startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
             }
+            .setAction(R.string.dismiss) {
+                snackbar?.dismiss()
+            }
             .setBackgroundTint(ContextCompat.getColor(this, android.R.color.holo_red_dark))
             .setTextColor(ContextCompat.getColor(this, android.R.color.white))
             .setActionTextColor(ContextCompat.getColor(this, android.R.color.white))
+
         snackbar?.show()
     }
+
 
     private fun hideGPSDisabledSnackBar() {
         snackbar?.dismiss()

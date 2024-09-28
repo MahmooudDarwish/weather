@@ -7,6 +7,12 @@ import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.constants.Keys
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import java.lang.Double.parseDouble
 
 class SharedPreferencesManager(val sharedPreferences: SharedPreferences) {
 
@@ -67,23 +73,22 @@ class SharedPreferencesManager(val sharedPreferences: SharedPreferences) {
         return sharedPreferences.getBoolean(Keys.NOTIFICATION_STATUS_KEY, false)
     }
 
-
-    //Current location
     fun setLocation(latitude: Double, longitude: Double) {
-        with(sharedPreferences.edit()) {
-            putFloat(Keys.LATITUDE_KEY, latitude.toFloat())
-            putFloat(Keys.LONGITUDE_KEY, longitude.toFloat())
-            apply()
+            with(sharedPreferences.edit()) {
+                putString(Keys.LATITUDE_KEY, latitude.toString())
+                putString(Keys.LONGITUDE_KEY, longitude.toString())
+                apply()
+            }
         }
-    }
+
 
     fun getLocation(): Pair<Double, Double>? {
-        val latitude = sharedPreferences.getFloat(Keys.LATITUDE_KEY, Float.NaN)
-        val longitude = sharedPreferences.getFloat(Keys.LONGITUDE_KEY, Float.NaN)
-        return if (latitude.isNaN() || longitude.isNaN()) {
-            null
+        val latitude = sharedPreferences.getString(Keys.LATITUDE_KEY, null)
+        val longitude = sharedPreferences.getString(Keys.LONGITUDE_KEY, null)
+        return if (latitude != null  && longitude != null ) {
+            Pair( parseDouble(latitude), parseDouble(longitude))
         } else {
-            Pair(latitude.toDouble(), longitude.toDouble())
+            null
         }
     }
 

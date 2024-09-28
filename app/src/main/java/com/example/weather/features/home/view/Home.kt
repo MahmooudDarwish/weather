@@ -32,11 +32,13 @@ import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.model.API.WeatherResponse
+import com.example.weather.utils.model.Local.DailyWeatherEntity
+import com.example.weather.utils.model.Local.HourlyWeatherEntity
+import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import kotlinx.coroutines.launch
 
 import java.util.Locale
-//UpdateLocationWeather
 class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     lateinit var viewModel: HomeViewModel
 
@@ -53,18 +55,9 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             val latitude = data?.getDoubleExtra(Keys.LATITUDE_KEY, 0.0) ?: 0.0
             val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
 
-            Log.d("HomeActivity", "Latitude: $latitude, Longitude: $longitude")
+            Log.d("HomeActivity", "LatitudeMap: $latitude, LongitudeMAp: $longitude")
             updateLocation(Pair(latitude, longitude))
         }
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        Log.i("DEBUGGGGGGG", "onResume called Home")
-        val currentLocation: Pair<Double, Double>? = viewModel.getCurrentLocation()
-        updateLocation(currentLocation)
-        checkLocationStatus()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,84 +72,66 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
                 ),
                 sharedPreferences = SharedPreferencesManager(requireActivity().getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
 
-            )
+            ),
         )
-
-
         viewModel = ViewModelProvider(this, homeFactory).get(HomeViewModel::class.java)
     }
 
-    private fun setUpCollectors() {
-        lifecycleScope.launch{
-            viewModel.currentWeatherState.collect { apiResponse ->
-                when (apiResponse) {
-                    is ApiResponse.Loading -> {
-                        binding.currentWeatherProgressBar.visibility = View.VISIBLE
-                        binding.measurementsProgressBar.visibility = View.VISIBLE
-                        binding.measurementsGrid.visibility = View.GONE
+    private fun showToast(msg: String) {
+        Toast.makeText(requireActivity(), msg, Toast.LENGTH_SHORT).show()
+    }
 
-                    }
-                    is ApiResponse.Success -> {
-                        binding.currentWeatherProgressBar.visibility = View.GONE
-                        binding.measurementsProgressBar.visibility = View.GONE
-                        binding.measurementsGrid.visibility = View.VISIBLE
-                        updateUI(apiResponse.data)
-                    }
-                    is ApiResponse.Error -> {
-                        Toast.makeText(requireContext(), getString(apiResponse.message), Toast.LENGTH_SHORT).show()
-                    }
+    private fun setUpCollectors() {
+        lifecycleScope.launch {
+            viewModel.currentLocationFlow.collect { location ->
+                Log.i("DEBUGGGGGGG", "WeatherDetailsViewModel $location")
+                if (location != null) {
+                    updateLocation(location)
+                }
+            }
+
+        }
+        lifecycleScope.launch {
+            viewModel.errorState.collect { errorMessage ->
+                if (errorMessage != 0){
+                    showToast(getString(errorMessage))
                 }
             }
         }
 
-        lifecycleScope.launch{
-            viewModel.hourlyWeatherState.collect { apiResponse ->
-                when (apiResponse) {
-                    is ApiResponse.Loading -> {
+        lifecycleScope.launch {
+            viewModel.loadingState.collect { isLoading ->
+                if (isLoading) {
 
-                        binding.hourlyWeatherProgressBar.visibility = View.VISIBLE
+                    binding.homeContent.visibility = View.GONE
+                    binding.contentProgressBar.visibility = View.VISIBLE
 
-                    }
-                    is ApiResponse.Success -> {
-                        binding.hourlyWeatherProgressBar.visibility = View.GONE
-                        updateHourlyRecyclerViewList(apiResponse.data?.list)
-                    }
-
-                    is ApiResponse.Error -> {
-                        Toast.makeText(
-                            requireContext(),
-                            getString(apiResponse.message),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                } else {
+                    binding.homeContent.visibility = View.VISIBLE
+                    binding.contentProgressBar.visibility = View.GONE
                 }
             }
         }
         lifecycleScope.launch {
-            viewModel.dailyWeatherState.collect { apiResponse ->
-                when (apiResponse) {
-                    is ApiResponse.Loading -> {
-                        binding.dailyWeatherProgressBar.visibility = View.VISIBLE
-
-                    }
-
-                    is ApiResponse.Success -> {
-                        binding.dailyWeatherProgressBar.visibility = View.GONE
-                        updateDailyRecyclerView(apiResponse.data)
-                    }
-
-                    is ApiResponse.Error -> {
-                        Toast.makeText(
-                            requireContext(),
-                            getString(apiResponse.message),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+            viewModel.currentWeatherData.collect { weatherResponse ->
+                if (weatherResponse != null) {
+                    Log.i("DEBUGG", "FavoriteDetails: $weatherResponse")
+                    updateUI(weatherResponse)
                 }
             }
         }
 
+        lifecycleScope.launch {
+            viewModel.hourlyWeatherData.collect { hourlyWeather ->
+                updateHourlyRecyclerViewList(hourlyWeather)
+            }
+        }
 
+        lifecycleScope.launch {
+            viewModel.dailyWeatherData.collect { dailyWeather ->
+                updateDailyRecyclerView(dailyWeather)
+            }
+        }
     }
 
     override fun onCreateView(
@@ -169,9 +144,6 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         super.onViewCreated(view, savedInstanceState)
-        val currentLocation: Pair<Double, Double>? = viewModel.getCurrentLocation()
-
-        updateLocation(currentLocation)
         Log.i("HomeFragment", "onViewCreated called")
         initUi()
         setUpListeners()
@@ -186,7 +158,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
         return if (!addresses.isNullOrEmpty()) {
-            val city = addresses[0].locality ?: addresses[1].locality ?: addresses[0].countryName ?:getString(R.string.unknown)
+            val city = addresses[0].locality ?: addresses[0].countryName ?:getString(R.string.unknown)
             Log.d("MapsActivity", "City: $city")
             city
         } else {
@@ -216,21 +188,19 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
     }
 
-    private fun updateDailyRecyclerView(dailyWeather: DailyWeatherResponse?) {
-        if (dailyWeather != null) {
-            dailyWeatherAdapter.updateData(dailyWeather.list)
-        }
+    private fun updateDailyRecyclerView(dailyList : List<DailyWeatherEntity?>) {
+            dailyWeatherAdapter.updateData(dailyList)
     }
 
-    private fun updateDetailedWeatherUI(weatherItem: DailyForecastItem) {
+    private fun updateDetailedWeatherUI(weatherItem: DailyWeatherEntity) {
 
-        binding.weatherDescriptionText.text = weatherItem.weather[0].description.replaceFirstChar {
+        binding.weatherDescriptionText.text = weatherItem.description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
 
         val selectedUnit = viewModel.getWeatherMeasure()
-        val maxTempInCelsius = weatherItem.temp.max.toInt()
-        val minTempInCelsius = weatherItem.temp.min.toInt()
+        val maxTempInCelsius = weatherItem.maxTemp.toInt()
+        val minTempInCelsius = weatherItem.minTemp.toInt()
         val convertedMaxTemp = Utils().getWeatherMeasure(maxTempInCelsius, selectedUnit)
         val convertedMinTemp = Utils().getWeatherMeasure(minTempInCelsius, selectedUnit)
 
@@ -251,13 +221,13 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
         }
 
-        binding.weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.weather[0].icon))
+        binding.weatherIcon.setImageResource(Utils().getWeatherIcon(weatherItem.icon))
 
         binding.pressureText.text =
             getString(R.string.pressrue_format, weatherItem.pressure, getString(R.string.hpa))
         binding.humidityText.text = getString(R.string.percentage, weatherItem.humidity)
         binding.cloudText.text = getString(R.string.percentage, weatherItem.clouds)
-        val speedInMps = weatherItem.speed
+        val speedInMps = weatherItem.windSpeed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
         binding.windText.text = getString(
@@ -270,54 +240,45 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
     }
 
+
     private fun filterHourlyWeatherByDay(dayEpoch: Long) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.hourlyWeatherState.collect { apiResponse ->
-                when (apiResponse) {
-                    is ApiResponse.Loading -> {
-                    }
-                    is ApiResponse.Success -> {
-                        val hourlyWeather = apiResponse.data
-                        val filteredList = hourlyWeather?.let { hourly ->
-                            if (Utils().getDayNameFromEpoch(
-                                    context = requireActivity(),
-                                    epochTime = dayEpoch
-                                ) == getString(R.string.today)
-                            ) {
-                                hourly.list.take(24)
-                            } else {
-                                hourly.list.filter {
-                                    Utils().isSameDay(it.dt, dayEpoch)
-                                }
-                            }
-                        }
-                        updateHourlyRecyclerViewList(filteredList)
-                    }
-                    is ApiResponse.Error -> {
-                    }
+         viewModel.hourlyWeatherData.value.let { hourlyWeather ->
+
+            if (Utils().getDayNameFromEpoch(
+                    context = requireActivity(),
+                    epochTime = dayEpoch
+                ) == getString(R.string.today)
+            ) {
+                val filteredList  = hourlyWeather.take(24)
+                updateHourlyRecyclerViewList(filteredList)
+
+            } else {
+                val filteredList =  hourlyWeather.filter {
+                    Utils().isSameDay(it!!.dt, dayEpoch)
                 }
+                updateHourlyRecyclerViewList(filteredList)
+
             }
-        }
+
+         }
     }
 
-
-    private fun updateHourlyRecyclerViewList(filteredList: List<ForecastItem>?) {
-        if (filteredList != null) {
+    private fun updateHourlyRecyclerViewList(filteredList: List<HourlyWeatherEntity?>) {
             hourlyWeatherAdapter.updateHourlyWeatherList(filteredList)
-        }
-
     }
 
-
-    private fun updateUI(weatherResponse: WeatherResponse?) {
-        if (weatherResponse?.name!!.isEmpty()) {
+    private fun updateUI(weatherResponse: WeatherEntity?) {
+        if (weatherResponse == null) {
+            return
+        }
+        if (weatherResponse.name.isEmpty()) {
             binding.countryName.text =
-                getAddressFromLocation(weatherResponse.coord.lat, weatherResponse.coord.lon)
+                getAddressFromLocation(weatherResponse.latitude, weatherResponse.longitude)
         } else {
             binding.countryName.text = weatherResponse.name
         }
 
-        val temperatureInCelsius = weatherResponse.main.temp.toInt()
+        val temperatureInCelsius = weatherResponse.temp.toInt()
         val selectedUnit = viewModel.getWeatherMeasure()
         val convertedTemperature = Utils().getWeatherMeasure(temperatureInCelsius, selectedUnit)
 
@@ -325,17 +286,17 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             R.string.temperature_format, convertedTemperature, Utils().getUnitSymbol(selectedUnit)
         )
 
-        binding.weatherDescriptionText.text = weatherResponse.weather[0].description.replaceFirstChar {
+        binding.weatherDescriptionText.text = weatherResponse.description.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
-        binding.weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.weather[0].icon))
+        binding.weatherIcon.setImageResource(Utils().getWeatherIcon(weatherResponse.icon))
         binding.pressureText.text = getString(
             R.string.pressrue_format,
-            weatherResponse.main.pressure,
+            weatherResponse.pressure,
             getString(R.string.hpa)
         )
-        binding.humidityText.text = getString(R.string.percentage, weatherResponse.main.humidity)
-        val speedInMps = weatherResponse.wind.speed
+        binding.humidityText.text = getString(R.string.percentage, weatherResponse.humidity)
+        val speedInMps = weatherResponse.windSpeed
         val speedMeasure = viewModel.getWindMeasure()
         val speed = Utils().metersPerSecondToMilesPerHour(speedInMps, speedMeasure)
 
@@ -345,7 +306,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             Utils().getSpeedUnitSymbol(speedMeasure, requireActivity())
         )
 
-        binding.cloudText.text = getString(R.string.percentage, weatherResponse.clouds.all)
+        binding.cloudText.text = getString(R.string.percentage, weatherResponse.clouds)
 
     }
 
@@ -367,14 +328,12 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         }
         val latitude = currentLocation.first
         val longitude = currentLocation.second
-        viewModel.getWeather(longitude = longitude, latitude = latitude)
-        viewModel.fetchHourlyWeather(longitude = longitude, latitude = latitude)
-        viewModel.fetchDailyWeather(longitude = longitude, latitude = latitude)
-        viewModel.saveCurrentLocation(longitude = longitude, latitude = latitude)
+        viewModel.updateWeatherAndRefreshRoom(longitude = longitude, latitude = latitude,city = getAddressFromLocation(latitude, longitude))
+        Log.i("HomeFragment", " hommmme shared ${longitude}, ")
 
     }
 
-    override fun onDayClick(item: DailyForecastItem) {
+    override fun onDayClick(item: DailyWeatherEntity) {
         updateDetailedWeatherUI(item)
     }
 }

@@ -1,6 +1,7 @@
 package com.example.weather.utils.model.repository
 
 
+import android.util.Log
 import com.example.weather.utils.remote.WeatherRemoteDataSource
 
 
@@ -115,31 +116,31 @@ class WeatherRepositoryImpl private constructor(
 
     ///ROOM DATABASE
 
-    override fun getFavoriteWeather(lon: Double, lat: Double): Flow<WeatherEntity?> {
-        return localDataSource.getCurrentWeather(lon, lat)
+    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity?> {
+        return localDataSource.getWeather(lon = lon,lat = lat)
     }
 
-    override fun getFavoriteDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
-        return localDataSource.getDailyWeather(lon, lat)
+    override fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
+        return localDataSource.getDailyWeather(lon = lon,lat = lat)
     }
 
-    override fun getFavoriteHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
-        return localDataSource.getHourlyWeather(lon, lat)
+    override fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
+        return localDataSource.getHourlyWeather(lon = lon,lat = lat)
     }
 
     override fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
         return localDataSource.getAllFavoriteWeather()
     }
 
-    override suspend fun insertFavoriteWeather(weather: WeatherEntity) {
+    override suspend fun insertWeather(weather: WeatherEntity) {
         localDataSource.insertCurrentWeather(weather)
     }
 
-    override suspend fun insertFavoriteDailyWeather(dailyWeather: List<DailyWeatherEntity>) {
+    override suspend fun insertDailyWeather(dailyWeather: List<DailyWeatherEntity>) {
         localDataSource.insertDailyWeather(dailyWeather)
     }
 
-    override suspend fun insertFavoriteHourlyWeather(hourlyWeather: List<HourlyWeatherEntity>) {
+    override suspend fun insertHourlyWeather(hourlyWeather: List<HourlyWeatherEntity>) {
         localDataSource.insertHourlyWeather(hourlyWeather)
     }
 

@@ -16,5 +16,7 @@ data class DailyWeatherEntity(
     val humidity: Int,
     val description: String,
     val icon: String,
-    val clouds: Int
+    val clouds: Int,
+    val isFavorite: Boolean
+
 )

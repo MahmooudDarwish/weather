@@ -17,9 +17,9 @@ interface WeatherDao {
     suspend fun insertFavoriteWeather(weather: WeatherEntity)
 
     @Query("SELECT * FROM current_weather WHERE longitude = :lon AND latitude = :lat")
-    fun getFavoriteWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
+    fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity?>
 
-    @Query("SELECT * FROM current_weather")
+    @Query("SELECT * FROM current_weather WHERE isFavorite = 1")
     fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>
 
     // Delete Current Weather

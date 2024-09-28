@@ -14,7 +14,7 @@ import com.example.weather.databinding.ActivitySplashBinding
 import com.example.weather.features.landing.view.LandingActivity
 import com.example.weather.features.settings.view_model.SettingsViewModel
 import com.example.weather.features.settings.view_model.SettingsViewModelFactory
-import com.example.weather.utils.SharedDataManager
+import com.example.weather.utils.managers.SharedDataManager
 import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.local.room.AppDatabase

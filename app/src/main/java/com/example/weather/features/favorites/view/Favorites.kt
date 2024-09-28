@@ -43,8 +43,8 @@ class Favorites : Fragment(), IFavoriteItem {
             val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
             val city = data?.getStringExtra(Keys.CITY_KEY) ?: ""
 
-            Log.d("HomeActivity", "Latitude: $latitude, Longitude: $longitude")
-            saveFavoriteLocation(Pair(latitude, longitude), city)
+            Log.d("UTR", "Latitude: $latitude, Longitude: $longitude")
+            saveFavoriteLocation(latitude= latitude, longitude =  longitude, city)
         }
     }
 
@@ -133,8 +133,8 @@ class Favorites : Fragment(), IFavoriteItem {
         mapActivityResultLauncher.launch(Intent(requireActivity(), Map::class.java))
     }
 
-    private fun saveFavoriteLocation(location: Pair<Double, Double>, city: String) {
-        viewModel.updateWeatherAndRefreshRoom(location.first, location.second, city)
+    private fun saveFavoriteLocation(latitude: Double, longitude: Double, city: String) {
+        viewModel.updateWeatherAndRefreshRoom(latitude = latitude, longitude =  longitude,city =  city)
     }
 
     override fun onDeleteItem(weatherEntity: WeatherEntity) {
@@ -142,13 +142,15 @@ class Favorites : Fragment(), IFavoriteItem {
     }
 
     override fun onClickItem(weatherEntity: WeatherEntity) {
-        val latitude = weatherEntity.latitude // or wherever you get latitude
-        val longitude = weatherEntity.longitude // or wherever you get longitude
-        navigateToFavoriteDetails(latitude, longitude)
+        val latitude = weatherEntity.latitude
+        val longitude = weatherEntity.longitude
+        Log.d("UTR", "MOdel Latitude: $latitude, Longitude: $longitude")
+        navigateToFavoriteDetails(latitude= latitude, longitude = longitude)
     }
 
     private fun navigateToFavoriteDetails(latitude: Double, longitude: Double) {
         val intent = Intent(requireContext(), FavoriteDetails::class.java).apply {
+            Log.d("UTR", "BEFROE navigate Latitude: $latitude, Longitude: $longitude")
             putExtra(Keys.LATITUDE_KEY, latitude)
             putExtra(Keys.LONGITUDE_KEY, longitude)
         }

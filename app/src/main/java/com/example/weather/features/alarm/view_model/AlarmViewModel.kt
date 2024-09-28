@@ -49,10 +49,11 @@ class AlarmViewModel(
                     val weatherFlow = weatherRepository
                         .get30DayForecast(location!!.second, location.first)
                         .map { response ->
-                            response?.toDailyWeatherEntities() ?: emptyList()
+                            response?.toDailyWeatherEntities(lon = location.second.toString(), lat = location.first.toString(),   isFavourite = false) ?: emptyList()
                         }
 
                     weatherFlow.collect { dailyWeatherEntities ->
+                        Log.d("AlarmViewModel", "Weather data fetched: 11111")
                         _weatherDataState.value = ApiResponse.Success(dailyWeatherEntities)
                     }
 
