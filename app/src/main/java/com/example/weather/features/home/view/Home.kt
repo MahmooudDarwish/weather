@@ -64,7 +64,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
             val longitude = data?.getDoubleExtra(Keys.LONGITUDE_KEY, 0.0) ?: 0.0
 
             Log.d("HomeActivity", "LatitudeMap: $latitude, LongitudeMAp: $longitude")
-            updateLocation(Pair(latitude, longitude))
+            viewModel.saveCurrentLocation(latitude, longitude)
         }
     }
 

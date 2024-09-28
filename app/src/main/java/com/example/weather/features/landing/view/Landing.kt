@@ -170,6 +170,18 @@ class LandingActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        val landingFactory = LandingFactory(
+            WeatherRepositoryImpl.getInstance(
+                remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
+                localDataSource = WeatherLocalDataSourceImpl(
+                    AppDatabase.getDatabase(this).weatherDao(),
+                    AppDatabase.getDatabase(this).alarmDao()
+                ),
+                sharedPreferences = SharedPreferencesManager(this.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
+            )
+        )
+        viewModel = ViewModelProvider(this, landingFactory).get(LandingViewModel::class.java)
+
         setupToolbar()
         setupDrawer()
         setupNavigation()
@@ -193,25 +205,15 @@ class LandingActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             gpsChecker.gpsStateFlow.collect { isGpsEnabled ->
-                if (isGpsEnabled) {
-                    hideGPSDisabledSnackBar()
-                } else {
+                if (!isGpsEnabled && viewModel.getLocationStatus() == LocationStatus.GPS) {
                     showGPSDisabledSnackBar()
+                } else {
+                    hideGPSDisabledSnackBar()
                 }
             }
         }
 
-        val landingFactory = LandingFactory(
-            WeatherRepositoryImpl.getInstance(
-                remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
-                localDataSource = WeatherLocalDataSourceImpl(
-                    AppDatabase.getDatabase(this).weatherDao(),
-                    AppDatabase.getDatabase(this).alarmDao()
-                ),
-                sharedPreferences = SharedPreferencesManager(this.getSharedPreferences(Keys.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE))
-            )
-        )
-        viewModel = ViewModelProvider(this, landingFactory).get(LandingViewModel::class.java)
+
         if (!viewModel.isFirstLaunch()) {
             showInitialSetupDialog()
         }

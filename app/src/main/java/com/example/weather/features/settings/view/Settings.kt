@@ -129,11 +129,11 @@ class Settings : Fragment() {
         binding.rgLocation.setOnCheckedChangeListener { _, checkedId ->
             if (isListenerEnabled) {
 
+                Log.i("settins", "checkedId: $checkedId")
                 when (checkedId) {
                     R.id.rbSettingsGPS -> {
                         checkLocationPermissionAndGps()
                     }
-
                     R.id.rbSettingsMap -> viewModel.saveLocationStatus(LocationStatus.MAP)
                 }
             }
@@ -238,8 +238,11 @@ class Settings : Fragment() {
 
     private fun cancelGPSPermissionDialog() {
         isListenerEnabled = false
-        binding.rgLocation.check(R.id.rbSettingsMap)
-        viewModel.saveLocationStatus(LocationStatus.MAP)
+        if (viewModel.locationStatusFlow.value == LocationStatus.GPS) {
+            binding.rgLocation.check(R.id.rbSettingsGPS)
+        } else {
+            binding.rgLocation.check(R.id.rbSettingsMap)
+        }
         isListenerEnabled = true
 
     }
@@ -267,25 +270,9 @@ class Settings : Fragment() {
             }
         }
 
-        fun checkLocationPermission(status: LocationStatus){
-            val isLocationPermissionGranted = ContextCompat.checkSelfPermission(
-                requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-
-            if (isLocationPermissionGranted) {
-                if (isGpsEnabled()) {
-                    fetchCurrentLocationWeather()
-                }else{
-                    if (status == LocationStatus.GPS) {
-                        checkGpsStatusAndFetchLocation()
-                    }
-                }
-            }
-        }
 
         lifecycleScope.launch {
             viewModel.locationStatusFlow.collect { status ->
-                checkLocationPermission(status)
                 when (status) {
                     LocationStatus.GPS -> binding.rgLocation.check(R.id.rbSettingsGPS)
                     LocationStatus.MAP -> binding.rgLocation.check(R.id.rbSettingsMap)
