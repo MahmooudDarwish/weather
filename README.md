@@ -33,10 +33,10 @@ The Weather Application provides users a comprehensive and user-friendly interfa
 ## API Usage
 
 This application utilizes the following Weather APIs:
-- [OpenWeatherMap Hourly Forecast 4 days](https://openweathermap.org/api/hourly-forecast))
+- [OpenWeatherMap Hourly Forecast 4 days](https://openweathermap.org/api/hourly-forecast)
 - [OpenWeatherMap Current Weather Data API](https://openweathermap.org/current](https://openweathermap.org/current))
-- [OpenWeatherMap Daily Forecast 16 days](https://openweathermap.org/forecast16))
-- [OpenWeatherMap Climatic Forecast 30 days](https://openweathermap.org/api/forecast30))
+- [OpenWeatherMap Daily Forecast 16 days](https://openweathermap.org/forecast16)
+- [OpenWeatherMap Climatic Forecast 30 days](https://openweathermap.org/api/forecast30)
 
 
 ## Architecture
