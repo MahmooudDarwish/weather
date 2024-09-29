@@ -47,6 +47,11 @@ The application follows the **Model-View-ViewModel (MVVM)** architectural patter
 - **Architecture**: MVVM
 - **Libraries**: [Retrofit, Room, Work, Flow, Coroutines, ..]
 
+## Android versions
+- **compileSdkVersion**: is set to 33 (Android 13).
+- **minSdkVersion** is 21 (Android 5.0).
+- **targetSdkVersion** is 33.
+
 ## Installation
 
 To run this application locally, follow these steps:
