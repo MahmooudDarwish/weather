@@ -34,7 +34,7 @@ class AlarmViewModel(
         get() = _weatherDataState
 
 
-    fun getAlerts() {
+        fun getAlerts() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 weatherRepository.getAllAlarms().collect { alarms ->
@@ -42,7 +42,6 @@ class AlarmViewModel(
                 }
             } catch (e: Exception) {
                 _weatherDataState.value = DataState.Error(R.string.error_fetching_alerts)
-                Log.e("FavoritesViewModel", "Error fetching or saving weather data", e)
             }
         }
     }
@@ -90,24 +89,27 @@ class AlarmViewModel(
 
 
     fun addAlert(alert: AlarmEntity) {
-        viewModelScope.launch {
+        if (alert.title.isEmpty() || alert.description.isEmpty() || alert.startDate == 0L) {
+            _weatherDataState.value = DataState.Error(R.string.invalid_alert_data)
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 weatherRepository.insertAlarm(alert)
             } catch (e: Exception) {
-                _weatherDataState.value = DataState.Error(R.string.error_deleting_alarm_data)
-                Log.e("AlarmViewModel", "Error deleting alert", e)
+                _weatherDataState.value = DataState.Error(R.string.error_adding_alarm_data)
             }
         }
     }
 
 
     fun deleteAlert(id: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 weatherRepository.deleteAlarm(id)
             } catch (e: Exception) {
                 _weatherDataState.value = DataState.Error(R.string.error_deleting_alarm_data)
-                Log.e("AlarmViewModel", "Error deleting alert", e)
+
             }
         }
     }

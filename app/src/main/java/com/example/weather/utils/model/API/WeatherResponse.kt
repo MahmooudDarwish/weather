@@ -28,7 +28,7 @@ fun WeatherResponse.toWeatherEntity(
     isFavorite: Boolean
 ): WeatherEntity {
     Log.d("WeatherResponse", "toWeatherEntity: ${lon.toDouble()}, ${lat.toDouble()}")
-
+    println("hereeeuijhnbeiu")
     var cityName = name
     if (cityName.isEmpty()) {
         cityName = city

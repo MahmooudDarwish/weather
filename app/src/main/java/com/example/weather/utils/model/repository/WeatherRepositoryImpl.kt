@@ -117,19 +117,19 @@ class WeatherRepositoryImpl private constructor(
 
     ///ROOM DATABASE
 
-    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
+    override suspend fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
         return localDataSource.getWeather(lon = lon,lat = lat)
     }
 
-    override fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
+    override suspend fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
         return localDataSource.getDailyWeather(lon = lon,lat = lat)
     }
 
-    override fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
+    override suspend fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
         return localDataSource.getHourlyWeather(lon = lon,lat = lat)
     }
 
-    override fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
+    override suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
         return localDataSource.getAllFavoriteWeather()
     }
 
@@ -161,7 +161,7 @@ class WeatherRepositoryImpl private constructor(
         localDataSource.insertAlarm(alarm)
     }
 
-    override fun getAllAlarms(): Flow<List<AlarmEntity>> {
+    override suspend fun getAllAlarms(): Flow<List<AlarmEntity>> {
        return localDataSource.getAllAlarm()
     }
 

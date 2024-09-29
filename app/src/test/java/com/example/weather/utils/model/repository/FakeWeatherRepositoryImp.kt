@@ -12,57 +12,82 @@ import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 
 
-class FakeWeatherRepositoryImp : WeatherRepository{
-    override fun fetchWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse?> {
+class FakeWeatherRepositoryImp(
+    private val alarms : MutableList<AlarmEntity>
+) : WeatherRepository{
+
+
+    override suspend fun insertAlarm(alarm: AlarmEntity) {
+        if (alarms.any { it.startDate == alarm.startDate }) {
+            throw IllegalArgumentException("An alarm with the same ID already exists.")
+        }
+        alarms.add(alarm)
+    }
+
+    override suspend fun getAllAlarms(): Flow<List<AlarmEntity>> =  flow {
+        emit(alarms)
+    }
+
+    override suspend fun deleteAlarm(id: Long) {
+        val alarmToDelete = alarms.find { it.startDate == id }
+        println(alarmToDelete)
+
+        if (alarmToDelete != null) {
+            alarms.remove(alarmToDelete)
+            println(alarms)
+        } else {
+            throw NoSuchElementException("Alarm with id $id not found.")
+        }
+    }
+
+
+    override fun fetchWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse> {
         TODO("Not yet implemented")
     }
 
-    override fun fetchHourlyWeatherData(
-        longitude: Double,
-        latitude: Double
-    ): Flow<HourlyWeatherResponse?> {
+    override fun fetchHourlyWeatherData(longitude: Double, latitude: Double): Flow<HourlyWeatherResponse> {
         TODO("Not yet implemented")
+
     }
 
     override fun get5DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?> {
         TODO("Not yet implemented")
-    }
 
-    override fun get30DayForecast(
-        longitude: Double,
-        latitude: Double
-    ): Flow<DailyWeatherResponse?> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
-        TODO("Not yet implemented")
     }
 
     override suspend fun insertWeather(weather: WeatherEntity) {
         TODO("Not yet implemented")
+
     }
 
     override suspend fun insertDailyWeather(dailyWeather: List<DailyWeatherEntity>) {
         TODO("Not yet implemented")
+
     }
 
     override suspend fun insertHourlyWeather(hourlyWeather: List<HourlyWeatherEntity>) {
         TODO("Not yet implemented")
+
+    }
+
+    override suspend fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
+        TODO("Not yet implemented")
+
+    }
+
+    override suspend fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
+        TODO("Not yet implemented")
+
+    }
+
+    override suspend  fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
+        TODO("Not yet implemented")
+
     }
 
     override suspend fun deleteFavoriteWeather(lon: Double, lat: Double) {
@@ -77,15 +102,13 @@ class FakeWeatherRepositoryImp : WeatherRepository{
         TODO("Not yet implemented")
     }
 
-    override suspend fun insertAlarm(alarm: AlarmEntity) {
+    override fun get30DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?> {
         TODO("Not yet implemented")
     }
 
-    override fun getAllAlarms(): Flow<List<AlarmEntity>> {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun deleteAlarm(id: Long) {
+
+    override suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
         TODO("Not yet implemented")
     }
 

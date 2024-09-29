@@ -105,9 +105,7 @@
     <string name="error_fetching_alerts">حدث خطا اثناء احضار البيانات</string>
     <string name="error_deleting_favorite_weather_data">حدث خطا اثناء حذف البيانات</string>
     <string name="error_deleting_alarm_data">حدث خطا اثناء حذف البيانات </string>
-
-
-
-
+    <string name="error_adding_alarm_data">حدث خطا اثناء اضافه البيانات</string>
+    <string name="invalid_alert_data">برجاء مراحعه بيانات الاشعار او التنبيه </string>
 
 </resources>

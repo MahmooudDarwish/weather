@@ -106,4 +106,6 @@
     <string name="error_deleting_alarm_data">Error Deleting Alarm </string>
 
     <string name="error_fetching_alerts">Error fetching alerts</string>
+    <string name="error_adding_alarm_data">Error adding the alarm data \n</string>
+    <string name="invalid_alert_data">Invalid alarm data\n</string>
 </resources>

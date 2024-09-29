@@ -23,10 +23,10 @@ interface WeatherRepository {
      fun get30DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?>
 
      /// Database
-     fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity>
-     fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
-     fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
-     fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>
+     suspend fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity>
+     suspend fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
+     suspend fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
+     suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>
 
      // Methods for inserting weather data
      suspend fun insertWeather(weather: WeatherEntity)
@@ -40,7 +40,7 @@ interface WeatherRepository {
 
      // Methods for handle alarms
      suspend fun insertAlarm(alarm: AlarmEntity)
-     fun getAllAlarms(): Flow<List<AlarmEntity>>
+     suspend fun getAllAlarms(): Flow<List<AlarmEntity>>
      suspend fun deleteAlarm(id: Long)
 
      /// SharedPreferences

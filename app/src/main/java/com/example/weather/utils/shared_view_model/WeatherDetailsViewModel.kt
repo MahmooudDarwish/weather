@@ -90,8 +90,6 @@ class WeatherDetailsViewModel(
                         weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
                         _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
                     }
-
-                fetchWeatherFromRoom(longitude, latitude)
             } catch (e: Exception) {
                 _weatherState.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
             }
@@ -99,19 +97,20 @@ class WeatherDetailsViewModel(
     }
 
      fun fetchWeatherFromRoom(latitude: Double, longitude: Double) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                launch {
+                //execute in parallel
+                launch(Dispatchers.IO) {
                     weatherRepository.getHourlyWeather(latitude, longitude).collect { response ->
                         _hourlyWeatherState.value = DataState.Success(response)
                     }
                 }
-                launch {
+                launch(Dispatchers.IO) {
                     weatherRepository.getDailyWeather(latitude, longitude).collect { response ->
                         _dailyWeatherState.value = DataState.Success(response)
                     }
                 }
-                launch {
+                launch (Dispatchers.IO){
                     weatherRepository.getWeather(latitude, longitude).collect { response ->
                         _weatherState.value = DataState.Success(response)
                     }
