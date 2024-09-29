@@ -17,8 +17,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weather.R
 import com.example.weather.databinding.FragmentHomeBinding
-import com.example.weather.features.home.view_model.HomeViewModel
-import com.example.weather.features.home.view_model.HomeViewModelFactory
 import com.example.weather.features.map.view.Map
 import com.example.weather.utils.Utils
 import com.example.weather.utils.constants.Keys
@@ -34,12 +32,17 @@ import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import com.example.weather.utils.shared_adapters.DailyWeatherAdapter
+import com.example.weather.utils.shared_adapters.HourlyWeatherAdapter
+import com.example.weather.utils.shared_interfaces.OnDayClickListener
+import com.example.weather.utils.shared_view_model.WeatherDetailsViewModel
+import com.example.weather.utils.shared_view_model.WeatherDetailsViewModelFactory
 import kotlinx.coroutines.launch
 
 import java.util.Locale
 
-class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
-    lateinit var viewModel: HomeViewModel
+class Home : Fragment(), OnDayClickListener {
+    lateinit var viewModel: WeatherDetailsViewModel
 
     private lateinit var binding: FragmentHomeBinding
 
@@ -73,7 +76,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val homeFactory = HomeViewModelFactory(
+        val weatherDetailsFactory = WeatherDetailsViewModelFactory(
             WeatherRepositoryImpl.getInstance(
                 remoteDataSource = WeatherRemoteDataSourceImpl.getInstance(),
                 localDataSource = WeatherLocalDataSourceImpl(
@@ -89,7 +92,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
 
             ),
         )
-        viewModel = ViewModelProvider(this, homeFactory).get(HomeViewModel::class.java)
+        viewModel = ViewModelProvider(this, weatherDetailsFactory).get(WeatherDetailsViewModel::class.java)
 
         internetChecker = InternetChecker(requireActivity())
         gpsChecker = GPSChecker(requireActivity())
@@ -396,7 +399,7 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         mapActivityResultLauncher.launch(Intent(requireActivity(), Map::class.java))
     }
 
-    override fun updateLocation(currentLocation: Pair<Double, Double>?) {
+     private fun updateLocation(currentLocation: Pair<Double, Double>?) {
         if (currentLocation == null) {
             return
         }
@@ -405,7 +408,8 @@ class Home : Fragment(), OnDayClickListener, UpdateLocationWeather {
         viewModel.updateWeatherAndRefreshRoom(
             longitude = longitude,
             latitude = latitude,
-            city = getAddressFromLocation(latitude, longitude)
+            city = getAddressFromLocation(latitude, longitude),
+            isFavorite = false
         )
         Log.i("HomeFragment", " hommmme shared ${longitude}, ")
 

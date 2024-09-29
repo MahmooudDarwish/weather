@@ -1,4 +1,4 @@
-package com.example.weather.features.home.view
+package com.example.weather.utils.shared_interfaces
 
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 

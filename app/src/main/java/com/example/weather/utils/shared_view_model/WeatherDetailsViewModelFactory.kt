@@ -1,4 +1,4 @@
-package com.example.weather.features.weather_deatils.view_model
+package com.example.weather.utils.shared_view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

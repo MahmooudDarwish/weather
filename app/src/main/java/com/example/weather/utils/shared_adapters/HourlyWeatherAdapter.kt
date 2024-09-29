@@ -1,4 +1,4 @@
-package com.example.weather.features.home.view
+package com.example.weather.utils.shared_adapters
 
 
 import android.content.Context
@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
 import com.example.weather.utils.Utils
 import com.example.weather.utils.enums.Temperature
-import com.example.weather.utils.model.ForecastItem
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 
 class HourlyWeatherAdapter(

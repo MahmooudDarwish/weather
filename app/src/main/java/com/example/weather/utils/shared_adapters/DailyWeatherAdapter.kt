@@ -1,4 +1,4 @@
-package com.example.weather.features.home.view
+package com.example.weather.utils.shared_adapters
 
 import android.content.Context
 import android.graphics.Color
@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weather.R
+import com.example.weather.utils.shared_interfaces.OnDayClickListener
 import com.example.weather.utils.Utils
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.model.Local.DailyWeatherEntity

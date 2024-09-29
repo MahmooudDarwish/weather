@@ -1,6 +1,5 @@
 package com.example.weather.features.weather_deatils.view
 
-import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.location.Geocoder
@@ -14,8 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weather.R
 import com.example.weather.databinding.ActivityFavoriteDetailsBinding
-import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModel
-import com.example.weather.features.weather_deatils.view_model.WeatherDetailsViewModelFactory
+import com.example.weather.utils.shared_view_model.WeatherDetailsViewModel
+import com.example.weather.utils.shared_view_model.WeatherDetailsViewModelFactory
 import com.example.weather.utils.managers.SharedDataManager
 import com.example.weather.utils.Utils
 import com.example.weather.utils.constants.Keys
@@ -30,17 +29,20 @@ import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
+import com.example.weather.utils.shared_adapters.DailyWeatherAdapter
+import com.example.weather.utils.shared_adapters.HourlyWeatherAdapter
+import com.example.weather.utils.shared_interfaces.OnDayClickListener
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
+class FavoriteDetails : AppCompatActivity(), OnDayClickListener {
 
     private lateinit var viewModel: WeatherDetailsViewModel
     private lateinit var binding: ActivityFavoriteDetailsBinding
 
-    private lateinit var dailyWeatherAdapter: FavoriteDailyWeatherAdapter
-    private lateinit var hourlyWeatherAdapter: FavoriteHourlyWeatherAdapter
+    private lateinit var dailyWeatherAdapter: DailyWeatherAdapter
+    private lateinit var hourlyWeatherAdapter: HourlyWeatherAdapter
     private lateinit var internetChecker: InternetChecker
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -80,7 +82,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
                 sharedPreferences = SharedPreferencesManager(
                     this.getSharedPreferences(
                         Keys.SHARED_PREFERENCES_NAME,
-                        Context.MODE_PRIVATE
+                        MODE_PRIVATE
                     )
                 )
 
@@ -120,7 +122,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         viewModel.updateWeatherAndRefreshRoom(
             latitude,
             longitude,
-            getAddressFromLocation(latitude = latitude, longitude = longitude)
+            getAddressFromLocation(latitude = latitude, longitude = longitude),
+            isFavorite = true
         )
     }
     fun getAddressFromLocation(latitude: Double, longitude: Double): String {
@@ -157,7 +160,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
 
         lifecycleScope.launch {
-            viewModel.favoriteWeatherData.collect { state ->
+            viewModel.weatherState.collect { state ->
                 when (state) {
                     is DataState.Loading -> {
                         binding.contentLayout.visibility = View.GONE
@@ -352,16 +355,16 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         binding.favoriteRecyclerViewHourlyWeather.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         hourlyWeatherAdapter =
-            FavoriteHourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure(), this)
+           HourlyWeatherAdapter(emptyList(), viewModel.getWeatherMeasure(), this)
         binding.favoriteRecyclerViewHourlyWeather.adapter = hourlyWeatherAdapter
 
         binding.favoriteRecyclerViewDailyWeather.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         dailyWeatherAdapter =
-            FavoriteDailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), this)
+            DailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), this)
         binding.favoriteRecyclerViewDailyWeather.adapter = dailyWeatherAdapter
     }
-    override fun onDayClicked(day: DailyWeatherEntity) {
-        updateDailyUI(day)
+    override fun onDayClick(item: DailyWeatherEntity) {
+        updateDailyUI(item)
     }
 }

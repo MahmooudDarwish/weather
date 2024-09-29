@@ -31,7 +31,7 @@ class FavoriteDailyWeatherAdapter(
     class DayViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val weatherDay: TextView = view.findViewById(R.id.weatherDay)
         val tempMinMax: TextView = view.findViewById(R.id.tempMinMax)
-        val icon: ImageView = view.findViewById(R.id.deleteAlarm)
+        val icon: ImageView = view.findViewById(R.id.weatherDayIcon)
         val tempDesc: TextView = view.findViewById(R.id.weatherDayDesc)
         val card: CardView = view.findViewById(R.id.weatherDayCard)
     }
