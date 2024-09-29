@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 interface WeatherLocalDataSource {
 
     // Methods for retrieving weather data
-    fun getWeather(lon: Double, lat: Double) : Flow<WeatherEntity>
-    fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
-    fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
-    fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>
+    suspend fun getWeather(lon: Double, lat: Double) : Flow<WeatherEntity>
+    suspend fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>>
+    suspend fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>>
+    suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>>
 
     // Methods for inserting weather data
     suspend fun insertCurrentWeather(weather: WeatherEntity)

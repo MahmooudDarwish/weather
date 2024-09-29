@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -157,8 +158,21 @@ class Favorites : Fragment(), IFavoriteItem {
     }
 
     override fun onDeleteItem(weatherEntity: WeatherEntity) {
-        viewModel.deleteFavorite(weatherEntity)
+        val builder = AlertDialog.Builder(requireActivity())
+        builder.setTitle(getString(R.string.confirm_delete_title))
+            .setMessage(getString(R.string.confirm_delete_message))
+            .setPositiveButton(getString(R.string.yes)) { dialog, _ ->
+                viewModel.deleteFavorite(weatherEntity)
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.no)) { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        builder.create().show()
     }
+
+
 
     override fun onClickItem(weatherEntity: WeatherEntity) {
         val latitude = weatherEntity.latitude

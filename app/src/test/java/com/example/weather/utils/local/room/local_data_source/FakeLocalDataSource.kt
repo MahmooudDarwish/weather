@@ -12,7 +12,7 @@ class FakeLocalDataSource(
     private val mockedHourlyWeatherEntities: MutableList<HourlyWeatherEntity>,
     private val mockedDailyWeatherEntities: MutableList<DailyWeatherEntity>
 ) : WeatherLocalDataSource {
-    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
+    override suspend fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
         TODO("Not yet implemented")
     }
 
@@ -29,7 +29,7 @@ class FakeLocalDataSource(
             }
         }
     }
-    override fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
+    override suspend fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
         return flow {
             val filteredWeatherList = mockedDailyWeatherEntities.filter {
                 it.longitude == lon && it.latitude == lat
@@ -43,11 +43,11 @@ class FakeLocalDataSource(
         }
     }
 
-    override fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
+    override suspend fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
         TODO("Not yet implemented")
     }
 
-    override fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
+    override suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
         TODO("Not yet implemented")
     }
 

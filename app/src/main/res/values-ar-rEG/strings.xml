@@ -107,5 +107,10 @@
     <string name="error_deleting_alarm_data">حدث خطا اثناء حذف البيانات </string>
     <string name="error_adding_alarm_data">حدث خطا اثناء اضافه البيانات</string>
     <string name="invalid_alert_data">برجاء مراحعه بيانات الاشعار او التنبيه </string>
+    <string name="confirm_delete_title">تأكيد الحذف</string>
+    <string name="confirm_delete_message">هل أنت متأكد أنك تريد حذف هذا العنصر؟</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+
 
 </resources>

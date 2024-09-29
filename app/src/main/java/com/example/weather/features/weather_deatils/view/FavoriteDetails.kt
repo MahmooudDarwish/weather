@@ -103,8 +103,8 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickListener {
         internetChecker = InternetChecker(this)
         internetChecker.startMonitoring()
 
-
         initUI()
+
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             if (internetChecker.isInternetAvailable()){
@@ -114,8 +114,14 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickListener {
             }
             binding.swipeRefreshLayout.isRefreshing = false
         }
+
         setUpCollectors()
-        getWeatherDetails(longitude = longitude, latitude = latitude)
+
+        if (!internetChecker.isInternetAvailable()){
+            viewModel.fetchWeatherFromRoom(longitude = longitude, latitude = latitude)
+        }else{
+            getWeatherDetails(longitude = longitude, latitude = latitude)
+        }
     }
 
     private fun getWeatherDetails(longitude: Double, latitude: Double){

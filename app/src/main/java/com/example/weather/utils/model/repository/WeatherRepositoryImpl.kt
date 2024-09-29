@@ -121,7 +121,7 @@ class WeatherRepositoryImpl private constructor(
         return localDataSource.getWeather(lon = lon,lat = lat)
     }
 
-    override suspend fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
+    override suspend  fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
         return localDataSource.getDailyWeather(lon = lon,lat = lat)
     }
 

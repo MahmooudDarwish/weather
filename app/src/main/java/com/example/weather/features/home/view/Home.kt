@@ -231,6 +231,8 @@ class Home : Fragment(), OnDayClickListener {
         binding.swipeRefreshLayout.setOnRefreshListener {
             if (!internetChecker.isInternetAvailable()) {
                 showToast(getString(R.string.no_internet_connection))
+                //viewModel.fetchWeatherFromRoom()
+
             } else {
                 if (viewModel.getLocationStatus() == LocationStatus.GPS) {
                     if(gpsChecker.isLocationEnabled()){

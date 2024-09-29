@@ -61,6 +61,7 @@ class WeatherDetailsViewModel(
 
     fun updateWeatherAndRefreshRoom(latitude: Double, longitude: Double, city: String, isFavorite: Boolean) {
         _weatherState.value = DataState.Loading
+        Log.d("WeatherDetailsViewModel", "Fetching weather for coordinates: $latitude, $longitude")
         viewModelScope.launch(Dispatchers.IO + SupervisorJob() + exceptionHandler) {
             try {
                 // Fetch and save current weather data
@@ -88,8 +89,9 @@ class WeatherDetailsViewModel(
                     .collect { hourlyWeatherEntities ->
                         weatherRepository.deleteFavoriteHourlyWeather(lon = longitude, lat = latitude)
                         weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
-                        _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
+                       _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
                     }
+                //fetchWeatherFromRoom(latitude =  latitude, longitude = longitude)
             } catch (e: Exception) {
                 _weatherState.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
             }
@@ -97,21 +99,25 @@ class WeatherDetailsViewModel(
     }
 
      fun fetchWeatherFromRoom(latitude: Double, longitude: Double) {
-        viewModelScope.launch(Dispatchers.IO) {
+         _weatherState.value = DataState.Loading
+
+         Log.d("WeatherDetailsViewModel", "Fetching weather from Room for coordinates: $latitude, $longitude")
+         viewModelScope.launch(Dispatchers.IO) {
             try {
                 //execute in parallel
-                launch(Dispatchers.IO) {
-                    weatherRepository.getHourlyWeather(latitude, longitude).collect { response ->
+                launch {
+                    weatherRepository.getHourlyWeather(lat = latitude,lon= longitude).collect { response ->
+                        Log.d("WeatherDetailsViewModel", "Hourly weather data: $response")
                         _hourlyWeatherState.value = DataState.Success(response)
                     }
                 }
-                launch(Dispatchers.IO) {
-                    weatherRepository.getDailyWeather(latitude, longitude).collect { response ->
+                launch {
+                    weatherRepository.getDailyWeather(lat = latitude,lon= longitude).collect { response ->
                         _dailyWeatherState.value = DataState.Success(response)
                     }
                 }
-                launch (Dispatchers.IO){
-                    weatherRepository.getWeather(latitude, longitude).collect { response ->
+                launch {
+                    weatherRepository.getWeather(lat = latitude,lon= longitude).collect { response ->
                         _weatherState.value = DataState.Success(response)
                     }
                 }

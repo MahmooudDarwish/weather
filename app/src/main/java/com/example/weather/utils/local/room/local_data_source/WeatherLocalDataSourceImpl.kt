@@ -1,5 +1,6 @@
 package com.example.weather.utils.local.room.local_data_source
 
+import android.util.Log
 import com.example.weather.utils.local.room.Dao.AlarmDao
 import com.example.weather.utils.local.room.Dao.WeatherDao
 import com.example.weather.utils.model.Local.AlarmEntity
@@ -7,21 +8,22 @@ import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 class WeatherLocalDataSourceImpl(private val weatherDao: WeatherDao, private val alarmDao: AlarmDao) : WeatherLocalDataSource {
-    override fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
+    override suspend fun getWeather(lon: Double, lat: Double): Flow<WeatherEntity> {
         return weatherDao.getWeather(lon, lat)
     }
 
-    override fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
+    override suspend fun getDailyWeather(lon: Double, lat: Double): Flow<List<DailyWeatherEntity>> {
         return weatherDao.getDailyWeather(lon, lat)
     }
 
-    override fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
+    override suspend fun getHourlyWeather(lon: Double, lat: Double): Flow<List<HourlyWeatherEntity>> {
         return weatherDao.getHourlyWeather(lon, lat)
     }
 
-    override fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
+    override suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
         return weatherDao.getAllFavoriteWeather()
     }
 

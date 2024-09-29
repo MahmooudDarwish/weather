@@ -42,6 +42,7 @@ import com.example.weather.utils.managers.InternetChecker
 import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
+import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
 import kotlinx.coroutines.launch
@@ -454,10 +455,23 @@ class Alarm : Fragment(), OnDeleteClicked {
 
     }
     override fun deleteClicked(alarm: AlarmEntity) {
-        viewModel.deleteAlert(alarm.startDate)
-        Log.d("Alarm", "Alarm deleted: $alarm")
-            cancelNotificationOrAlarm(alarm)
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle(getString(R.string.confirm_delete_title))
+                .setMessage(getString(R.string.confirm_delete_message))
+                .setPositiveButton(getString(R.string.yes)) { dialog, _ ->
+                    viewModel.deleteAlert(alarm.startDate)
+                    Log.d("Alarm", "Alarm deleted: $alarm")
+                    cancelNotificationOrAlarm(alarm)
+                    dialog.dismiss()
+                }
+                .setNegativeButton(getString(R.string.no)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+
+            builder.create().show()
     }
+
+
     private fun openFromDatePickerDialog(onDateSet: (Calendar) -> Unit) {
         val calendar = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog.newInstance(
