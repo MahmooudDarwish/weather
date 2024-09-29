@@ -12,14 +12,13 @@ import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 
 
 class FakeWeatherRepositoryImp(
-    private val alarms : MutableList<AlarmEntity>
 ) : WeatherRepository{
+    private val alarms = mutableListOf<AlarmEntity>()
+
 
 
     override suspend fun insertAlarm(alarm: AlarmEntity) {

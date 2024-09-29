@@ -20,17 +20,9 @@ class AlarmViewModelTest{
     lateinit var repository : WeatherRepository
     lateinit var viewModel: AlarmViewModel
 
-    private val alarms = mutableListOf<AlarmEntity>()
-
-    init {
-        alarms.add(AlarmEntity(5L, 6L, "Alarm 1", "Desc 1", "icon1", 8, 30, 9, 30, 3L, true))
-    }
-
-
-
     @Before
     fun createRepository() {
-        repository = FakeWeatherRepositoryImp(alarms)
+        repository = FakeWeatherRepositoryImp()
         viewModel = AlarmViewModel(repository)
     }
 
@@ -38,7 +30,7 @@ class AlarmViewModelTest{
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun addAlert_alarm_addedSuccessfully() = runTest {
-        val intialSize = alarms.size
+        val intialSize = repository.getAllAlarms().first().size
         // Given: A new alarm to insert
         val newAlarm = AlarmEntity(10L, 11L, "Alarm 2", "Desc 2", "icon2", 10, 45, 11, 15, 5L, true)
 
@@ -46,14 +38,15 @@ class AlarmViewModelTest{
         viewModel.addAlert(newAlarm)
         advanceUntilIdle()
 
+        val newSize = repository.getAllAlarms().first().size
 
         //Then: The number of alarms in the repository should increase by 1
-        assertEquals(intialSize + 1, alarms.size)
+        assertEquals(intialSize + 1, newSize)
     }
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun addAlert_duplicateAlarm_notAddedAgain() = runTest {
-        val initialSize = alarms.size
+        val initialSize = repository.getAllAlarms().first().size
         // Given: An existing alarm
         val alarm = AlarmEntity(10L, 11L, "Alarm 1", "Desc 1", "icon1", 10, 45, 11, 15, 5L, true)
         viewModel.addAlert(alarm)
@@ -62,15 +55,16 @@ class AlarmViewModelTest{
         viewModel.addAlert(alarm)
         advanceUntilIdle()
 
+        val newSize = repository.getAllAlarms().first().size
 
         // Then: The number of alarms in the repository should remain the same
-        assertEquals(initialSize + 1 , alarms.size)
+        assertEquals(initialSize + 1 , newSize)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun addAlert_multipleDistinctAlarms_addedSuccessfully() = runTest {
-        val initialSize = alarms.size
+        val initialSize = repository.getAllAlarms().first().size
         // Given: Multiple new alarms to insert
         val alarm1 = AlarmEntity(10L, 11L, "Alarm 1", "Desc 1", "icon1", 10, 45, 11, 15, 5L, true)
         val alarm2 = AlarmEntity(20L, 21L, "Alarm 2", "Desc 2", "icon2", 10, 45, 11, 15, 5L, false)
@@ -80,85 +74,96 @@ class AlarmViewModelTest{
         viewModel.addAlert(alarm2)
         advanceUntilIdle()
 
+        val newSize = repository.getAllAlarms().first().size
 
         // Then: Both alarms should be present in the repository
-        assertEquals(initialSize + 2, alarms.size)
+        assertEquals(initialSize + 2, newSize)
     }
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun addAlert_invalidAlarm_doesNotAdd() = runTest {
-        val initialSize = alarms.size
+        val initialSize = repository.getAllAlarms().first().size
         // Given: An invalid alarm (for example, with null values or invalid times)
         val invalidAlarm = AlarmEntity(0L, 0L, "", "", "", -1, -1, -1, -1, -1L, false)
 
         // When: Attempting to add the invalid alarm
         viewModel.addAlert(invalidAlarm)
         advanceUntilIdle()
+        val newSize = repository.getAllAlarms().first().size
 
         // Then: The alarm should not be added to the repository
-        assertEquals(initialSize , alarms.size)
+        assertEquals(initialSize , newSize)
     }
 
     //Delete Alert
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun deleteAlarm_alarmExists_alarmIsRemoved() = runTest {
-        val initialSize = alarms.size
+        val initialSize = repository.getAllAlarms().first().size
+        val alarm = AlarmEntity(5, 11L, "Alarm 1", "Desc 1", "icon1", 10, 45, 11, 15, 5L, true)
+        viewModel.addAlert(alarm)
 
         // Given
         val idToDelete = 5L
 
+
         // When
         viewModel.deleteAlert(idToDelete)
         advanceUntilIdle() // This ensures the coroutine has completed before the next assertion
+        val newSize = repository.getAllAlarms().first().size
 
         // Then
-        assertEquals(initialSize-1,alarms.size)
+        assertEquals(initialSize,newSize)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test()
     fun deleteAlarm_alarmDoesNotExist_noSuchElementExceptionIsThrown() = runTest {
-        val initialSize = alarms.size
+        val initialSize = repository.getAllAlarms().first().size
         // Given
         val idToDelete = 3L
 
         // When
         viewModel.deleteAlert(idToDelete)
         advanceUntilIdle()
+        val newSize = repository.getAllAlarms().first().size
 
         // Then: nothing got deleted
-        assertEquals(initialSize,alarms.size)
+        assertEquals(initialSize,newSize)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun deleteAlarm_alarmExists_otherAlarmsRemainIntact() = runTest {
         // Given
-        alarms.add(AlarmEntity(2L, 3L, "Alarm 2", "Desc 2", "icon2", 10, 45, 11, 15, 5L, true))
+
+        viewModel.addAlert(AlarmEntity(2L, 3L, "Alarm 2", "Desc 2", "icon2", 10, 45, 11, 15, 5L, true))
         val idToDelete = 5L
 
         // When
         viewModel.deleteAlert(idToDelete)
         advanceUntilIdle()
 
+        val newSize = repository.getAllAlarms().first().size
+        val alarms = repository.getAllAlarms().first()
 
         // Then
-        assertEquals(1, alarms.size) // Ensure only one alarm remains
+        assertEquals(1, newSize) // Ensure only one alarm remains
         assertEquals(2L, alarms[0].startDate) // Verify the remaining alarm is the correct one
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun deleteAlarm_nullId_illegalArgumentExceptionIsThrown() = runTest {
-        val initialSize = alarms.size
+        val initialSize = repository.getAllAlarms().first().size
         // Given
         val nullId: Long? = null
 
         // When
         viewModel.deleteAlert(nullId ?: throw IllegalArgumentException("ID cannot be null"))
+        val newSize = repository.getAllAlarms().first().size
 
         // Then: nothing changed
-        assertEquals(initialSize,alarms.size)
+        assertEquals(initialSize,newSize)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -173,8 +178,9 @@ class AlarmViewModelTest{
         viewModel.deleteAlert(idToDelete)
         advanceUntilIdle()
 
+        val newSize = repository.getAllAlarms().first().size
 
         // Then
-        assertEquals(1,alarms.size)
+        assertEquals(0,newSize)
     }
 }
