@@ -48,50 +48,38 @@ class FavoritesViewModel(
             try {
                 _favorites.value = DataState.Loading
 
-                weatherRepository.fetchWeatherData(longitude, latitude)
-                    .map { response ->
+                weatherRepository.fetchWeatherData(longitude, latitude).map { response ->
                         response?.toWeatherEntity(
                             city,
                             lat = latitude.toString(),
                             lon = longitude.toString(),
                             isFavorite = true
                         )
-                    }
-                    .collect { currentWeatherEntity ->
+                    }.collect { currentWeatherEntity ->
                         Log.d(
-                            "FavoritesViewModel",
-                            "Current Weather Entity: $currentWeatherEntity"
+                            "FavoritesViewModel", "Current Weather Entity: $currentWeatherEntity"
                         )
                         currentWeatherEntity?.let {
                             weatherRepository.insertWeather(it)
                         }
                     }
 
-                weatherRepository.get5DayForecast(longitude, latitude)
-                    .map { response ->
+                weatherRepository.get5DayForecast(longitude, latitude).map { response ->
                         response?.toDailyWeatherEntities(
-                            lon = longitude.toString(),
-                            lat = latitude.toString(),
-                            true
+                            lon = longitude.toString(), lat = latitude.toString(), true
                         ) ?: emptyList()
-                    }
-                    .collect { dailyWeatherEntities ->
+                    }.collect { dailyWeatherEntities ->
                         Log.d(
-                            "FavoritesViewModel",
-                            "Daily Weather Entities: $dailyWeatherEntities"
+                            "FavoritesViewModel", "Daily Weather Entities: $dailyWeatherEntities"
                         )
                         weatherRepository.insertDailyWeather(dailyWeatherEntities)
                     }
 
-                weatherRepository.fetchHourlyWeatherData(longitude, latitude)
-                    .map { response ->
+                weatherRepository.fetchHourlyWeatherData(longitude, latitude).map { response ->
                         response?.toHourlyWeatherEntities(
-                            lon = longitude.toString(),
-                            lat = latitude.toString(),
-                            true
+                            lon = longitude.toString(), lat = latitude.toString(), true
                         ) ?: emptyList()
-                    }
-                    .collect { hourlyWeatherEntities ->
+                    }.collect { hourlyWeatherEntities ->
                         weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
                     }
 
@@ -124,8 +112,7 @@ class FavoritesViewModel(
         viewModelScope.launch {
             try {
                 weatherRepository.deleteFavoriteWeather(
-                    weatherEntity.longitude,
-                    weatherEntity.latitude
+                    weatherEntity.longitude, weatherEntity.latitude
                 )
             } catch (e: Exception) {
                 _favorites.value = DataState.Error(R.string.error_deleting_favorite_weather_data)

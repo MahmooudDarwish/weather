@@ -43,6 +43,15 @@ android {
     }
 }
 
+val junitVersion = "4.13.2"
+val hamcrestVersion = "2.2"
+val archTestingVersion = "2.1.0"
+val robolectricVersion = "4.8"
+val androidXTestCoreVersion = "1.4.0"
+val androidXTestExtKotlinRunnerVersion = "1.1.5"
+val espressoVersion = "3.4.0"
+val coroutinesVersion = "1.6.4"
+
 dependencies {
 
 
@@ -86,6 +95,22 @@ dependencies {
 
     implementation ("com.wdullaer:materialdatetimepicker:4.2.3")
     implementation("com.airbnb.android:lottie:6.0.0")
+
+    // Unit testing
+    testImplementation("junit:junit:$junitVersion")
+    testImplementation("org.hamcrest:hamcrest:2.2")
+    testImplementation("org.hamcrest:hamcrest-library:2.2")
+    testImplementation("androidx.arch.core:core-testing:$archTestingVersion")
+    testImplementation("org.robolectric:robolectric:$robolectricVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+
+    // AndroidX Test - JVM testing
+    testImplementation("androidx.test:core-ktx:$androidXTestCoreVersion")
+
+    // AndroidX Test - Instrumented testing
+    androidTestImplementation("androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion")
+    androidTestImplementation("androidx.test.espresso:espresso-core:$espressoVersion")
+    androidTestImplementation("androidx.arch.core:core-testing:$archTestingVersion")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
