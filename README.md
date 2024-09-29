@@ -16,7 +16,7 @@ The Weather Application provides users a comprehensive and user-friendly interfa
 - Displays current temperature, date, humidity, wind speed, pressure, cloud coverage, city name, and an appropriate weather icon.
 - Provide a weather description (e.g., clear sky, light rain).
 - Shows hourly weather data for the current date.
-- Displays forecast information for the past five days.
+- Displays forecast information for the next five days.
 
 ### Weather Alerts Screen
 - Users can set weather alerts with customizable options:
