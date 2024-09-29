@@ -1,8 +1,8 @@
 package com.example.weather.utils.model.repository
 
-import android.util.Log
-import com.example.weather.utils.enums.Language
+import com.example.weather.utils.local.room.local_data_source.FakeLocalDataSource
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSource
+import com.example.weather.utils.local.shared_perefernces.FakeSharedPreferencesManager
 import com.example.weather.utils.local.shared_perefernces.ISharedPreferencesManager
 import com.example.weather.utils.model.API.DailyForecastItem
 import com.example.weather.utils.model.API.DailyWeatherResponse
@@ -19,8 +19,8 @@ import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.Main
 import com.example.weather.utils.model.Weather
 import com.example.weather.utils.model.Wind
+import com.example.weather.utils.remote.FakeRemoteDataSource
 import com.example.weather.utils.remote.WeatherRemoteDataSource
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals

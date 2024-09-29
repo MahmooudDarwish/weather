@@ -1,12 +1,9 @@
-package com.example.weather.utils.model.repository
+package com.example.weather.utils.remote
 
-import android.util.Log
 import com.example.weather.utils.model.API.DailyWeatherResponse
 import com.example.weather.utils.model.API.HourlyWeatherResponse
 import com.example.weather.utils.model.API.WeatherResponse
-import com.example.weather.utils.remote.WeatherRemoteDataSource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
 class FakeRemoteDataSource(

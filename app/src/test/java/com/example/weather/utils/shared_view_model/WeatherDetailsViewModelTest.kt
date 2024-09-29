@@ -1,0 +1,132 @@
+package com.example.weather.utils.shared_view_model
+
+
+class WeatherDetailsViewModelTest{
+
+}
+
+
+
+
+/*
+
+class WeatherDetailsViewModel(
+    private val weatherRepository: WeatherRepository
+) : ViewModel() {
+
+    private val _weatherState = MutableStateFlow<DataState<WeatherEntity>>(DataState.Loading)
+    val weatherState: StateFlow<DataState<WeatherEntity>>
+        get() = _weatherState
+
+    private val _hourlyWeatherState = MutableStateFlow<DataState<List<HourlyWeatherEntity?>>>(
+        DataState.Loading)
+    val hourlyWeatherState: StateFlow<DataState<List<HourlyWeatherEntity?>>>
+        get() = _hourlyWeatherState
+
+    private val _dailyWeatherState = MutableStateFlow<DataState<List<DailyWeatherEntity?>>>(
+        DataState.Loading)
+    val dailyWeatherState: StateFlow<DataState<List<DailyWeatherEntity?>>>
+        get() = _dailyWeatherState
+
+    private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
+        val errorMessage = when (exception) {
+            is IOException -> R.string.network_error
+            is HttpException -> R.string.server_error
+            is TimeoutException -> R.string.timeout_error
+            else -> R.string.unexpected_error
+        }
+        // Emit an error state
+        _weatherState.value = DataState.Error(errorMessage)
+        Log.e("HomeViewModel", "Caught an exception: $exception")
+    }
+
+    fun updateWeatherAndRefreshRoom(latitude: Double, longitude: Double, city: String, isFavorite: Boolean) {
+        _weatherState.value = DataState.Loading
+        viewModelScope.launch(Dispatchers.IO + SupervisorJob() + exceptionHandler) {
+            try {
+                // Fetch and save current weather data
+                weatherRepository.fetchWeatherData(longitude, latitude)
+                    .map { response -> response?.toWeatherEntity(city, lon = longitude.toString(), lat = latitude.toString(), isFavorite) }
+                    .collect { currentWeatherEntity ->
+                        currentWeatherEntity?.let {
+                            weatherRepository.deleteFavoriteHourlyWeather(lon = longitude, lat = latitude)
+                            weatherRepository.insertWeather(it)
+                            _weatherState.value = DataState.Success(it)
+                        }
+                    }
+
+                // Fetch daily and hourly weather data
+                weatherRepository.get5DayForecast(longitude, latitude)
+                    .map { response -> response?.toDailyWeatherEntities(lon = longitude.toString(), lat = latitude.toString(), isFavorite) ?: emptyList() }
+                    .collect { dailyWeatherEntities ->
+                        weatherRepository.deleteFavoriteDailyWeather(lon = longitude, lat = latitude)
+                        weatherRepository.insertDailyWeather(dailyWeatherEntities)
+                        _dailyWeatherState.value = DataState.Success(dailyWeatherEntities)
+                    }
+
+                weatherRepository.fetchHourlyWeatherData(longitude, latitude)
+                    .map { response -> response?.toHourlyWeatherEntities(lon = longitude.toString(), lat = latitude.toString(), isFavorite) ?: emptyList() }
+                    .collect { hourlyWeatherEntities ->
+                        weatherRepository.deleteFavoriteHourlyWeather(lon = longitude, lat = latitude)
+                        weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
+                        _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
+                    }
+
+                fetchWeatherFromRoom(longitude, latitude)
+            } catch (e: Exception) {
+                _weatherState.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
+            }
+        }
+    }
+
+     fun fetchWeatherFromRoom(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            try {
+                launch {
+                    weatherRepository.getHourlyWeather(latitude, longitude).collect { response ->
+                        _hourlyWeatherState.value = DataState.Success(response)
+                    }
+                }
+                launch {
+                    weatherRepository.getDailyWeather(latitude, longitude).collect { response ->
+                        _dailyWeatherState.value = DataState.Success(response)
+                    }
+                }
+                launch {
+                    weatherRepository.getWeather(latitude, longitude).collect { response ->
+                        _weatherState.value = DataState.Success(response)
+                    }
+                }
+            } catch (e: Exception) {
+                _weatherState.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
+            }
+        }
+    }
+
+
+
+    fun getWeatherMeasure(): Temperature {
+        return weatherRepository.getTemperatureUnit()
+    }
+
+    fun getWindMeasure(): WindSpeed {
+        return weatherRepository.getWindSpeedUnit()
+    }
+
+    val currentLocationFlow: SharedFlow<Pair<Double, Double>?> = SharedDataManager.currentLocationFlow
+    fun getLocationStatus(): LocationStatus {
+        return weatherRepository.getLocationStatus()
+    }
+    fun saveCurrentLocation(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            val location = Pair(latitude, longitude)
+            SharedDataManager.emitLocation(location)
+            weatherRepository.saveCurrentLocation(latitude, longitude)
+        }
+    }
+
+
+
+
+}
+*/

@@ -1,6 +1,5 @@
-package com.example.weather.utils.model.repository
+package com.example.weather.utils.local.room.local_data_source
 
-import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSource
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity

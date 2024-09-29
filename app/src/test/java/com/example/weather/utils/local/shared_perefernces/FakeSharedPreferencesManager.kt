@@ -1,4 +1,4 @@
-package com.example.weather.utils.model.repository
+package com.example.weather.utils.local.shared_perefernces
 
 import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
