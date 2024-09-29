@@ -23,7 +23,6 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
             }
         }
     }
-
     override fun getCurrentWeather(
         latitude: String, longitude: String, lang: String
     ): Flow<WeatherResponse?> = flow {
@@ -47,7 +46,6 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
             emit(null)
         }
     }
-
     override fun getHourlyWeather(
         latitude: String,
         longitude: String,
@@ -72,8 +70,6 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
             emit(null)
         }
     }
-
-
     override fun get5DayForecast(
         latitude: String,
         longitude: String,
@@ -98,7 +94,6 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
             emit(null)
         }
     }
-
     override fun get30DayForecast(
         latitude: String,
         longitude: String,
@@ -123,6 +118,4 @@ class WeatherRemoteDataSourceImpl private constructor() : WeatherRemoteDataSourc
             emit(null)
         }
     }
-
-
 }

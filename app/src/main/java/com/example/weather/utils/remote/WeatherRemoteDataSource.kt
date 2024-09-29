@@ -9,17 +9,14 @@ interface  WeatherRemoteDataSource {
      fun getCurrentWeather(
         latitude: String, longitude: String, lang: String
     ): Flow<WeatherResponse?>
-
     fun getHourlyWeather(
         latitude: String, longitude: String, lang: String
     ):   Flow<HourlyWeatherResponse?>
-
      fun get5DayForecast(
         latitude: String,
         longitude: String,
         lang: String
     ) : Flow<DailyWeatherResponse?>
-
     fun get30DayForecast(
         latitude: String,
         longitude: String,

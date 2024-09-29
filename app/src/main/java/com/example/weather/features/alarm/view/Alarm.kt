@@ -56,7 +56,6 @@ class Alarm : Fragment(), OnDeleteClicked {
     private lateinit var binding: FragmentAlarmBinding
     private lateinit var popUpBinding: AddAlertDialogBinding
 
-
     private lateinit var viewModel: AlarmViewModel
     private lateinit var alarmAdapter: AlarmAdapter
     private lateinit var alertDialog: AlertDialog
@@ -65,10 +64,7 @@ class Alarm : Fragment(), OnDeleteClicked {
     private lateinit var fromDateDatePicker: Calendar
     private lateinit var toDateDatePicker: Calendar
 
-
     private val REQUEST_OVERLAY_PERMISSION = 1234
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -92,15 +88,12 @@ class Alarm : Fragment(), OnDeleteClicked {
         viewModel = ViewModelProvider(this, alarmModelViewFactory).get(AlarmViewModel::class.java)
         viewModel.getAlerts()
     }
-
     private fun updateAlerts(alerts: List<AlarmEntity?>?) {
         if (alerts != null) {
             alarmAdapter.setAlarms(alerts)
         }
 
     }
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -111,7 +104,6 @@ class Alarm : Fragment(), OnDeleteClicked {
         binding = FragmentAlarmBinding.inflate(inflater, container, false)
         return binding.root
     }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -119,7 +111,6 @@ class Alarm : Fragment(), OnDeleteClicked {
         setUpListeners()
         setUpObservers()
     }
-
     private fun setUpObservers() {
         lifecycleScope.launch {
             viewModel.alerts.collect() {
@@ -127,10 +118,6 @@ class Alarm : Fragment(), OnDeleteClicked {
                 observeNoAlerts(it.isNotEmpty())
             }
         }
-
-
-
-
         lifecycleScope.launch {
             viewModel.weatherDataState.collect { state ->
                 when (state) {
@@ -200,10 +187,7 @@ class Alarm : Fragment(), OnDeleteClicked {
                 }
             }
         }
-
-
     }
-
     private fun parseDatesAndTimes(): DateTimeResult? {
         val dateFrom = popUpBinding.dateFromTxt.text.toString()
         val dateTo = popUpBinding.dateToTxt.text.toString()
@@ -254,8 +238,6 @@ class Alarm : Fragment(), OnDeleteClicked {
             endDateTimeMillis = endDateTimeMillis
         )
     }
-
-
     private fun observeNoAlerts(alertsExist: Boolean) {
         if (alertsExist) {
             binding.noAlertsText.visibility = View.GONE
@@ -263,18 +245,13 @@ class Alarm : Fragment(), OnDeleteClicked {
         } else {
             binding.noAlertsText.visibility = View.VISIBLE
             binding.alarmIcon.visibility = View.VISIBLE
-
         }
-
     }
-
     private fun setUpListeners() {
         binding.addAlertFAB.setOnClickListener {
             openAddAlertDialog()
         }
     }
-
-
     private fun openAddAlertDialog() {
         val calendar = Calendar.getInstance()
         val currentTime = calendar.time
@@ -368,8 +345,6 @@ class Alarm : Fragment(), OnDeleteClicked {
 
         alertDialog.show()
     }
-
-
     private fun scheduleNotification(alarmEntity: AlarmEntity) {
         val triggerTimeMillis = alarmEntity.startDate + 10000 - System.currentTimeMillis()
 
@@ -388,14 +363,11 @@ class Alarm : Fragment(), OnDeleteClicked {
         Log.i("Alarm", "workRequest: ${alarmEntity.startDate}")
         WorkManager.getInstance(requireContext()).enqueue(workRequest)
     }
-
     private fun cancelNotificationOrAlarm(alarmEntity: AlarmEntity) {
         val uniqueId = alarmEntity.startDate.toString()
         Log.i("Alarm", "uniqueId: $uniqueId")
         WorkManager.getInstance(requireContext()).cancelAllWorkByTag(uniqueId)
     }
-
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_OVERLAY_PERMISSION) {
@@ -416,7 +388,6 @@ class Alarm : Fragment(), OnDeleteClicked {
             }
         }
     }
-
     private fun alarmPermissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requireActivity().getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
@@ -424,7 +395,6 @@ class Alarm : Fragment(), OnDeleteClicked {
             true
         }
     }
-
     private fun requestExactAlarmPermission(alarmEntity: AlarmEntity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
             Log.d("Alarm", "Sdk version is greater than 31")
@@ -445,7 +415,6 @@ class Alarm : Fragment(), OnDeleteClicked {
             scheduleAlarmWithWorkManager(alarmEntity)
         }
     }
-
     private fun scheduleAlarm(alarmEntity: AlarmEntity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Log.d("Alarm", "Sdk version is greater than 31")
@@ -455,7 +424,6 @@ class Alarm : Fragment(), OnDeleteClicked {
             scheduleAlarmWithWorkManager(alarmEntity)
         }
     }
-
     private fun scheduleAlarmWithWorkManager(alarmEntity: AlarmEntity) {
         val data = Data.Builder()
             .putString(Keys.ALARM_TITLE_KEY, alarmEntity.title)
@@ -473,9 +441,6 @@ class Alarm : Fragment(), OnDeleteClicked {
 
         WorkManager.getInstance(requireActivity()).enqueue(workRequest)
     }
-
-
-
     private fun initUi() {
         binding.alertsRecyclerView.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
@@ -483,13 +448,11 @@ class Alarm : Fragment(), OnDeleteClicked {
         binding.alertsRecyclerView.adapter = alarmAdapter
 
     }
-
     override fun deleteClicked(alarm: AlarmEntity) {
         viewModel.deleteAlert(alarm.startDate)
         Log.d("Alarm", "Alarm deleted: $alarm")
             cancelNotificationOrAlarm(alarm)
     }
-
     private fun openFromDatePickerDialog(onDateSet: (Calendar) -> Unit) {
         val calendar = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog.newInstance(
@@ -512,8 +475,6 @@ class Alarm : Fragment(), OnDeleteClicked {
         }
         datePickerDialog.show(parentFragmentManager, "FromDatePickerDialog")
     }
-
-
     private fun openToDatePickerDialog(onDateSet: (Calendar) -> Unit) {
         val calendar = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog.newInstance(
@@ -533,8 +494,6 @@ class Alarm : Fragment(), OnDeleteClicked {
         }
         datePickerDialog.show(parentFragmentManager, "ToDatePickerDialog")
     }
-
-
     private fun openFromTimePickerDialog(onTimeSet: (Calendar) -> Unit) {
         val currentTime = Calendar.getInstance()
         val isToday = fromDateTimePicker.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR) &&
@@ -558,7 +517,6 @@ class Alarm : Fragment(), OnDeleteClicked {
 
         timePickerDialog.show(parentFragmentManager, "FromTimePickerDialog")
     }
-
     private fun openToTimePickerDialog(onTimeSet: (Calendar) -> Unit) {
         val currentTime = Calendar.getInstance()
         val isFromDateToday = fromDateTimePicker.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR) &&
@@ -585,7 +543,6 @@ class Alarm : Fragment(), OnDeleteClicked {
         ).apply {
             setMinTime(minHour, minMinute, 0)
         }
-
         timePickerDialog.show(parentFragmentManager, "ToTimePickerDialog")
     }
 }

@@ -18,5 +18,4 @@ data class DailyWeatherEntity(
     val icon: String,
     val clouds: Int,
     val isFavorite: Boolean
-
 )

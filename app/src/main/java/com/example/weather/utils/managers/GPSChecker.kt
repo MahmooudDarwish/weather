@@ -23,24 +23,20 @@ class GPSChecker(private val context: Context) {
             checkLocationEnabled()
         }
     }
-
     fun startMonitoring() {
         val intentFilter = IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
         context.registerReceiver(locationReceiver, intentFilter)
         checkLocationEnabled()
     }
-
     fun stopMonitoring() {
         context.unregisterReceiver(locationReceiver)
     }
-
     private fun checkLocationEnabled() {
         val isLocationEnabled = isLocationEnabled()
         CoroutineScope(Dispatchers.Default).launch {
             _gpsStateFlow.emit(isLocationEnabled)
         }
     }
-
     fun isLocationEnabled(): Boolean {
         val gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 

@@ -102,5 +102,8 @@
     <string name="timeout_error">Request timed out. Please try again.</string>
     <string name="unexpected_error">An unexpected error occurred.</string>
     <string name="error_fetching_favorite_weather_data">Error fetching favorite weather data</string>
+    <string name="error_deleting_favorite_weather_data">Error Deleting favorite weather data</string>
+    <string name="error_deleting_alarm_data">Error Deleting Alarm </string>
+
     <string name="error_fetching_alerts">Error fetching alerts</string>
 </resources>

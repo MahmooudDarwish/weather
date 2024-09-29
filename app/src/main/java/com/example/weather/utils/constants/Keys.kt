@@ -20,9 +20,6 @@ object Keys {
     const val ALARM_ID_KEY = "alarmId"
     const val ALARM_DISMISS_KEY = "alarmDismissTime"
 
-
-
-
     //API Keys
     const val BASE_URL = "https://pro.openweathermap.org/data/2.5/"
     const val WEATHER_API_KEY = "1de10df0792496fe3df75e77821732a5"

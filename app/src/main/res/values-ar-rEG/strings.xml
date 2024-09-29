@@ -103,6 +103,9 @@
     <string name="no_internet_connection">لا يوجد اتصال بالانترنت</string>"
     <string name="error_fetching_favorite_weather_data">حدث خطا اثناء احضار البيانات</string>
     <string name="error_fetching_alerts">حدث خطا اثناء احضار البيانات</string>
+    <string name="error_deleting_favorite_weather_data">حدث خطا اثناء حذف البيانات</string>
+    <string name="error_deleting_alarm_data">حدث خطا اثناء حذف البيانات </string>
+
 
 
 

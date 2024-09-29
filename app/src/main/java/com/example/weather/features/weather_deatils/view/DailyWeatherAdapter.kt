@@ -35,19 +35,16 @@ class FavoriteDailyWeatherAdapter(
         val tempDesc: TextView = view.findViewById(R.id.weatherDayDesc)
         val card: CardView = view.findViewById(R.id.weatherDayCard)
     }
-
     fun updateData(newList: List<DailyWeatherEntity?>) {
         Log.d("DailyWeatherAdapter", "Updating data: $newList")
         weatherList = newList
         notifyDataSetChanged()
     }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DayViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_weather_daily, parent, false)
         return DayViewHolder(view)
     }
-
     override fun onBindViewHolder(holder: DayViewHolder, position: Int) {
         val weatherItem = weatherList[position]
 
@@ -86,7 +83,6 @@ class FavoriteDailyWeatherAdapter(
         }
 
     }
-
     override fun getItemCount(): Int {
         Log.d("DailyWeatherAdapter", "getItemCount: ${weatherList.size}")
         return weatherList.size

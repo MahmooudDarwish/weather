@@ -2,10 +2,10 @@ package com.example.weather.features.weather_deatils.view_model
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.weather.R
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
-
 import com.example.weather.utils.model.API.toDailyWeatherEntities
 import com.example.weather.utils.model.API.toHourlyWeatherEntities
 import com.example.weather.utils.model.API.toWeatherEntity
@@ -56,11 +56,9 @@ class WeatherDetailsViewModel(
         Log.e("HomeViewModel", "Caught an exception: $exception")
     }
 
-    private val viewModelScope = CoroutineScope(Dispatchers.IO + SupervisorJob() + exceptionHandler)
-
     fun updateWeatherAndRefreshRoom(latitude: Double, longitude: Double, city: String) {
         _favoriteWeatherData.value = DataState.Loading
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO + SupervisorJob() + exceptionHandler) {
             try {
                 // Fetch and save current weather data
                 weatherRepository.fetchWeatherData(longitude, latitude)

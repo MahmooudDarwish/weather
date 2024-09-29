@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +23,7 @@ import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
+import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import com.example.weather.utils.remote.WeatherRemoteDataSourceImpl
@@ -108,12 +110,22 @@ class Favorites : Fragment(), IFavoriteItem {
 
     private fun observeFavorites() {
         lifecycleScope.launch {
-            viewModel.favorites.collect { favorites ->
-                favoritesAdapter.updateList(favorites)
-                observeNoFavorites(favorites.isNotEmpty())
+            viewModel.favorites.collect { state ->
+                when (state) {
+                    is DataState.Loading -> {
+                    }
+                    is DataState.Success -> {
+                        favoritesAdapter.updateList(state.data)
+                        observeNoFavorites(state.data.isNotEmpty())
+                    }
+                    is DataState.Error -> {
+                        Toast.makeText(context, getString(state.message), Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
     }
+
 
     private fun observeNoFavorites(favoriteExist: Boolean) {
         if (favoriteExist) {

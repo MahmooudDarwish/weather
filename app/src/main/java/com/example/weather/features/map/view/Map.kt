@@ -56,6 +56,8 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+
+
     private fun updateLocale(language:String) {
         val locale = Locale(language)
         Locale.setDefault(locale)
@@ -80,6 +82,15 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         requestLocationPermission()
 
+        lifecycleScope.launch {
+            SharedDataManager.languageFlow.collect { language ->
+                Log.i("DEBGUGG", "languageDetails: $language")
+                when (language) {
+                    Language.ENGLISH -> updateLocale("en")
+                    Language.ARABIC -> updateLocale("ar")
+                }
+            }
+        }
 
         binding.etSearchLocation.apply {
             val geocoder = Geocoder(this@Map, Locale.getDefault())

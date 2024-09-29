@@ -46,7 +46,6 @@ class Settings : Fragment() {
 
     private lateinit var binding: FragmentSettingsBinding
 
-
     private lateinit var viewModel: SettingsViewModel
     private lateinit var factory: SettingsViewModelFactory
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -310,7 +309,4 @@ class Settings : Fragment() {
         }
 
     }
-
-
-
 }

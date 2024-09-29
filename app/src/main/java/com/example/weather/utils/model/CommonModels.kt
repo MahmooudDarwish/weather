@@ -4,33 +4,24 @@ data class Coordinates(
     val lon: Double,
     val lat: Double
 )
-
 data class Weather(
     val description: String,
     val icon: String
 )
-
 data class Main(
     val temp: Double,
     val pressure: Int,
     val humidity: Int,
 )
-
 data class Wind(
     val speed: Double,
 )
-
 data class City(
     val coord: Coordinates
 )
-
-
-
-
 data class Clouds(
     val all: Int
 )
-
 data class ForecastItem(
     val dt: Long,
     val main: Main,

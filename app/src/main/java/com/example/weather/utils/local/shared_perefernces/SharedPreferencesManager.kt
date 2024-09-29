@@ -7,11 +7,6 @@ import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
 import com.example.weather.utils.constants.Keys
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import java.lang.Double.parseDouble
 
 class SharedPreferencesManager(val sharedPreferences: SharedPreferences) {

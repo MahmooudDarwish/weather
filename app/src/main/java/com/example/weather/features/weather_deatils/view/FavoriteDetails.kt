@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.location.Geocoder
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -44,9 +42,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
     private lateinit var dailyWeatherAdapter: FavoriteDailyWeatherAdapter
     private lateinit var hourlyWeatherAdapter: FavoriteHourlyWeatherAdapter
     private lateinit var internetChecker: InternetChecker
-
-
-
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
@@ -66,7 +61,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         super.onDestroy()
         internetChecker.stopMonitoring()
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFavoriteDetailsBinding.inflate(layoutInflater)
@@ -129,7 +123,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
             getAddressFromLocation(latitude = latitude, longitude = longitude)
         )
     }
-
     fun getAddressFromLocation(latitude: Double, longitude: Double): String {
         Log.i("UTR", "getAddressFromLocation latitude:$latitude longitude:$longitude")
         val geocoder = Geocoder(this, Locale.getDefault())
@@ -150,7 +143,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
     private fun showToast(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
-
     private fun setUpCollectors() {
         lifecycleScope.launch {
             internetChecker.networkStateFlow.collect { isConnected ->
@@ -221,8 +213,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
             }
         }
     }
-
-
     private fun updateLocale(language: String) {
         val locale = Locale(language)
         Locale.setDefault(locale)
@@ -235,7 +225,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
             applicationContext.resources.displayMetrics
         )
     }
-
     private fun updateUI(weatherResponse: WeatherEntity) {
 
         binding.favoriteCountryName.text = weatherResponse.name
@@ -283,7 +272,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
             hourlyWeatherAdapter.updateHourlyWeatherList(filteredList)
         }
     }
-
     private fun updateDailyUI(weatherItem: DailyWeatherEntity) {
 
         binding.favoriteWeatherDescriptionText.text = weatherItem.description.replaceFirstChar {
@@ -338,8 +326,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         filterHourlyWeatherByDay(weatherItem.dt)
 
     }
-
-
     private fun filterHourlyWeatherByDay(dayEpoch: Long) {
         viewModel.hourlyWeatherState.value.let { hourlyWeather ->
 
@@ -362,7 +348,6 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
 
         }
     }
-
     private fun initUI() {
         binding.favoriteRecyclerViewHourlyWeather.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -375,11 +360,7 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickedFavorite {
         dailyWeatherAdapter =
             FavoriteDailyWeatherAdapter(emptyList(), this, viewModel.getWeatherMeasure(), this)
         binding.favoriteRecyclerViewDailyWeather.adapter = dailyWeatherAdapter
-
-
     }
-
-
     override fun onDayClicked(day: DailyWeatherEntity) {
         updateDailyUI(day)
     }

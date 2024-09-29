@@ -25,13 +25,11 @@ class InternetChecker(private val context: Context) {
             checkInternetConnection()
         }
     }
-
     fun startMonitoring() {
         val intentFilter = IntentFilter(CONNECTIVITY_ACTION)
         context.registerReceiver(networkReceiver, intentFilter)
         checkInternetConnection()
     }
-
     fun stopMonitoring() {
         context.unregisterReceiver(networkReceiver)
     }
@@ -41,7 +39,6 @@ class InternetChecker(private val context: Context) {
             _networkStateFlow.emit(isConnected)
         }
     }
-
     fun isInternetAvailable(): Boolean {
         val network = connectivityManager.activeNetwork ?: return false
         val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false

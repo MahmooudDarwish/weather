@@ -11,7 +11,6 @@ data class DailyWeatherResponse(
     val list: List<DailyForecastItem>,
     val city: City
 )
-
 data class DailyForecastItem(
     val dt: Long,
     val speed: Double,
@@ -21,13 +20,10 @@ data class DailyForecastItem(
     val temp: Temperature,
     val clouds: Int,
 )
-
 data class Temperature(
    val min :Double,
    val max: Double,
 )
-
-
 
 fun DailyWeatherResponse.toDailyWeatherEntities( lon:String ,  lat:String,isFavourite: Boolean = false): List<DailyWeatherEntity> {
     return list.map { item ->

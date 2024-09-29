@@ -29,8 +29,6 @@ import java.util.Locale
 class Splash : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
-
-
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
@@ -44,7 +42,6 @@ class Splash : AppCompatActivity() {
         }
         recreate()
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
@@ -81,13 +78,10 @@ class Splash : AppCompatActivity() {
             finish()
         }, 3000)
     }
-
     private fun setUpLottieAnimation() {
         binding.lottieAnimationView.playAnimation()
         binding.lottieAnimationView.speed = 1.5f
     }
-
-
     private fun updateLocale(language:String) {
         val locale = Locale(language)
         Locale.setDefault(locale)

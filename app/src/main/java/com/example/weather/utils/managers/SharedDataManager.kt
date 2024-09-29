@@ -13,7 +13,6 @@ object SharedDataManager {
         _languageFlow.emit(language)
     }
 
-
     private val _currentLocationFlow = MutableSharedFlow<Pair<Double, Double>?>(replay = 1)
     val currentLocationFlow: SharedFlow<Pair<Double,Double>?> = _currentLocationFlow
 

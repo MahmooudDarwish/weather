@@ -11,14 +11,11 @@ data class HourlyWeatherResponse(
     var list: List<ForecastItem>,
     val city: City
 )
-
-
 fun HourlyWeatherResponse.toHourlyWeatherEntities(lon: String, lat: String, isFavorite: Boolean): List<HourlyWeatherEntity> {
     return list.map { forecastItem ->
         forecastItem.toHourlyWeatherEntity(lon.toDouble(), lat.toDouble(), isFavorite)
     }
 }
-
 private fun ForecastItem.toHourlyWeatherEntity(longitude: Double, latitude: Double, isFavorite: Boolean): HourlyWeatherEntity {
     return HourlyWeatherEntity(
         longitude = longitude,
