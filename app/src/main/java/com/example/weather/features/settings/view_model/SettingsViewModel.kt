@@ -8,6 +8,7 @@ import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,7 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
     val notificationStatusFlow: StateFlow<Boolean> = _notificationStatusFlow
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val language = repository.getLanguage()
             SharedDataManager.emitLanguage(language)
             _locationStatusFlow.emit(repository.getLocationStatus())
@@ -41,42 +42,42 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
     }
 
     fun saveNotificationStatus(status: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.setNotificationStatus(status)
             _notificationStatusFlow.emit(status)
         }
     }
 
     fun saveLanguage(lang: Language) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.setLanguage(lang)
             SharedDataManager.emitLanguage(lang)
         }
     }
 
     fun saveLocationStatus(locationStatus: LocationStatus) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.setLocationStatus(locationStatus)
             _locationStatusFlow.emit(locationStatus)
         }
     }
 
     fun saveTemperatureUnit(unit: Temperature) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.setTemperatureUnit(unit)
             _temperatureFlow.emit(unit)
         }
     }
 
     fun saveWindSpeedUnit(unit: WindSpeed) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.setWindSpeedUnit(unit)
             _windSpeedFlow.emit(unit)
         }
     }
 
     fun saveCurrentLocation(latitude: Double, longitude: Double) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val location = Pair(latitude, longitude)
             SharedDataManager.emitLocation(location)
             repository.saveCurrentLocation(latitude, longitude)

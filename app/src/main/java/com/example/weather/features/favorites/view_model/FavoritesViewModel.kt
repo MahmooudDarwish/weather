@@ -10,7 +10,6 @@ import com.example.weather.utils.model.API.toWeatherEntity
 import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepository
-import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -47,8 +46,8 @@ class FavoritesViewModel(
         viewModelScope.launch(Dispatchers.IO + supervisorJob + exceptionHandler) {
             try {
                 _favorites.value = DataState.Loading
-
-                weatherRepository.fetchWeatherData(longitude, latitude).map { response ->
+                launch(Dispatchers.IO) {
+                    weatherRepository.fetchWeatherData(longitude, latitude).map { response ->
                         response?.toWeatherEntity(
                             city,
                             lat = latitude.toString(),
@@ -63,8 +62,10 @@ class FavoritesViewModel(
                             weatherRepository.insertWeather(it)
                         }
                     }
+                }
 
-                weatherRepository.get5DayForecast(longitude, latitude).map { response ->
+                launch(Dispatchers.IO) {
+                    weatherRepository.get5DayForecast(longitude, latitude).map { response ->
                         response?.toDailyWeatherEntities(
                             lon = longitude.toString(), lat = latitude.toString(), true
                         ) ?: emptyList()
@@ -74,16 +75,19 @@ class FavoritesViewModel(
                         )
                         weatherRepository.insertDailyWeather(dailyWeatherEntities)
                     }
+                }
 
-                weatherRepository.fetchHourlyWeatherData(longitude, latitude).map { response ->
+                launch(Dispatchers.IO) {
+                    weatherRepository.fetchHourlyWeatherData(longitude, latitude).map { response ->
                         response?.toHourlyWeatherEntities(
                             lon = longitude.toString(), lat = latitude.toString(), true
                         ) ?: emptyList()
                     }.collect { hourlyWeatherEntities ->
                         weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
                     }
+                }
 
-                fetchAllFavoriteWeather()
+                //fetchAllFavoriteWeather()
 
             } catch (e: Exception) {
                 Log.e("FavoritesViewModel", "Error fetching or saving weather data", e)

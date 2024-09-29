@@ -16,7 +16,6 @@ import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepository
-import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -65,32 +64,66 @@ class WeatherDetailsViewModel(
         viewModelScope.launch(Dispatchers.IO + SupervisorJob() + exceptionHandler) {
             try {
                 // Fetch and save current weather data
-                weatherRepository.fetchWeatherData(longitude, latitude)
-                    .map { response -> response?.toWeatherEntity(city, lon = longitude.toString(), lat = latitude.toString(), isFavorite) }
-                    .collect { currentWeatherEntity ->
-                        currentWeatherEntity?.let {
-                            weatherRepository.deleteFavoriteHourlyWeather(lon = longitude, lat = latitude)
-                            weatherRepository.insertWeather(it)
-                            _weatherState.value = DataState.Success(it)
+                launch(Dispatchers.IO) {
+                    weatherRepository.fetchWeatherData(longitude, latitude)
+                        .map { response ->
+                            response?.toWeatherEntity(
+                                city,
+                                lon = longitude.toString(),
+                                lat = latitude.toString(),
+                                isFavorite
+                            )
                         }
-                    }
+                        .collect { currentWeatherEntity ->
+                            currentWeatherEntity?.let {
+                                weatherRepository.deleteFavoriteHourlyWeather(
+                                    lon = longitude,
+                                    lat = latitude
+                                )
+                                weatherRepository.insertWeather(it)
+                                _weatherState.value = DataState.Success(it)
+                            }
+                        }
+                }
 
                 // Fetch daily and hourly weather data
-                weatherRepository.get5DayForecast(longitude, latitude)
-                    .map { response -> response?.toDailyWeatherEntities(lon = longitude.toString(), lat = latitude.toString(), isFavorite) ?: emptyList() }
-                    .collect { dailyWeatherEntities ->
-                        weatherRepository.deleteFavoriteDailyWeather(lon = longitude, lat = latitude)
-                        weatherRepository.insertDailyWeather(dailyWeatherEntities)
-                        _dailyWeatherState.value = DataState.Success(dailyWeatherEntities)
-                    }
+                launch(Dispatchers.IO) {
+                    weatherRepository.get5DayForecast(longitude, latitude)
+                        .map { response ->
+                            response?.toDailyWeatherEntities(
+                                lon = longitude.toString(),
+                                lat = latitude.toString(),
+                                isFavorite
+                            ) ?: emptyList()
+                        }
+                        .collect { dailyWeatherEntities ->
+                            weatherRepository.deleteFavoriteDailyWeather(
+                                lon = longitude,
+                                lat = latitude
+                            )
+                            weatherRepository.insertDailyWeather(dailyWeatherEntities)
+                            _dailyWeatherState.value = DataState.Success(dailyWeatherEntities)
+                        }
+                }
 
+                launch(Dispatchers.IO) {
                 weatherRepository.fetchHourlyWeatherData(longitude, latitude)
-                    .map { response -> response?.toHourlyWeatherEntities(lon = longitude.toString(), lat = latitude.toString(), isFavorite) ?: emptyList() }
-                    .collect { hourlyWeatherEntities ->
-                        weatherRepository.deleteFavoriteHourlyWeather(lon = longitude, lat = latitude)
-                        weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
-                       _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
+                    .map { response ->
+                        response?.toHourlyWeatherEntities(
+                            lon = longitude.toString(),
+                            lat = latitude.toString(),
+                            isFavorite
+                        ) ?: emptyList()
                     }
+                    .collect { hourlyWeatherEntities ->
+                        weatherRepository.deleteFavoriteHourlyWeather(
+                            lon = longitude,
+                            lat = latitude
+                        )
+                        weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
+                        _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
+                    }
+            }
                 //fetchWeatherFromRoom(latitude =  latitude, longitude = longitude)
             } catch (e: Exception) {
                 _weatherState.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
@@ -105,18 +138,18 @@ class WeatherDetailsViewModel(
          viewModelScope.launch(Dispatchers.IO) {
             try {
                 //execute in parallel
-                launch {
+                launch(Dispatchers.IO) {
                     weatherRepository.getHourlyWeather(lat = latitude,lon= longitude).collect { response ->
                         Log.d("WeatherDetailsViewModel", "Hourly weather data: $response")
                         _hourlyWeatherState.value = DataState.Success(response)
                     }
                 }
-                launch {
+                launch(Dispatchers.IO) {
                     weatherRepository.getDailyWeather(lat = latitude,lon= longitude).collect { response ->
                         _dailyWeatherState.value = DataState.Success(response)
                     }
                 }
-                launch {
+                launch(Dispatchers.IO) {
                     weatherRepository.getWeather(lat = latitude,lon= longitude).collect { response ->
                         _weatherState.value = DataState.Success(response)
                     }
@@ -142,7 +175,7 @@ class WeatherDetailsViewModel(
         return weatherRepository.getLocationStatus()
     }
     fun saveCurrentLocation(latitude: Double, longitude: Double) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val location = Pair(latitude, longitude)
             SharedDataManager.emitLocation(location)
             weatherRepository.saveCurrentLocation(latitude, longitude)
