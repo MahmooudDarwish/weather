@@ -53,4 +53,4 @@ To run this application locally, follow these steps:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-username/weather-app.git](https://github.com/MahmooudDarwish/weather.git](https://github.com/MahmooudDarwish/weather.git
+   git clone https://github.com/MahmooudDarwish/weather.git
