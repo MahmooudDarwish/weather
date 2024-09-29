@@ -117,6 +117,7 @@ class Home : Fragment(), OnDayClickListener {
             }
         }
 
+
         lifecycleScope.launch {
             viewModel.currentLocationFlow.collect { location ->
                 Log.i("DEBUGGGGGGG", "WeatherDetailsViewModel $location")
@@ -411,7 +412,8 @@ class Home : Fragment(), OnDayClickListener {
         if (currentLocation == null) {
             return
         }
-        val latitude = currentLocation.first
+         checkLocationStatus()
+         val latitude = currentLocation.first
         val longitude = currentLocation.second
          if (internetChecker.isInternetAvailable()){
              viewModel.updateWeatherAndRefreshRoom(
