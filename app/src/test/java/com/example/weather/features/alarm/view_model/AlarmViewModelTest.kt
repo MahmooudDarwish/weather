@@ -8,8 +8,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -109,7 +107,7 @@ class AlarmViewModelTest{
 
         // When
         viewModel.deleteAlert(idToDelete)
-        advanceUntilIdle() // This ensures the coroutine has completed before the next assertion
+        advanceUntilIdle()
         val newSize = repository.getAllAlarms().first().size
 
         // Then
@@ -148,8 +146,8 @@ class AlarmViewModelTest{
         val alarms = repository.getAllAlarms().first()
 
         // Then
-        assertEquals(1, newSize) // Ensure only one alarm remains
-        assertEquals(2L, alarms[0].startDate) // Verify the remaining alarm is the correct one
+        assertEquals(1, newSize)
+        assertEquals(2L, alarms[0].startDate)
     }
 
     @Test(expected = IllegalArgumentException::class)

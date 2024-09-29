@@ -4,7 +4,6 @@ import com.example.weather.utils.enums.Language
 import com.example.weather.utils.enums.LocationStatus
 import com.example.weather.utils.enums.Temperature
 import com.example.weather.utils.enums.WindSpeed
-import com.example.weather.utils.local.shared_perefernces.ISharedPreferencesManager
 
 class FakeSharedPreferencesManager : ISharedPreferencesManager {
     override fun setFirstLaunchCompleted(status: Boolean) {

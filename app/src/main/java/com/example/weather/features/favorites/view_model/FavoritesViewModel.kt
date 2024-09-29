@@ -97,26 +97,23 @@ class FavoritesViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 weatherRepository.getAllFavoriteWeather().collect { response ->
-                    Log.d("FavoritesViewModel", "Fetched favorites: $response")
                     _favorites.value = DataState.Success(response)
                 }
             } catch (e: Exception) {
                 _favorites.value = DataState.Error(R.string.error_fetching_favorite_weather_data)
-                Log.e("FavoritesViewModel", "Error fetching weather data from room", e)
             }
         }
     }
 
 
     fun deleteFavorite(weatherEntity: WeatherEntity) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 weatherRepository.deleteFavoriteWeather(
                     weatherEntity.longitude, weatherEntity.latitude
                 )
             } catch (e: Exception) {
                 _favorites.value = DataState.Error(R.string.error_deleting_favorite_weather_data)
-                Log.e("FavoritesViewModel", "Error fetching weather data from room", e)
             }
         }
     }

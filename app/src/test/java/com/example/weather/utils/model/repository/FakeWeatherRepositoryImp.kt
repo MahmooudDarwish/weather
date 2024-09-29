@@ -18,14 +18,16 @@ import kotlinx.coroutines.flow.flow
 class FakeWeatherRepositoryImp(
 ) : WeatherRepository{
     private val alarms = mutableListOf<AlarmEntity>()
-
-
+    private val favorites = mutableListOf<WeatherEntity>()
 
     override suspend fun insertAlarm(alarm: AlarmEntity) {
-        if (alarms.any { it.startDate == alarm.startDate }) {
-            throw IllegalArgumentException("An alarm with the same ID already exists.")
+
+        val exists = alarms.any {
+            it.startDate == alarm.startDate
         }
-        alarms.add(alarm)
+        if (!exists) {
+            alarms.add(alarm)
+        }
     }
 
     override suspend fun getAllAlarms(): Flow<List<AlarmEntity>> =  flow {
@@ -44,6 +46,24 @@ class FakeWeatherRepositoryImp(
         }
     }
 
+    override suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> = flow {
+        emit(favorites)
+    }
+
+
+    override suspend fun deleteFavoriteWeather(lon: Double, lat: Double) {
+        favorites.removeIf { it.longitude == lon && it.latitude == lat }
+    }
+    override suspend fun insertWeather(weather: WeatherEntity) {
+        val exists = favorites.any {
+            it.longitude == weather.longitude && it.latitude == weather.latitude
+        }
+
+        if (!exists) {
+            favorites.add(weather)
+        }
+    }
+
 
     override fun fetchWeatherData(longitude: Double, latitude: Double): Flow<WeatherResponse> {
         TODO("Not yet implemented")
@@ -59,10 +79,7 @@ class FakeWeatherRepositoryImp(
 
     }
 
-    override suspend fun insertWeather(weather: WeatherEntity) {
-        TODO("Not yet implemented")
 
-    }
 
     override suspend fun insertDailyWeather(dailyWeather: List<DailyWeatherEntity>) {
         TODO("Not yet implemented")
@@ -89,10 +106,6 @@ class FakeWeatherRepositoryImp(
 
     }
 
-    override suspend fun deleteFavoriteWeather(lon: Double, lat: Double) {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun deleteFavoriteDailyWeather(lon: Double, lat: Double) {
         TODO("Not yet implemented")
     }
@@ -102,12 +115,6 @@ class FakeWeatherRepositoryImp(
     }
 
     override fun get30DayForecast(longitude: Double, latitude: Double): Flow<DailyWeatherResponse?> {
-        TODO("Not yet implemented")
-    }
-
-
-
-    override suspend fun getAllFavoriteWeather(): Flow<List<WeatherEntity>> {
         TODO("Not yet implemented")
     }
 
