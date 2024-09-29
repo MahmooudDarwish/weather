@@ -8,6 +8,7 @@ import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.API.toDailyWeatherEntities
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
+import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +21,7 @@ import java.io.IOException
 import java.util.concurrent.TimeoutException
 
 class AlarmViewModel(
-    private val weatherRepository: WeatherRepositoryImpl
+    private val weatherRepository: WeatherRepository
 ) : ViewModel() {
 
     private val _alerts = MutableStateFlow<List<AlarmEntity?>>(emptyList())

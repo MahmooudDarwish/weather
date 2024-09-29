@@ -38,6 +38,7 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
+import com.example.weather.utils.managers.InternetChecker
 import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.AlarmEntity
 import com.example.weather.utils.model.Local.DailyWeatherEntity
@@ -249,7 +250,11 @@ class Alarm : Fragment(), OnDeleteClicked {
     }
     private fun setUpListeners() {
         binding.addAlertFAB.setOnClickListener {
-            openAddAlertDialog()
+            if(InternetChecker(requireActivity()).isInternetAvailable()){
+                openAddAlertDialog()
+            }else{
+                Toast.makeText(context, getString(R.string.no_internet_connection), Toast.LENGTH_LONG).show()
+            }
         }
     }
     private fun openAddAlertDialog() {

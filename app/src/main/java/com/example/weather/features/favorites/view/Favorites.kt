@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.weather.R
 import com.example.weather.databinding.FragmentFavoritesBinding
 import com.example.weather.features.favorites.view_model.FavoritesViewModel
 import com.example.weather.features.favorites.view_model.FavoritesViewModelFactory
@@ -23,6 +24,7 @@ import com.example.weather.utils.constants.Keys
 import com.example.weather.utils.local.room.AppDatabase
 import com.example.weather.utils.local.room.local_data_source.WeatherLocalDataSourceImpl
 import com.example.weather.utils.local.shared_perefernces.SharedPreferencesManager
+import com.example.weather.utils.managers.InternetChecker
 import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.WeatherEntity
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
@@ -93,7 +95,12 @@ class Favorites : Fragment(), IFavoriteItem {
 
     private fun setUpListeners() {
         binding.addFavoriteLocationFAB.setOnClickListener() {
-            navigateToMaps()
+            if(InternetChecker(requireActivity()).isInternetAvailable()){
+                navigateToMaps()
+
+            }else{
+                Toast.makeText(context, getString(R.string.no_internet_connection), Toast.LENGTH_LONG).show()
+            }
         }
     }
 

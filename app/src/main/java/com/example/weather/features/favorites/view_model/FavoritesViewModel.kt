@@ -9,6 +9,7 @@ import com.example.weather.utils.model.API.toHourlyWeatherEntities
 import com.example.weather.utils.model.API.toWeatherEntity
 import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.WeatherEntity
+import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +23,7 @@ import java.io.IOException
 import java.util.concurrent.TimeoutException
 
 class FavoritesViewModel(
-    private val weatherRepository: WeatherRepositoryImpl
+    private val weatherRepository: WeatherRepository
 ) : ViewModel() {
 
     private val _favorites = MutableStateFlow<DataState<List<WeatherEntity?>>>(DataState.Loading)

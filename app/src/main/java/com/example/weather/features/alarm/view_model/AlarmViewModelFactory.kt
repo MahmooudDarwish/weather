@@ -2,10 +2,11 @@ package com.example.weather.features.alarm.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 
 class AlarmViewModelFactory (
-    private val weatherRepository: WeatherRepositoryImpl
+    private val weatherRepository: WeatherRepository
     ) : ViewModelProvider.Factory
     {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

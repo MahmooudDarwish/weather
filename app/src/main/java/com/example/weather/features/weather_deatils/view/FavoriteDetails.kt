@@ -119,14 +119,18 @@ class FavoriteDetails : AppCompatActivity(), OnDayClickListener {
     }
 
     private fun getWeatherDetails(longitude: Double, latitude: Double){
-        viewModel.updateWeatherAndRefreshRoom(
-            latitude,
-            longitude,
-            getAddressFromLocation(latitude = latitude, longitude = longitude),
-            isFavorite = true
-        )
+        if (internetChecker.isInternetAvailable()){
+            viewModel.updateWeatherAndRefreshRoom(
+                longitude = longitude,
+                latitude = latitude,
+                city = getAddressFromLocation(latitude, longitude),
+                isFavorite = true
+            )
+        }else{
+            viewModel.fetchWeatherFromRoom(latitude = latitude,longitude=  longitude)
+        }
     }
-    fun getAddressFromLocation(latitude: Double, longitude: Double): String {
+    private fun getAddressFromLocation(latitude: Double, longitude: Double): String {
         Log.i("UTR", "getAddressFromLocation latitude:$latitude longitude:$longitude")
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)

@@ -15,6 +15,7 @@ import com.example.weather.utils.model.DataState
 import com.example.weather.utils.model.Local.DailyWeatherEntity
 import com.example.weather.utils.model.Local.HourlyWeatherEntity
 import com.example.weather.utils.model.Local.WeatherEntity
+import com.example.weather.utils.model.repository.WeatherRepository
 import com.example.weather.utils.model.repository.WeatherRepositoryImpl
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ import java.io.IOException
 import java.util.concurrent.TimeoutException
 
 class WeatherDetailsViewModel(
-    private val weatherRepository: WeatherRepositoryImpl
+    private val weatherRepository: WeatherRepository
 ) : ViewModel() {
 
     private val _weatherState = MutableStateFlow<DataState<WeatherEntity>>(DataState.Loading)
@@ -77,7 +78,7 @@ class WeatherDetailsViewModel(
                 weatherRepository.get5DayForecast(longitude, latitude)
                     .map { response -> response?.toDailyWeatherEntities(lon = longitude.toString(), lat = latitude.toString(), isFavorite) ?: emptyList() }
                     .collect { dailyWeatherEntities ->
-                        weatherRepository.deleteFavoriteHourlyWeather(lon = longitude, lat = latitude)
+                        weatherRepository.deleteFavoriteDailyWeather(lon = longitude, lat = latitude)
                         weatherRepository.insertDailyWeather(dailyWeatherEntities)
                         _dailyWeatherState.value = DataState.Success(dailyWeatherEntities)
                     }
@@ -97,7 +98,7 @@ class WeatherDetailsViewModel(
         }
     }
 
-    private fun fetchWeatherFromRoom(latitude: Double, longitude: Double) {
+     fun fetchWeatherFromRoom(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             try {
                 launch {

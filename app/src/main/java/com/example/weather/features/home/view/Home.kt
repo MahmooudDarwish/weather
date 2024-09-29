@@ -253,7 +253,11 @@ class Home : Fragment(), OnDayClickListener {
 
     private fun setUpListeners() {
         binding.locationIcon.setOnClickListener {
-            navigateToMaps()
+            if(InternetChecker(requireActivity()).isInternetAvailable()){
+                navigateToMaps()
+            }else{
+                Toast.makeText(context, getString(R.string.no_internet_connection), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -341,6 +345,8 @@ class Home : Fragment(), OnDayClickListener {
     }
 
     private fun updateHourlyRecyclerViewList(filteredList: List<HourlyWeatherEntity?>) {
+        Log.i("HomeFragment", "updateHourlyRecyclerViewList called")
+        Log.i("HomeFragment", "updateHourlyRecyclerViewList ${filteredList.size}")
         hourlyWeatherAdapter.updateHourlyWeatherList(filteredList)
     }
 
@@ -405,12 +411,17 @@ class Home : Fragment(), OnDayClickListener {
         }
         val latitude = currentLocation.first
         val longitude = currentLocation.second
-        viewModel.updateWeatherAndRefreshRoom(
-            longitude = longitude,
-            latitude = latitude,
-            city = getAddressFromLocation(latitude, longitude),
-            isFavorite = false
-        )
+         if (internetChecker.isInternetAvailable()){
+             viewModel.updateWeatherAndRefreshRoom(
+                 longitude = longitude,
+                 latitude = latitude,
+                 city = getAddressFromLocation(latitude, longitude),
+                 isFavorite = false
+             )
+         }else{
+             viewModel.fetchWeatherFromRoom(latitude = latitude,longitude=  longitude)
+         }
+
         Log.i("HomeFragment", " hommmme shared ${longitude}, ")
 
     }
