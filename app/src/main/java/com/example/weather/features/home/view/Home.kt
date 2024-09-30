@@ -102,6 +102,7 @@ class Home : Fragment(), OnDayClickListener {
         gpsChecker.startMonitoring()
 
 
+
     }
 
     private fun showToast(msg: String) {
@@ -121,7 +122,7 @@ class Home : Fragment(), OnDayClickListener {
         lifecycleScope.launch {
             viewModel.currentLocationFlow.collect { location ->
                 Log.i("DEBUGGGGGGG", "WeatherDetailsViewModel $location")
-                if (location != null && internetChecker.isInternetAvailable()) {
+                if (location != null) {
                     lastKnownLocation = location
                     updateLocation(location)
                 }
@@ -423,6 +424,7 @@ class Home : Fragment(), OnDayClickListener {
                  isFavorite = false
              )
          }else{
+             Log.i("HomeFragment", "updateLocation called")
              viewModel.fetchWeatherFromRoom(latitude = latitude,longitude=  longitude)
          }
 

@@ -76,10 +76,6 @@ class WeatherDetailsViewModel(
                         }
                         .collect { currentWeatherEntity ->
                             currentWeatherEntity?.let {
-                                weatherRepository.deleteFavoriteHourlyWeather(
-                                    lon = longitude,
-                                    lat = latitude
-                                )
                                 weatherRepository.insertWeather(it)
                                 _weatherState.value = DataState.Success(it)
                             }
@@ -97,10 +93,6 @@ class WeatherDetailsViewModel(
                             ) ?: emptyList()
                         }
                         .collect { dailyWeatherEntities ->
-                            weatherRepository.deleteFavoriteDailyWeather(
-                                lon = longitude,
-                                lat = latitude
-                            )
                             weatherRepository.insertDailyWeather(dailyWeatherEntities)
                             _dailyWeatherState.value = DataState.Success(dailyWeatherEntities)
                         }
@@ -116,10 +108,6 @@ class WeatherDetailsViewModel(
                         ) ?: emptyList()
                     }
                     .collect { hourlyWeatherEntities ->
-                        weatherRepository.deleteFavoriteHourlyWeather(
-                            lon = longitude,
-                            lat = latitude
-                        )
                         weatherRepository.insertHourlyWeather(hourlyWeatherEntities)
                         _hourlyWeatherState.value = DataState.Success(hourlyWeatherEntities)
                     }
