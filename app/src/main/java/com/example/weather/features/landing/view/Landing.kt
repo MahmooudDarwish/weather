@@ -2,10 +2,8 @@ package com.example.weather.features.landing.view
 
 import android.Manifest
 import android.app.Activity
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -317,11 +315,14 @@ class LandingActivity : AppCompatActivity() {
 
     private fun checkGpsStatusAndFetchLocation() {
 
-        if (isGpsEnabled()) {
-            fetchCurrentLocationWeather()
-        } else {
-            showEnableGpsDialog()
+        if (InternetChecker(this).isInternetAvailable()){
+            if (isGpsEnabled()) {
+                fetchCurrentLocationWeather()
+            } else {
+                showEnableGpsDialog()
+            }
         }
+
     }
 
     private fun fetchCurrentLocationWeather() {
