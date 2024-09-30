@@ -121,7 +121,7 @@ class Home : Fragment(), OnDayClickListener {
         lifecycleScope.launch {
             viewModel.currentLocationFlow.collect { location ->
                 Log.i("DEBUGGGGGGG", "WeatherDetailsViewModel $location")
-                if (location != null) {
+                if (location != null && internetChecker.isInternetAvailable()) {
                     lastKnownLocation = location
                     updateLocation(location)
                 }
@@ -232,7 +232,7 @@ class Home : Fragment(), OnDayClickListener {
         binding.swipeRefreshLayout.setOnRefreshListener {
             if (!internetChecker.isInternetAvailable()) {
                 showToast(getString(R.string.no_internet_connection))
-                //viewModel.fetchWeatherFromRoom()
+                viewModel.fetchWeatherFromRoom(latitude = lastKnownLocation!!.first, longitude = lastKnownLocation!!.second)
 
             } else {
                 if (viewModel.getLocationStatus() == LocationStatus.GPS) {
