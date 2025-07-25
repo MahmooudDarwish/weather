@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Weather Application provides users a comprehensive and user-friendly interface to access real-time weather information. With features such as location selection, customizable temperature and wind speed units, and detailed forecasts, this application aims to inform users about weather conditions in their preferred locations.
+The Weather Application provides users with a comprehensive and user-friendly interface to access real-time weather information. With features such as location selection, customizable temperature and wind speed units, and detailed forecasts, this application aims to inform users about weather conditions in their preferred locations.
 
 ## Features
 
@@ -12,18 +12,11 @@ The Weather Application provides users a comprehensive and user-friendly interfa
 - **Wind Speed Units**: Options include meter/sec or miles/hour.
 - **Language Preferences**: Choose between Arabic and English.
 
-  ![Seetings Screen](https://github.com/user-attachments/assets/047e2c9b-89b7-4911-8507-69dfa2fcb3f5)
-
-
 ### Home Screen
 - Displays current temperature, date, humidity, wind speed, pressure, cloud coverage, city name, and an appropriate weather icon.
 - Provide a weather description (e.g., clear sky, light rain).
 - Shows hourly weather data for the current date.
 - Displays forecast information for the next five days.
-  
-  ![Home Screen_1](https://github.com/user-attachments/assets/0cd3f8a0-c48f-4e7d-8b4c-101d115c6ed9)
-  ![Home Screen_2](https://github.com/user-attachments/assets/d8ede4f8-9733-4ec8-a498-8684884429d7)
-
 
 ### Weather Alerts Screen
 - Users can set weather alerts with customizable options:
@@ -31,19 +24,36 @@ The Weather Application provides users a comprehensive and user-friendly interfa
   - Type of alarm (notification or default alarm sound).
   - Option to stop notifications or disable the alarm.
 
- ![Alarm Screen](https://github.com/user-attachments/assets/ea1bb5a7-1997-4924-9338-73f621d6b59d)
-![Notification Creation](https://github.com/user-attachments/assets/11990410-08a3-4b7f-a771-aac4735d2ec9)
-
-
-
 ### Favorite Screen
 - Lists favorite locations with an option to view detailed forecast information for each.
 - Features a Floating Action Button (FAB) to add new favorite places.
 - Users can either set a marker on a map or type the name of a city to save it to their favorites.
 - Ability to remove saved locations.
+  
+## App Screenshots (Alarm & Notification Module)
 
-  ![Favorites Screen](https://github.com/user-attachments/assets/10b6c24e-a71a-49cc-86cf-01304c1c2530)
-
+<table>
+  <tr>
+    <td><b>Settings Screen</b></td>
+    <td><b>Home Screen 1</b></td>
+    <td><b>Home Screen 2</b></td>
+    <td><b>Alarm Screen</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/047e2c9b-89b7-4911-8507-69dfa2fcb3f5" width="200"/></td>
+    <td><img src="https://github.com/user-attachments/assets/0cd3f8a0-c48f-4e7d-8b4c-101d115c6ed9" width="200"/></td>
+    <td><img src="https://github.com/user-attachments/assets/d8ede4f8-9733-4ec8-a498-8684884429d7" width="200"/></td>
+    <td><img src="https://github.com/user-attachments/assets/ea1bb5a7-1997-4924-9338-73f621d6b59d" width="200"/></td>
+  </tr>
+  <tr>
+    <td><b>Notification Creation</b></td>
+    <td><b>Favorites Screen</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/11990410-08a3-4b7f-a771-aac4735d2ec9" width="200"/></td>
+    <td><img src="https://github.com/user-attachments/assets/10b6c24e-a71a-49cc-86cf-01304c1c2530" width="200"/></td>
+  </tr>
+</table>
 
 ## API Usage
 
